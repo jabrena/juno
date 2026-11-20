@@ -56,18 +56,22 @@ read of the secure flash raises a SecureFault. Those checks ran before secrets w
 
 ## Provisioning
 
-Upload the provisioning program with `juno:secret`. It asks for the value at a hidden prompt, sends it to the board over USB
-serial as hex, and never puts it on the command line or in the log:
+Provision with `juno:secret`. The goal uploads the plugin's own provisioning program (`SecretProvisioner`, shipped in
+`juno-maven-plugin`), so it works from any project without a program of its own; `-Djuno.main` can still name another
+program that speaks the same protocol. It asks for the value at a hidden prompt, sends it to the board over USB serial
+as hex, and never puts it on the command line or in the log:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:secret \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretProvisioner \
   -Djuno.board=arduino-portenta-h7 \
   -Djuno.port=/dev/cu.usbmodemXXXX \
   -Djuno.secret.key=wifi.ssid
 ```
 
-- `-Djuno.secret.list=true` prints `STATE <name> written|missing` for every name, without values.
+Every name is yours: the program knows no names of its own.
+
+- `-Djuno.secret.list=wifi.ssid,wifi.password` prints `STATE <name> written|missing` for each name given, without
+  values. The store cannot enumerate what it holds, so the names to check are always named.
 - `-Djuno.secret.clear=true` asks you to type `CLEAR` before uploading anything, then empties **every data slot on the
   store** — see [Clearing](#clearing) below.
 - Only one of `-Djuno.secret.key`, `-Djuno.secret.list` and `-Djuno.secret.clear` may be used at a time.

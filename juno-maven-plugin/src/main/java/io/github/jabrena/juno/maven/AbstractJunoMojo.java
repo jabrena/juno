@@ -76,15 +76,33 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     @Parameter(property = "juno.carriers")
     private @Nullable String carrierCount;
 
+    /**
+     * The program this goal compiles when no {@code juno.main} is given. Most goals have none, since a project's
+     * programs are its own; a goal that talks to a program of the plugin's (such as {@code juno:secret}) ships it.
+     */
+    Optional<BundledProgram> defaultProgram() {
+        return Optional.empty();
+    }
+
     final CompiledSketch compileSketch() {
-        String entryPoint = configured(mainClass).orElseThrow(() -> new ArduinoCliException(
-                "Missing required Juno entry point: choose the program to compile with -Djuno.main=<class> "
-                        + "(e.g. -Djuno.main=com.example.Main) or configure <mainClass>"));
-        if (classpathElements == null || classpathElements.isEmpty()) {
-            throw new ArduinoCliException("Maven compile classpath is empty");
+        Path output = outputDirectory.toPath().toAbsolutePath().normalize();
+        Optional<String> configuredMain = configured(mainClass);
+        Optional<BundledProgram> bundled = configuredMain.isPresent() ? Optional.empty() : defaultProgram();
+        String entryPoint = configuredMain.or(() -> bundled.map(BundledProgram::mainClass))
+                .orElseThrow(() -> new ArduinoCliException(
+                        "Missing required Juno entry point: choose the program to compile with -Djuno.main=<class> "
+                                + "(e.g. -Djuno.main=com.example.Main) or configure <mainClass>"));
+        List<Path> classpath;
+        if (bundled.isPresent()) {
+            getLog().info("No -Djuno.main given: using the plugin's own " + entryPoint);
+            classpath = bundled.get().classpath(output.resolve("bundled-classes"));
+        } else {
+            if (classpathElements == null || classpathElements.isEmpty()) {
+                throw new ArduinoCliException("Maven compile classpath is empty");
+            }
+            classpath = classpathElements.stream().map(Path::of).toList();
         }
-        List<Path> classpath = classpathElements.stream().map(Path::of).toList();
-        SketchLayout layout = new SketchLayout(outputDirectory.toPath().toAbsolutePath().normalize(), entryPoint);
+        SketchLayout layout = new SketchLayout(output, entryPoint);
 
         RuntimeConfig runtimeConfig = RuntimeConfig.of(Optional.ofNullable(arenaSize),
                 Optional.ofNullable(threadStackSize), Optional.ofNullable(carrierCount));

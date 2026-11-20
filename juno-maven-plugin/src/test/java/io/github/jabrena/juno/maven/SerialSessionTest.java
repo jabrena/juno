@@ -34,10 +34,10 @@ class SerialSessionTest {
         ByteArrayOutputStream sent = new ByteArrayOutputStream();
 
         try (SerialSession session = new SerialSession(new ByteArrayInputStream(new byte[0]), sent)) {
-            session.send(SecretProtocol.listRequest());
+            session.send(SecretProtocol.listRequest("wifi.ssid"));
         }
 
-        assertThat(sent.toString(StandardCharsets.US_ASCII)).isEqualTo("LIST\n");
+        assertThat(sent.toString(StandardCharsets.US_ASCII)).isEqualTo("LIST wifi.ssid\n");
     }
 
     @Test

@@ -36,7 +36,7 @@ class SecretMojoTest extends AbstractMojoTestCase {
     void shouldRequireExactlyOneMode() throws Exception {
         // Given
         FakeExecutor executor = new FakeExecutor();
-        SecretMojo mojo = mojo(executor, null, false, false);
+        SecretMojo mojo = mojo(executor, null, null, false);
 
         // When & Then
         assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
@@ -49,7 +49,7 @@ class SecretMojoTest extends AbstractMojoTestCase {
     void shouldRejectTwoModes() throws Exception {
         // Given
         FakeExecutor executor = new FakeExecutor();
-        SecretMojo mojo = mojo(executor, "wifi.ssid", true, false);
+        SecretMojo mojo = mojo(executor, "wifi.ssid", "wifi.ssid", false);
 
         // When & Then
         assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
@@ -62,7 +62,7 @@ class SecretMojoTest extends AbstractMojoTestCase {
     void shouldRequireATerminalForValues() throws Exception {
         // Given
         FakeExecutor executor = new FakeExecutor();
-        SecretMojo mojo = mojo(executor, "wifi.ssid", false, false);
+        SecretMojo mojo = mojo(executor, "wifi.ssid", null, false);
 
         // When & Then
         assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
@@ -75,7 +75,7 @@ class SecretMojoTest extends AbstractMojoTestCase {
     void shouldRequireATerminalForClear() throws Exception {
         // Given
         FakeExecutor executor = new FakeExecutor();
-        SecretMojo mojo = mojo(executor, null, false, true);
+        SecretMojo mojo = mojo(executor, null, null, true);
 
         // When & Then
         assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
@@ -132,7 +132,7 @@ class SecretMojoTest extends AbstractMojoTestCase {
         FakeExecutor executor = cliAnswers();
         RecordingLog log = new RecordingLog();
         ByteArrayOutputStream sent = new ByteArrayOutputStream();
-        SecretMojo mojo = mojo(executor, "wifi.ssid", false, false);
+        SecretMojo mojo = mojo(executor, "wifi.ssid", null, false);
         mojo.setLog(log);
         mojo.useTerminalAndSessions(terminal("MyNetwork", ""), session("READY\nOK wifi.ssid\n", sent));
 
@@ -151,7 +151,7 @@ class SecretMojoTest extends AbstractMojoTestCase {
     @DisplayName("set fails when the board refuses the request, and reports the board's reply")
     void setReportsABoardRefusal() throws Exception {
         // Given
-        SecretMojo mojo = mojo(cliAnswers(), "wifi.password", false, false);
+        SecretMojo mojo = mojo(cliAnswers(), "wifi.password", null, false);
         mojo.useTerminalAndSessions(terminal("pass-phrase", ""),
                 session("READY\nERR write failed\n", new ByteArrayOutputStream()));
 
@@ -165,7 +165,7 @@ class SecretMojoTest extends AbstractMojoTestCase {
     void setRejectsALongValueBeforeUpload() throws Exception {
         // Given
         FakeExecutor executor = new FakeExecutor();
-        SecretMojo mojo = mojo(executor, "wifi.password", false, false);
+        SecretMojo mojo = mojo(executor, "wifi.password", null, false);
         mojo.useTerminalAndSessions(terminal("a".repeat(50), ""), session("READY\n", new ByteArrayOutputStream()));
 
         // When & Then
@@ -179,7 +179,7 @@ class SecretMojoTest extends AbstractMojoTestCase {
     void setRequiresATypedValue() throws Exception {
         // Given
         FakeExecutor executor = new FakeExecutor();
-        SecretMojo mojo = mojo(executor, "wifi.ssid", false, false);
+        SecretMojo mojo = mojo(executor, "wifi.ssid", null, false);
         mojo.useTerminalAndSessions(terminal("", ""), session("READY\n", new ByteArrayOutputStream()));
 
         // When & Then
@@ -189,43 +189,98 @@ class SecretMojoTest extends AbstractMojoTestCase {
     }
 
     @Test
-    @DisplayName("list prints each name's state, without values")
+    @DisplayName("list asks about each name the user gives, and prints its state without a value")
     void listPrintsStatesOnly() throws Exception {
         // Given
+        ByteArrayOutputStream sent = new ByteArrayOutputStream();
         RecordingLog log = new RecordingLog();
-        SecretMojo mojo = mojo(cliAnswers(), null, true, false);
+        SecretMojo mojo = mojo(cliAnswers(), null, "wifi.ssid, wifi.password", false);
         mojo.setLog(log);
         mojo.useTerminalAndSessions(terminal("", ""), session(
-                "READY\nSTATE wifi.ssid written\nSTATE wifi.password missing\nSTATE mailbox.apikey missing\n"
-                        + "STATE mailbox.q.ip missing\nSTATE smtp.host missing\nSTATE smtp.username missing\n"
-                        + "STATE smtp.password missing\nSTATE supabase.api.host missing\nSTATE supabase.api.key missing\n"
-                        + "STATE supabase.api.url missing\nEND\n",
-                new ByteArrayOutputStream()));
+                "READY\nSTATE wifi.ssid written\nSTATE wifi.password missing\n", sent));
 
         // When
         mojo.execute();
 
         // Then
+        assertThat(sent.toString(StandardCharsets.US_ASCII)).isEqualTo("LIST wifi.ssid\nLIST wifi.password\n");
         assertThat(log.infos()).contains("STATE wifi.ssid written", "STATE wifi.password missing");
     }
 
     @Test
-    @DisplayName("clear lists the names and clears each one after the word CLEAR is typed")
+    @DisplayName("list fails when the board answers about a different name")
+    void listRejectsAnUnexpectedReply() throws Exception {
+        // Given
+        SecretMojo mojo = mojo(cliAnswers(), null, "wifi.ssid", false);
+        mojo.useTerminalAndSessions(terminal("", ""),
+                session("READY\nERR missing name\n", new ByteArrayOutputStream()));
+
+        // When & Then
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
+                .hasMessageContaining("did not report wifi.ssid");
+    }
+
+    @Test
+    @DisplayName("list given true or false fails before any command, with how to name the keys")
+    void listRejectsTheOldSwitch() throws Exception {
+        // Given
+        FakeExecutor executor = new FakeExecutor();
+        SecretMojo mojo = mojo(executor, null, "true", false);
+
+        // When & Then
+        assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
+                .hasMessageContaining("-Djuno.secret.list=wifi.ssid,wifi.password");
+        assertThat(executor.invocations()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("without -Djuno.main the plugin compiles and uploads its own SecretProvisioner")
+    void usesTheBundledProvisionerByDefault() throws Exception {
+        // Given
+        RecordingLog log = new RecordingLog();
+        FakeExecutor executor = cliAnswers();
+        SecretMojo mojo = (SecretMojo) lookupEmptyMojo("secret", new File("."));
+        mojo = (SecretMojo) configureMojo(mojo, configuration()
+                .set("arduinoCli", "arduino-cli")
+                .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
+                .set("board", "arduino-uno-r4-wifi")
+                .set("outputDirectory", "target/juno-mojo-test/secret-bundled")
+                .set("list", "wifi.ssid")
+                .set("clear", "false")
+                .build());
+        mojo.setLog(log);
+        mojo.useExecutor(executor);
+        mojo.useTerminalAndSessions(terminal("", ""),
+                session("READY\nSTATE wifi.ssid missing\n", new ByteArrayOutputStream()));
+
+        // When
+        mojo.execute();
+
+        // Then
+        Path sketch = Path.of("target/juno-mojo-test/secret-bundled/SecretProvisionerAsm");
+        assertThat(sketch.resolve("SecretProvisioner.S")).exists();
+        assertThat(log.infos()).anyMatch(line -> line.contains("using the plugin's own "
+                + "io.github.jabrena.juno.maven.provisioner.SecretProvisioner"));
+        assertThat(executor.invocations().get(0).arguments()).contains("compile", sketch.toAbsolutePath().toString());
+    }
+
+    @Test
+    @DisplayName("clear empties every data slot after the word CLEAR is typed")
     void clearAfterConfirmation() throws Exception {
         // Given
         ByteArrayOutputStream sent = new ByteArrayOutputStream();
         RecordingLog log = new RecordingLog();
-        SecretMojo mojo = mojo(cliAnswers(), null, false, true);
+        SecretMojo mojo = mojo(cliAnswers(), null, null, true);
         mojo.setLog(log);
         mojo.useTerminalAndSessions(terminal("", "CLEAR"), session(
-                "READY\nSTATE wifi.ssid written\nEND\nOK CLEAR ALL\n",
+                "READY\nOK CLEAR ALL\n",
                 sent));
 
         // When
         mojo.execute();
 
         // Then
-        assertThat(sent.toString(StandardCharsets.US_ASCII)).isEqualTo("LIST\nCLEAR ALL\n");
+        assertThat(sent.toString(StandardCharsets.US_ASCII)).isEqualTo("CLEAR ALL\n");
         assertThat(log.infos()).contains("Emptied every data slot on the chip");
     }
 
@@ -234,7 +289,7 @@ class SecretMojoTest extends AbstractMojoTestCase {
     void clearWithoutConfirmationDoesNothing() throws Exception {
         // Given
         FakeExecutor executor = new FakeExecutor();
-        SecretMojo mojo = mojo(executor, null, false, true);
+        SecretMojo mojo = mojo(executor, null, null, true);
         mojo.useTerminalAndSessions(terminal("", "yes"), session("READY\n", new ByteArrayOutputStream()));
 
         // When & Then
@@ -247,9 +302,9 @@ class SecretMojoTest extends AbstractMojoTestCase {
     @DisplayName("clear fails when the board does not confirm a name was cleared")
     void clearReportsABoardFailure() throws Exception {
         // Given
-        SecretMojo mojo = mojo(cliAnswers(), null, false, true);
+        SecretMojo mojo = mojo(cliAnswers(), null, null, true);
         mojo.useTerminalAndSessions(terminal("", "CLEAR"),
-                session("READY\nEND\nERR write failed\n", new ByteArrayOutputStream()));
+                session("READY\nERR write failed\n", new ByteArrayOutputStream()));
 
         // When & Then
         assertThatThrownBy(mojo::execute).isInstanceOf(MojoFailureException.class)
@@ -261,7 +316,7 @@ class SecretMojoTest extends AbstractMojoTestCase {
     void skipsRepeatedReady() throws Exception {
         // Given
         RecordingLog log = new RecordingLog();
-        SecretMojo mojo = mojo(cliAnswers(), "wifi.ssid", false, false);
+        SecretMojo mojo = mojo(cliAnswers(), "wifi.ssid", null, false);
         mojo.setLog(log);
         mojo.useTerminalAndSessions(terminal("MyNetwork", ""),
                 session("READY\nREADY\nREADY\nOK wifi.ssid\n", new ByteArrayOutputStream()));
@@ -300,12 +355,12 @@ class SecretMojoTest extends AbstractMojoTestCase {
                 .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
                 .set("board", "raspberry-pi-pico-2-w")
                 .set("outputDirectory", "target/juno-mojo-test/secret-pico")
-                .set("list", "true")
+                .set("list", "wifi.ssid")
                 .set("clear", "false")
                 .build());
         mojo.setLog(new RecordingLog());
         mojo.useExecutor(executor);
-        mojo.useTerminalAndSessions(terminal("", ""), session("READY\nEND\n", new ByteArrayOutputStream()));
+        mojo.useTerminalAndSessions(terminal("", ""), session("READY\nSTATE wifi.ssid missing\n", new ByteArrayOutputStream()));
 
         // When
         mojo.execute();
@@ -323,7 +378,7 @@ class SecretMojoTest extends AbstractMojoTestCase {
         return hex.toString();
     }
 
-    private SecretMojo mojo(FakeExecutor executor, String key, boolean list, boolean clear) throws Exception {
+    private SecretMojo mojo(FakeExecutor executor, String key, String list, boolean clear) throws Exception {
         SecretMojo mojo = (SecretMojo) lookupEmptyMojo("secret", new File("."));
         MojoConfig config = configuration()
                 .set("arduinoCli", "arduino-cli")
@@ -331,10 +386,12 @@ class SecretMojoTest extends AbstractMojoTestCase {
                 .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
                 .set("board", "arduino-uno-r4-wifi")
                 .set("outputDirectory", "target/juno-mojo-test/secret")
-                .set("list", String.valueOf(list))
                 .set("clear", String.valueOf(clear));
         if (key != null) {
             config.set("key", key);
+        }
+        if (list != null) {
+            config.set("list", list);
         }
         mojo = (SecretMojo) configureMojo(mojo, config.build());
         mojo.setLog(new RecordingLog());
