@@ -290,6 +290,36 @@ class ConcurrencyPrimitivesTest {
     }
 
     @Test
+    @DisplayName("A dual-carrier ESP32 thread is placed before its slot is chosen, by the load of runnable threads")
+    void shouldPlaceANewThreadBeforeChoosingItsSlot() throws Exception {
+        CompilationResult result = compile("ArduinoNanoEsp32Board", "Thread.startVirtualThread(new Job()).join();");
+
+        String shim = result.runtimeShim();
+        String start = shim.substring(shim.indexOf("extern \"C\" void juno_thread_start(int32_t handle) {"));
+        start = start.substring(0, start.indexOf("\n}\n"));
+        assertThat(start.indexOf("juno_place_new_thread();")).isPositive()
+                .isLessThan(start.indexOf("uint32_t slot = 1u;"));
+        assertThat(start).contains("!juno_port_reusable(slot) || !juno_slot_suits(slot)",
+                "juno_slots[slot].carrier = juno_new_thread_carrier(slot);");
+        // A joining owner leaves its carrier to what it forked; a tie stays on the starter's carrier.
+        assertThat(shim).contains("if (juno_slots[index].state != JUNO_SLOT_FREE && !juno_slot_waits(index)) {",
+                "uint32_t selected = juno_current_carrier();",
+                "if (loads[carrier] < loads[selected]) selected = carrier;")
+                .doesNotContain("juno_placement_hint", "juno_choose_carrier");
+    }
+
+    @Test
+    @DisplayName("A single-carrier ESP32 thread start has no placement step")
+    void shouldNotPlaceThreadsOnOneCarrier() throws Exception {
+        RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1"));
+
+        CompilationResult result = compile("ArduinoNanoEsp32Board",
+                "Thread.startVirtualThread(new Job()).join();", config);
+
+        assertThat(result.runtimeShim()).doesNotContain("juno_place_new_thread", "juno_slot_suits");
+    }
+
+    @Test
     @DisplayName("Dual-carrier ESP32 programs place main on its real core and start threads on an idle carrier")
     void shouldStartThreadsOnAnIdleCarrier() throws Exception {
         CompilationResult result = compile("ArduinoNanoEsp32Board", "Thread.startVirtualThread(new Job()).join();");

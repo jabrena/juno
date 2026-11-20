@@ -41,6 +41,7 @@ sealed interface SchedulerCarriers {
                     .replace("${JUNO_CARRIER_FILTER}", "")
                     .replace("${JUNO_PLACEMENT}", "")
                     .replace("${JUNO_CURRENT_SCAN}", "index == juno_current_slot ? marker : nullptr")
+                    .replace("${JUNO_PLACE_NEW_THREAD}", "")
                     .replace("${JUNO_SET_CARRIER}", "")
                     .replace("${JUNO_SLOT_CARRIER_FIELD}", "")
                     .replace("${JUNO_SLOT_CARRIER_ACCESSOR}", "")
@@ -114,8 +115,6 @@ sealed interface SchedulerCarriers {
                               if (slot.carrier != juno_current_carrier()) return false;
                             """)
                     .replace("${JUNO_PLACEMENT}", counted("""
-                            static uint32_t juno_placement_hint = 0u;
-
                             static bool juno_carrier_empty(uint32_t carrier) {
                               for (uint32_t index = 0u; index < juno_slot_count; index++) {
                                 if (juno_slots[index].state != JUNO_SLOT_FREE && juno_slots[index].carrier == carrier) {
@@ -125,31 +124,59 @@ sealed interface SchedulerCarriers {
                               return true;
                             }
 
-                            // A slot whose task the port has already pinned to a core keeps that carrier; otherwise
-                            // the least-loaded carrier, not counting the slot being placed.
-                            static uint32_t juno_choose_carrier(uint32_t slot) {
-                              juno_carriers_init();
+                            // A thread waiting for others to finish uses no CPU, so it does not count as a carrier's
+                            // load: an owner that forks and then joins leaves its carrier to what it forked.
+                            static bool juno_slot_waits(uint32_t index) {
+                              uint32_t state = juno_slots[index].state;
+                              return state == JUNO_SLOT_JOINING || state == JUNO_SLOT_JOINING_ALL
+                                  || state == JUNO_SLOT_JOINING_SCOPE;
+                            }
+
+                            // Where the next thread runs, chosen before its slot: the carrier with the fewest threads
+                            // that can run, and on a tie the carrier of the thread starting it, which usually joins
+                            // what it starts next. A slot's task stays on the core it was created on, so only a
+                            // free slot that suits the target is taken while one exists.
+                            static uint32_t juno_placement_target = 0u;
+                            static bool juno_placement_strict = false;
+
+                            static bool juno_slot_suits(uint32_t slot) {
+                              if (!juno_placement_strict) return true;
                               uint32_t fixed = juno_port_fixed_carrier(slot);
-                              if (fixed < ${JUNO_CARRIER_COUNT}u) return fixed;
+                              return fixed >= ${JUNO_CARRIER_COUNT}u || fixed == juno_placement_target;
+                            }
+
+                            static void juno_place_new_thread() {
+                              juno_carriers_init();
                               uint32_t loads[${JUNO_CARRIER_COUNT}] = {};
                               for (uint32_t index = 0u; index < juno_slot_count; index++) {
-                                if (index != slot && juno_slots[index].state != JUNO_SLOT_FREE) {
+                                if (juno_slots[index].state != JUNO_SLOT_FREE && !juno_slot_waits(index)) {
                                   loads[juno_slots[index].carrier]++;
                                 }
                               }
-                              uint32_t selected = 0u;
-                              for (uint32_t carrier = 1u; carrier < ${JUNO_CARRIER_COUNT}u; carrier++) {
+                              uint32_t selected = juno_current_carrier();
+                              for (uint32_t carrier = 0u; carrier < ${JUNO_CARRIER_COUNT}u; carrier++) {
                                 if (loads[carrier] < loads[selected]) selected = carrier;
                               }
-                              if (loads[0] == loads[1] && ${JUNO_CARRIER_COUNT}u > 1u) {
-                                selected = juno_placement_hint++ % ${JUNO_CARRIER_COUNT}u;
+                              juno_placement_target = selected;
+                              juno_placement_strict = false;
+                              for (uint32_t slot = 1u; slot < juno_slot_count; slot++) {
+                                if (juno_slots[slot].state != JUNO_SLOT_FREE || !juno_port_reusable(slot)) continue;
+                                juno_placement_strict = true;
+                                if (juno_slot_suits(slot)) return;
+                                juno_placement_strict = false;
                               }
-                              return selected;
+                            }
+
+                            // The carrier of the slot just taken: its task's core once it has one, else the target.
+                            static uint32_t juno_new_thread_carrier(uint32_t slot) {
+                              uint32_t fixed = juno_port_fixed_carrier(slot);
+                              return fixed < ${JUNO_CARRIER_COUNT}u ? fixed : juno_placement_target;
                             }
                             """))
                     .replace("${JUNO_CURRENT_SCAN}", "juno_slots[index].carrier == juno_current_carrier() "
                             + "&& index == juno_current_slot ? marker : nullptr")
-                    .replace("${JUNO_SET_CARRIER}", "  juno_slots[slot].carrier = juno_choose_carrier(slot);\n")
+                    .replace("${JUNO_PLACE_NEW_THREAD}", "  juno_place_new_thread();\n")
+                    .replace("${JUNO_SET_CARRIER}", "  juno_slots[slot].carrier = juno_new_thread_carrier(slot);\n")
                     .replace("${JUNO_SLOT_CARRIER_FIELD}", "  uint32_t carrier;\n")
                     .replace("${JUNO_SLOT_CARRIER_ACCESSOR}",
                             "extern \"C\" uint32_t juno_slot_carrier(uint32_t slot) { return juno_slots[slot].carrier; }\n")
@@ -171,7 +198,7 @@ sealed interface SchedulerCarriers {
                                 }
                                 juno_runtime_exit();
                             """ + "    ")
-                    .replace("${JUNO_SLOT_REUSABLE}", " || !juno_port_reusable(slot)")
+                    .replace("${JUNO_SLOT_REUSABLE}", " || !juno_port_reusable(slot) || !juno_slot_suits(slot)")
                     .replace("${JUNO_BLOCK_IDLE}", "juno_port_check_killed();\n    ")
                     .replace("${JUNO_CARRIER_FUNCTIONS}", """
                             // Loads a thread's own state into its carrier's per-carrier state.
