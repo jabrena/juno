@@ -18,7 +18,7 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 
 | Feature | Status | Notes | Example |
 |---|:---:|---|---|
-| `Gpio`, `DigitalOutput` | ✓ | Resolve portable `D0`–`D13` and `A0`–`A5` names through the board context; board-specific aliases are available where documented, including the red status LED on GPIO33. | [`AiThinkerEsp32CamBlink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/AiThinkerEsp32CamBlink.java) |
+| `Gpio`, `DigitalOutput` | ✓ | Resolve portable `D0`–`D13` and `A0`–`A5` names through the board context; board-specific aliases are available where documented, including the red status LED on GPIO33. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
 | `Delay`, `Serial` | ✓ | Serial output uses a USB-serial adapter because the board has no USB port. | |
 | Classes, interfaces and inheritance | ✓ | | |
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | | |

@@ -79,5 +79,5 @@ public final class GrovePicoLed {
 }
 ```
 
-The Pico 2 W's own Grove examples are [`RaspberryPico2GroveShield`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/RaspberryPico2GroveShield.java) and [`RaspberryPico2GroveOled`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/RaspberryPico2GroveOled.java).
+The Pico 2 W's own Grove example is [`RaspberryPico2GroveOled`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/RaspberryPico2GroveOled.java).
 |}

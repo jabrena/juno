@@ -158,7 +158,7 @@ screen from its own `touch` method safely.
 
 Boards with a keyboard, such as the M5Stack Cardputer, use `KeyboardViewRouter` with `KeyboardView` screens. It takes the
 `Keyboard` in place of the touch panel and calls `key(key, fnPressed)` for each key pressed in a transition. The rest
-of the layout is unchanged; [`ZeldaOcarinaCardputer`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/zelda/ZeldaOcarinaCardputer.java)
+of the layout is unchanged; [`MailboxCardputer`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox/client/MailboxCardputer.java)
 follows this pattern.
 
 ## Limits

@@ -35,14 +35,14 @@ The Nano ESP32 includes 8 MB of PSRAM. It is separate from the Java arena and ga
 |---|:---:|---|---|
 | `Gpio`, `DigitalOutput` | ✓ | Resolve printed names such as `digitalPin("D13")` and `analogPin("A0")`; D13 is translated to ESP32-S3 GPIO48. Never pass raw ESP32 GPIO numbers; the onboard RGB LED is not reachable. | |
 | `Delay`, `Serial` | ✓ | `Serial` over the native USB port. | |
-| `int`, `long`, `float`, `double` | ✓ | Java semantics kept (a `long` division by zero stops the program, float-to-int casts saturate). `float` uses the S3's FPU; `double` is soft-float. | [`SerialWideMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialWideMath.java), [`SerialDoubleMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java) |
-| Double-precision `java.lang.Math` | ✓ | Uses the toolchain's libm. | [`SerialDoubleMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java) |
+| `int`, `long`, `float`, `double` | ✓ | Java semantics kept (a `long` division by zero stops the program, float-to-int casts saturate). `float` uses the S3's FPU; `double` is soft-float. | [`PrimitiveTypes`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/PrimitiveTypes.java), [`MathFunctionsDoublePrecision`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java) |
+| Double-precision `java.lang.Math` | ✓ | Uses the toolchain's libm. | [`MathFunctionsDoublePrecision`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java) |
 | Objects, arrays, static and interface calls | ✓ | | |
-| Lambdas and method references | ✓ | Every shape. | [`SerialLambdas`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialLambdas.java) |
-| `BigInteger`, `BigDecimal`, `MathContext` | ✓ | Runs in the arena with the JDK's rounding and text rules. | [`SerialBigNumbers`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialBigNumbers.java) |
-| Threads, `synchronized`, `ReentrantLock`, `StructuredTaskScope`, `ScopedValue` | ✓ | Each thread is a FreeRTOS task with an 8 KiB stack (`-Djuno.Xss`); one runs Java at a time, handing over after a 1 ms slice. On the AVR boards at most four threads run, including `main`. | [`SerialThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialThreads.java) |
+| Lambdas and method references | ✓ | Every shape. | [`Lambdas`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Lambdas.java) |
+| `BigInteger`, `BigDecimal`, `MathContext` | ✓ | Runs in the arena with the JDK's rounding and text rules. | [`BigNumberValues`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/BigNumberValues.java) |
+| Threads, `synchronized`, `ReentrantLock`, `StructuredTaskScope`, `ScopedValue` | ✓ | Each thread is a FreeRTOS task with an 8 KiB stack (`-Djuno.Xss`); one runs Java at a time, handing over after a 1 ms slice. On the AVR boards at most four threads run, including `main`. | [`VirtualThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java), [`Synchronization`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Synchronization.java), [`StructuredConcurrency`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java), [`ScopedValuesPrecision`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java) |
 | `@Watchdog` | ✓ | ESP32-S3 task watchdog; the timeout is rounded up to whole seconds. | |
-| `UUID.randomUUID()` | ✓ | Hardware RNG through `esp_fill_random`; may be weaker before Wi-Fi or Bluetooth start. | [`SerialUuids`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialUuids.java) |
+| `UUID.randomUUID()` | ✓ | Hardware RNG through `esp_fill_random`; may be weaker before Wi-Fi or Bluetooth start. | [`UuidValues`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/UuidValues.java) |
 | Wi-Fi station | ✓ | `begin`, `status`, `localIP`, `gatewayIP`, `macAddress`; credentials from the microSD card (see [SD Card](../../api/storage/sdcard)). | [`NanoWifiStatusSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoWifiStatusSD.java) |
 | Wi-Fi access point | ✓ | `beginAP(ssid, password)`. | [`NanoAccessPointSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/NanoAccessPointSD.java) |
 | `Udp`, SNTP (`LocalDateTime.now()`) | ✓ | Through the core's `WiFiUDP`; optional `sntp.host`/`sntp.port` from the card. | [`NanoSntpTimeSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/udp/NanoSntpTimeSD.java) |
@@ -51,7 +51,7 @@ The Nano ESP32 includes 8 MB of PSRAM. It is separate from the Java arena and ga
 | `HttpServer` | ✓ | Runs on the station address. | [`NanoHttpServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpServerSD.java) |
 | `Smtp.sendTls`, `Pop3Client` | ✓ | Implicit TLS on ports 465 and 995, checked against the bundled roots. The examples read the password, subject and body from SD `Properties` values, of up to 31 bytes each. | [`NanoSmtpSendSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoSmtpSendSD.java), [`NanoPop3InboxSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoPop3InboxSD.java) |
 | `Smtp.send` (STARTTLS) | ✓ | Needs `arduino-cli lib install ESP_SSLClient`. After the upgrade the server's chain, and its dates, are checked against the bundled Mozilla roots; the first send sets the board's clock over SNTP (`pool.ntp.org`). | [`NanoSmtpStarttlsCredentialsSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/NanoSmtpStarttlsCredentialsSD.java) |
-| USB HID mouse | ✓ | `MCU.getMouse()` through TinyUSB; shares the USB port with `Serial`. | [`NanoRatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/NanoRatonLoco.java) |
+| USB HID mouse | ✓ | `MCU.getMouse()` through TinyUSB; shares the USB port with `Serial`. | [`RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java) |
 
 ## Features
 
@@ -99,7 +99,7 @@ while (true) {
 ```
 
 Once uploaded, the program keeps moving the pointer; disconnect the board or upload another program to stop it.
-[`NanoRatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/NanoRatonLoco.java) also prints each side over `Serial`.
+[`RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java) is the complete example; it runs on every board with a USB HID mouse.
 
 ## Shields
 
@@ -218,7 +218,7 @@ boolean motion = pir.motionDetected(carrier.getGroveA2());
 float percent = light.getLightValue();
 ```
 
-[`NanoCarrierGroveSensors`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/carrier/NanoCarrierGroveSensors.java) prints a
+[`NanoCarrierGroveSensors`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/NanoCarrierGroveSensors.java) prints a
 Grove PIR in the A2/A3 socket and a light sensor in the A0/A1 socket once a second.
 
 ##### Remote-control a LEGO RCX
