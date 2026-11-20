@@ -19,8 +19,6 @@ import io.github.jabrena.juno.util.Delay;
 @Board(RaspberryPico2WifiBoard.class)
 public final class RaspberryPico2GroveOled {
     private static final int GLYPH_WIDTH = 6;
-    private RaspberryPico2GroveOled() {
-    }
 
     /** Draws one row once, then keeps it on screen. */
     public static void main(String[] args) {

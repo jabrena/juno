@@ -23,8 +23,6 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoNanoEsp32Board.class})
 public final class NanoCarrierGroveSensors {
-    private NanoCarrierGroveSensors() {
-    }
 
     public static void main(String[] args) {
         NanoConnectorCarrier carrier = new NanoConnectorCarrier(MCU.getGpio());

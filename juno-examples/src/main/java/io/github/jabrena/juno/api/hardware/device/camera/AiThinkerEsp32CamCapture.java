@@ -18,9 +18,6 @@ public final class AiThinkerEsp32CamCapture {
     private static final int FRAME_CAPACITY = 6144;
     private static final int CAPTURE_INTERVAL_MILLIS = 3000;
 
-    private AiThinkerEsp32CamCapture() {
-    }
-
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);

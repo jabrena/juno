@@ -14,8 +14,6 @@ import io.github.jabrena.juno.util.Delay;
 /** Reads the Grove ultrasonic ranger connected to the carrier's A2/A3 socket. */
 @Board(ArduinoNanoEsp32Board.class)
 public final class NanoCarrierUltrasonic {
-    private NanoCarrierUltrasonic() {
-    }
 
     public static void main(String[] args) {
         Gpio gpio = MCU.getGpio();
