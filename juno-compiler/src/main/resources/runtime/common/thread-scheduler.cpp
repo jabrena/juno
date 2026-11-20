@@ -279,7 +279,7 @@ extern "C" void juno_thread_start(int32_t handle) {
     Serial.println("[juno-thread] IllegalThreadStateException: thread already started");
     juno_panic();
   }
-  uint32_t slot = 1u;
+${JUNO_PLACE_NEW_THREAD}  uint32_t slot = 1u;
   while (slot < juno_slot_count && juno_slots[slot].state != JUNO_SLOT_FREE${JUNO_SLOT_REUSABLE}) slot++;
   if (slot == juno_slot_count) juno_slots_grow();
   thread->flags |= JUNO_THREAD_STARTED;
