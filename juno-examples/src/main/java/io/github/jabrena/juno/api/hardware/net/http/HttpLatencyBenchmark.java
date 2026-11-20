@@ -18,14 +18,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.StructuredTaskScope;
 
 /**
- * Times an I/O-bound job, {@value #REQUESTS} HTTP requests to a public endpoint that answers after a fixed second
- * ({@value #URL}), done three ways on the Nano ESP32: one after another, on {@value #REQUESTS} virtual threads, and as
- * {@value #REQUESTS} subtasks of a {@link StructuredTaskScope}.
+ * Times an I/O-bound job, {@value #REQUESTS} requests to a public endpoint that answers after a fixed second
+ * ({@value #HTTP_URL}), done three ways on the Nano ESP32: one after another, on {@value #REQUESTS} virtual threads, and
+ * as {@value #REQUESTS} subtasks of a {@link StructuredTaskScope}.
  *
  * <p>Unlike a CPU-bound job, a request spends almost all its time waiting for the server, so threads pay off even on
- * one core: while one request waits, another can be sent. The ESP32 runtime lets at most two HTTP requests be in flight
- * at once, so the parallel modes approach two rounds of one second, not one. Plain HTTP keeps TLS handshakes, which
- * are CPU-bound, out of the measurement; the endpoint receives nothing but the request line.
+ * one core: while one request waits, another can be sent. The ESP32 runtime lets up to four HTTP requests be in flight
+ * at once. Plain HTTP keeps TLS handshakes, which are CPU-bound, out of the measurement; the endpoint receives nothing
+ * but the request line. {@link HttpsLatencyBenchmark} runs the same job over HTTPS.
  *
  * <p>Each request owns its {@link HttpClient}, built once at startup, so two requests never share a response. A
  * request records its status, or {@code -1} when it fails, instead of throwing, so it runs as a plain task in every
@@ -35,8 +35,8 @@ import java.util.concurrent.StructuredTaskScope;
  */
 @Board(ArduinoNanoEsp32Board.class)
 public final class HttpLatencyBenchmark {
-    private static final String URL = "http://httpbin.org/delay/1";
-    private static final int REQUESTS = 4;
+    static final String HTTP_URL = "http://httpbin.org/delay/1";
+    static final int REQUESTS = 4;
     private static final int ROUND_PAUSE_MILLIS = 15_000;
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
@@ -62,8 +62,12 @@ public final class HttpLatencyBenchmark {
     /** One request with its own client, and the status of its last attempt. */
     private static final class Request {
         private final HttpClient client = HttpClient.newHttpClient();
-        private final HttpRequest request = HttpRequest.newBuilder(URI.create(URL)).build();
+        private final HttpRequest request;
         private int status;
+
+        Request(String url) {
+            this.request = HttpRequest.newBuilder(URI.create(url)).build();
+        }
 
         void fetch() {
             try {
@@ -76,23 +80,35 @@ public final class HttpLatencyBenchmark {
 
     private final Wifi wifi = MCU.getWifi();
     private final Clock clock = MCU.getClock();
-    private final Request first = new Request();
-    private final Request second = new Request();
-    private final Request third = new Request();
-    private final Request fourth = new Request();
+    private final String name;
+    private final String url;
+    private final Request first;
+    private final Request second;
+    private final Request third;
+    private final Request fourth;
 
-    public static void main(String[] args) throws InterruptedException, ExecutionException {
-        new HttpLatencyBenchmark().run();
+    /** A benchmark that prints {@code name} at the start of each round and requests {@code url}. */
+    HttpLatencyBenchmark(String name, String url) {
+        this.name = name;
+        this.url = url;
+        this.first = new Request(url);
+        this.second = new Request(url);
+        this.third = new Request(url);
+        this.fourth = new Request(url);
     }
 
-    private void run() throws InterruptedException, ExecutionException {
+    public static void main(String[] args) throws InterruptedException, ExecutionException {
+        new HttpLatencyBenchmark("HTTP", HTTP_URL).run();
+    }
+
+    void run() throws InterruptedException, ExecutionException {
         Serial.begin(BaudRate.BAUD_115200);
         if (!connectWifi()) {
             return;
         }
         for (int round = 1; ; round++) {
             Thread.sleep(ROUND_PAUSE_MILLIS);
-            Serial.println("HTTP latency benchmark round " + round + ": " + REQUESTS + " x " + URL);
+            Serial.println(name + " latency benchmark round " + round + ": " + REQUESTS + " x " + url);
             int sequential = 0;
             for (int index = 0; index < MODES.length; index++) {
                 Mode mode = MODES[index];
@@ -103,7 +119,12 @@ public final class HttpLatencyBenchmark {
                     sequential = elapsed;
                 }
                 String speedUp = mode == Mode.SEQUENTIAL ? "" : " speed-up=" + hundredths(sequential * 100 / elapsed) + "x";
-                Serial.println(mode.label() + " elapsed=" + elapsed + "ms ok=" + answered() + "/" + REQUESTS + speedUp);
+                int answered = answered();
+                // A timing only counts when every request answered; otherwise the statuses say which did not.
+                String statuses = answered == REQUESTS ? "" : " statuses=" + first.status + "," + second.status + ","
+                        + third.status + "," + fourth.status;
+                Serial.println(mode.label() + " elapsed=" + elapsed + "ms ok=" + answered + "/" + REQUESTS + speedUp
+                        + statuses);
             }
         }
     }
