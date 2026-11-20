@@ -120,7 +120,7 @@
       <div class="juno-topnav-children">
         <a class="" href="/juno/blog">Overview</a>
       </div>
-      <a class="" href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+      <a class="" href="/juno/javadocs/0.1.0/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
     </nav>
     <div class="juno-topbar-actions">
 <form class="juno-search juno-search-desktop" role="search" autocomplete="off">
@@ -328,7 +328,7 @@ git init
 <p><code>git submodule add</code> clones Juno into <code>juno/</code> and records it in a <code>.gitmodules</code> file. To build against a specific Juno
 revision, pin the submodule to a commit with <code>git -C juno checkout &lt;commit&gt;</code>.</p>
 <h2 id="3-build-juno-into-your-local-maven-repository">3. Build Juno into your local Maven repository</h2>
-<p>The project depends on <code>juno-api</code> and the Maven plugin at version <code>0.1.0-SNAPSHOT</code>. Maven resolves them from your local
+<p>The project depends on <code>juno-api</code> and the Maven plugin at version <code>0.1.0</code>. Maven resolves them from your local
 repository (<code>~/.m2</code>), not from the submodule, so build the submodule once with its own wrapper:</p>
 <pre><code class="language-bash">cd juno
 ./mvnw clean install -DskipTests -Dspotless.check.skip=true -Dpmd.skip=true \
@@ -351,7 +351,7 @@ cd ..
     &lt;properties&gt;
         &lt;maven.compiler.release&gt;27&lt;/maven.compiler.release&gt;
         &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
-        &lt;juno.version&gt;0.1.0-SNAPSHOT&lt;/juno.version&gt;
+        &lt;juno.version&gt;0.1.0&lt;/juno.version&gt;
         &lt;juno.board&gt;arduino-uno-r4-wifi&lt;/juno.board&gt;
         &lt;juno.main&gt;com.example.testingjuno.App&lt;/juno.main&gt;
     &lt;/properties&gt;
@@ -568,7 +568,7 @@ property must match the version it installs.</li>
   <div class="juno-footer-inner">
     <div class="juno-footer-links">
       <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
-      <a href="/juno/javadocs/0.1.0-SNAPSHOT/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="/juno/javadocs/0.1.0/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
       <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
     </div>
     <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>

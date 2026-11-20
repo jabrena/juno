@@ -1,12 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<!-- child.project.url.inherit.append.path="false" keeps every module's inherited <url> (and the <scm> URLs below)
+     pointing at the project instead of appending the module's artifactId, which would give dead links on Central. -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" child.project.url.inherit.append.path="false">
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.jabrena</groupId>
-    <artifactId>java-for-arduino</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <artifactId>juno-parent</artifactId>
+    <version>0.1.0</version>
     <packaging>pom</packaging>
-    <name>Java for Arduino UNO</name>
-    <description>A tiny Java AOT compiler for Arduino UNO R4 WiFi</description>
+    <name>Juno</name>
+    <description>Juno: an ahead-of-time Java compiler, hardware API and Maven plugin for Arduino and other microcontroller boards</description>
+    <!-- Project metadata required by Maven Central (name, description, url, licenses, developers, scm); every module
+         inherits it from here. -->
+    <url>https://jabrena.github.io/juno/</url>
+    <inceptionYear>2026</inceptionYear>
+    <licenses>
+        <license>
+            <name>Apache-2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>jabrena</id>
+            <name>Juan Antonio Breña Moral</name>
+            <url>https://github.com/jabrena</url>
+        </developer>
+    </developers>
 
     <modules>
         <module>juno-api</module>
@@ -17,6 +37,21 @@
         <module>juno-third-parties</module>
         <module>coverage-aggregator</module>
     </modules>
+
+    <scm child.scm.connection.inherit.append.path="false" child.scm.developerConnection.inherit.append.path="false" child.scm.url.inherit.append.path="false">
+        <connection>scm:git:https://github.com/jabrena/juno.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/jabrena/juno.git</developerConnection>
+        <url>https://github.com/jabrena/juno</url>
+        <tag>HEAD</tag>
+    </scm>
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/jabrena/juno/issues</url>
+    </issueManagement>
+    <ciManagement>
+        <system>GitHub Actions</system>
+        <url>https://github.com/jabrena/juno/actions</url>
+    </ciManagement>
 
     <properties>
         <maven.compiler.release>27</maven.compiler.release>
@@ -43,6 +78,13 @@
         <maven-plugin-failsafe.version>3.6.0</maven-plugin-failsafe.version>
         <maven-plugin-jar.version>3.5.1</maven-plugin-jar.version>
         <maven-plugin-javadoc.version>3.12.0</maven-plugin-javadoc.version>
+        <maven-plugin-source.version>3.3.1</maven-plugin-source.version>
+        <central-publishing-plugin.version>0.12.0</central-publishing-plugin.version>
+        <maven-plugin-gpg.version>3.2.8</maven-plugin-gpg.version>
+        <!-- -Prelease signs only the published modules; -Dgpg.skip still turns signing off for a local dry run. -->
+        <gpg.skip>${maven.deploy.skip}</gpg.skip>
+        <!-- Overridden to true by the modules that are never published; the -Prelease attachments follow it too. -->
+        <maven.deploy.skip>false</maven.deploy.skip>
         <maven-plugin-pmd.version>3.28.0</maven-plugin-pmd.version>
         <pmd.version>7.29.0</pmd.version>
         <maven-plugin-jxr.version>3.6.0</maven-plugin-jxr.version>
@@ -54,6 +96,8 @@
              mutation and line coverage under -Ppitest (juno-compiler). -->
         <coverage.level>80</coverage.level>
         <maven-plugin-dependency.version>3.11.0</maven-plugin-dependency.version>
+        <!-- Release versioning: ./mvnw versions:set -DnewVersion=<version> updates the parent and every module. -->
+        <maven-plugin-versions.version>2.21.0</maven-plugin-versions.version>
         <maven-plugin-pitest.version>1.30.2</maven-plugin-pitest.version>
         <!-- PIT parallelism per module; a mutant's test run is slow, so the default single thread takes hours. -->
         <pitest.threads>4</pitest.threads>
@@ -141,6 +185,15 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>${maven-plugin-versions.version}</version>
+                    <configuration>
+                        <processAllModules>true</processAllModules>
+                        <generateBackupPoms>false</generateBackupPoms>
+                    </configuration>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-clean-plugin</artifactId>
                     <version>${maven-plugin-clean.version}</version>
@@ -169,6 +222,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>${maven-plugin-javadoc.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${maven-plugin-source.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -479,6 +537,99 @@
 
           Nothing under docs/ is hand-maintained; regenerate rather than hand-edit it.
         -->
+        <profile>
+            <!-- Maven Central release build: ./mvnw -Prelease deploy. Central rejects a jar artifact without its
+                 -sources.jar and -javadoc.jar, so every published module attaches both; the modules that set
+                 maven.deploy.skip (examples, site, coverage aggregator) skip them. -->
+            <id>release</id>
+            <properties>
+                <!-- Same as the site and pitest profiles: activating this profile turns off the activeByDefault
+                     jacoco profile, so surefire's @{argLine} would stay literal and the forked JVM cannot start. -->
+                <argLine></argLine>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- Replaces maven-deploy-plugin: deploy collects every module into one bundle and uploads it
+                             to the Central Portal with the token stored as server "central" in ~/.m2/settings.xml. -->
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>${central-publishing-plugin.version}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <deploymentName>Juno ${project.version}</deploymentName>
+                            <!-- Stop at VALIDATED and publish by hand from the Portal: a release cannot be withdrawn. -->
+                            <autoPublish>false</autoPublish>
+                            <waitUntil>validated</waitUntil>
+                            <!-- The plugin ignores maven.deploy.skip and would bundle every reactor module; Central
+                                 then rejects the whole deployment for these modules' missing sources and Javadoc. -->
+                            <excludeArtifacts>
+                                <excludeArtifact>juno-examples</excludeArtifact>
+                                <excludeArtifact>juno-site</excludeArtifact>
+                                <excludeArtifact>coverage-aggregator</excludeArtifact>
+                            </excludeArtifacts>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <!-- Central rejects every file without a detached .asc signature. Signing runs at verify, so
+                             the publishing plugin finds the signatures attached when it bundles at deploy. -->
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${maven-plugin-gpg.version}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- The passphrase only ever comes from MAVEN_GPG_PASSPHRASE, never from
+                                         settings.xml or the command line. -->
+                                    <bestPractices>true</bestPractices>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                                <configuration>
+                                    <skipSource>${maven.deploy.skip}</skipSource>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- An explicit skip wins over the maven.javadoc.skip the firmware modules set
+                                         for the documentation site: Central needs their -javadoc.jar too. -->
+                                    <skip>${maven.deploy.skip}</skip>
+                                    <!-- The plugin-wide outputDirectory writes the site's docs/javadocs; the jar is
+                                         built from target/ instead and never touches docs/. -->
+                                    <outputDirectory>${project.build.directory}/apidocs</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>site</id>
             <properties>

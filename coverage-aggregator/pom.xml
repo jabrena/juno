@@ -6,14 +6,19 @@
 
     <parent>
         <groupId>io.github.jabrena</groupId>
-        <artifactId>java-for-arduino</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <artifactId>juno-parent</artifactId>
+        <version>0.1.0</version>
     </parent>
 
     <artifactId>coverage-aggregator</artifactId>
     <packaging>jar</packaging>
     <name>Coverage Aggregator</name>
     <description>Aggregates the JaCoCo execution data of every Juno module into one report</description>
+
+    <properties>
+        <!-- Not a library: never published to Maven Central (the deploy step skips this module). -->
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
 
     <!-- Declares the modules whose execution data is aggregated; it contributes no classes of its own. -->
     <dependencies>

@@ -40,7 +40,7 @@ revision, pin the submodule to a commit with `git -C juno checkout <commit>`.
 
 ## 3. Build Juno into your local Maven repository
 
-The project depends on `juno-api` and the Maven plugin at version `0.1.0-SNAPSHOT`. Maven resolves them from your local
+The project depends on `juno-api` and the Maven plugin at version `0.1.0`. Maven resolves them from your local
 repository (`~/.m2`), not from the submodule, so build the submodule once with its own wrapper:
 
 ```bash
@@ -70,7 +70,7 @@ Create a `pom.xml` in the root of `testing-juno`:
     <properties>
         <maven.compiler.release>27</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <juno.version>0.1.0-SNAPSHOT</juno.version>
+        <juno.version>0.1.0</juno.version>
         <juno.board>arduino-uno-r4-wifi</juno.board>
         <juno.main>com.example.testingjuno.App</juno.main>
     </properties>
