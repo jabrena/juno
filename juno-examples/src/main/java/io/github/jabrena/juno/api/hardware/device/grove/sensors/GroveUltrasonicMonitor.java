@@ -20,9 +20,6 @@ public final class GroveUltrasonicMonitor {
     private static final int PERIOD_MILLIS = 200;
     private static final float MILLIMETRES_PER_METRE = 1000f;
 
-    private GroveUltrasonicMonitor() {
-    }
-
     public static void main(String[] args) {
         GroveBaseShield shield = new GroveBaseShield(MCU.getGpio());
         GroveUltrasonicRanger ranger = new GroveUltrasonicRanger(MCU.getGpio(), MCU.getClock(),

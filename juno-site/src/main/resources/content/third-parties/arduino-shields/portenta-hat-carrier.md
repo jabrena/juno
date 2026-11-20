@@ -48,5 +48,5 @@ public final class Mhs35Hello {
 }
 ```
 
-[`BouncingTrianglesTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/tft/BouncingTrianglesTFT.java) is the typical first demo for the display.
+[`BouncingTrianglesTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/tft/BouncingTrianglesTFT.java) is the typical first demo for the display.
 |}

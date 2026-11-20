@@ -43,7 +43,7 @@ peripherals. The UNO R4 Minima is not a Juno target.
 | `UUID.randomUUID()` | ✓ | The RA4M1's Secure Crypto Engine true-random-number generator. | |
 | `@Watchdog` | ✓ | The RA4M1 hardware watchdog. | |
 | `SecretStore` | ✓ | `Esp32Nvs` in the ESP32-S3's NVS, through the core's `Preferences` library; needs coprocessor firmware 0.4.1 or later. Not a secure element — see [Secrets in a Secure Element](../../api/storage/secure-element). | [`SecretStoreCheck`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java) |
-| Onboard LED matrix | ✓ | 12 × 8 through `MCU.getDisplay()`, a monochrome `Display`. | [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) |
+| Onboard LED matrix | ✓ | 12 × 8 through `MCU.getDisplay()`, a monochrome `Display`. | [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/led/LedMatrixScrollingText.java) |
 | USB HID mouse | ✓ | `MCU.getMouse()` through the Arduino `Mouse` library. | [`RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java) |
 | `Servo` | ✓ | Through the Arduino `Servo` library. | [`ServoSweep`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/servo/ServoSweep.java) |
 | Wi-Fi station and access point | ✓ | Through the ESP32-S3 and `WiFiS3`. | |
@@ -91,7 +91,7 @@ for (int offset = 12; offset >= -60; offset--) {
 }
 ```
 
-`print` takes any `String`, and the matrix clips the text at its edges. [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java) scrolls a longer
+`print` takes any `String`, and the matrix clips the text at its edges. [`LedMatrixScrollingText`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/led/LedMatrixScrollingText.java) scrolls a longer
 message forever.
 
 ### USB HID mouse
@@ -148,7 +148,7 @@ while (true) {
 }
 ```
 
-[`TouchPaintTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/tft/TouchPaintTFT.java) is a finger-paint program, and
+[`TouchPaintTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/tft/TouchPaintTFT.java) is a finger-paint program, and
 [`WeatherTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/weather/WeatherTFT.java) a desk weather station that reads its Wi-Fi credentials from the
 shield's microSD card (`TftTouchShield.getSdCard()` on the shield instance, chip select D10).
 
@@ -215,7 +215,7 @@ while (true) {
 }
 ```
 
-[`LcdKeypadDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java) shows each button press, and [`Pomodoro`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/pomodoro/Pomodoro.java)
+[`LcdKeypadDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java) shows each button press, and [`Pomodoro`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/pomodoro/Pomodoro.java)
 is a Pomodoro timer.
 
 ### AZDelivery Data Logger Shield

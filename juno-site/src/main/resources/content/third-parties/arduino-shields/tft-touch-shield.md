@@ -53,5 +53,5 @@ public final class TftTouchExample {
 }
 ```
 
-The full paint program with a color palette is [`TouchPaintTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/tft/TouchPaintTFT.java).
+The full paint program with a color palette is [`TouchPaintTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/tft/TouchPaintTFT.java).
 |}

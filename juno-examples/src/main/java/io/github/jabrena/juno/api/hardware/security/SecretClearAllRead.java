@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.hardware.security;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
@@ -13,9 +14,9 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 /**
- * Write, read, {@link SecretStore#clearAll()}, read on an ESP32 board's NVS store (Nano ESP32, AI Thinker
- * ESP32-CAM, M5Stack Cardputer) or the Pico 2 W's TrustZone store: the last read must fail. The counterpart of
- * {@link PortentaSecretClearAllRead} for those boards. The sequence runs once at startup, and its results are
+ * Write, read, {@link SecretStore#clearAll()}, read on the board's secret store: the NVS store of an ESP32 board (Nano
+ * ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer, or the UNO R4 WiFi's ESP32-S3 coprocessor), the Pico 2 W's TrustZone
+ * store or the Portenta H7's SE050C2. The last read must fail. The sequence runs once at startup, and its results are
  * reprinted every two seconds so a monitor attached late still sees them:
  *
  * <ol>
@@ -26,7 +27,8 @@ import io.github.jabrena.juno.util.Delay;
  * </ol>
  *
  * <p><b>This program empties every slot of the board's secret store.</b> {@code clearAll} also erases the Wi-Fi
- * credentials provisioned with {@code juno:secret}, so they have to be provisioned again afterwards. The demo value is
+ * credentials (and, on the Portenta, the SMTP account) provisioned with {@code juno:secret}, so they have to be
+ * provisioned again afterwards. The demo value is
  * a dummy constant in the firmware; no secret is involved.
  *
  * <pre>{@code
@@ -38,11 +40,11 @@ import io.github.jabrena.juno.util.Delay;
  * # AI Thinker ESP32-CAM: -Djuno.board=ai-thinker-esp32-cam -Djuno.port=<usb-serial port>
  * # M5Stack Cardputer: -Djuno.board=m5stack-cardputer
  * # Raspberry Pi Pico 2 W: -Djuno.board=raspberry-pi-pico-2-w
+ * # Portenta H7: -Djuno.board=arduino-portenta-h7
  * }</pre>
  */
 @Board({ArduinoNanoEsp32Board.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class,
-        RaspberryPico2WifiBoard.class,
-        ArduinoUnoR4WiFiBoard.class})
+        RaspberryPico2WifiBoard.class, ArduinoUnoR4WiFiBoard.class, ArduinoPortentaH7Board.class})
 public final class SecretClearAllRead {
     /** The largest value Juno's secure-store providers accept. */
     private static final int MAX_VALUE_BYTES = 63;

@@ -42,8 +42,8 @@ class GameScreenshotTest {
      */
     static Stream<Arguments> games() {
         return Stream.of(
-                game("api.hardware.device.tft.TouchPaintTFT", "tft-touch-paint", paintStrokes("end:12000")),
-                game("api.hardware.device.tft.TouchPaintTFT", "tft-touch-paint-cleared", paintStrokes("12500:210,20 end:13500")));
+                game("api.hardware.display.tft.TouchPaintTFT", "tft-touch-paint", paintStrokes("end:12000")),
+                game("api.hardware.display.tft.TouchPaintTFT", "tft-touch-paint-cleared", paintStrokes("12500:210,20 end:13500")));
     }
 
     @ParameterizedTest(name = "{0}")

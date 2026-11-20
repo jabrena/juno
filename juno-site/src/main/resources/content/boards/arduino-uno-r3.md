@@ -41,7 +41,7 @@ startup and stay small.
 | `BigInteger`, `BigDecimal`, `MathContext` | ✓ | Bounded by the 1 KB arena and 2 KB of SRAM. | |
 | `@Watchdog` | ✓ | ATmega328P hardware watchdog, at most 8 seconds. | |
 | Non-cryptographic UUIDs (`PortNoise`) | ✓ | The R3 has no hardware entropy, so `UUID.randomUUID()` is rejected; `PortNoise` gives best-effort node identities, never secrets. | [`WeakUuid`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/WeakUuid.java) |
-| `SdCard` | ✓ | On the Data Logger Shield's microSD slot. | [`StorageOccupancy`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java) |
+| `SdCard` | ✓ | On the Data Logger Shield's microSD slot. | [`StorageOccupancy`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/storage/StorageOccupancy.java) |
 | Grove Base Shield | ✓ | Passive: every socket is an UNO pin. | |
 | 9 Axis Motion Shield | ✓ | BNO055 over I2C; its reset line is D7. | [`NineAxisMotionShieldSerial`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/imu/NineAxisMotionShieldSerial.java) |
 | LCD Keypad Shield | ✓ | Uses D4-D10 for the LCD and backlight. | [`LcdKeypadDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java) |
@@ -153,7 +153,7 @@ if (sd.begin()) {
 }
 ```
 
-[`StorageOccupancy`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/StorageOccupancy.java) reports the card's used and total space.
+[`StorageOccupancy`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/storage/StorageOccupancy.java) reports the card's used and total space.
 
 ## Build and run
 

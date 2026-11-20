@@ -8,8 +8,6 @@ import io.github.jabrena.juno.hardware.display.Display;
 /** Draws colored shapes and text on the Cardputer's built-in display. */
 @Board(M5StackCardputerBoard.class)
 public final class M5CardputerDisplay {
-    private M5CardputerDisplay() {
-    }
 
     /** Initializes the display and draws a small status screen. */
     public static void main(String[] args) {

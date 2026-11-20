@@ -13,8 +13,6 @@ import io.github.jabrena.juno.util.Delay;
 /** Prints DHT22-format temperature and humidity from the Grove module on D4. */
 @Board({ArduinoUnoR3Board.class, ArduinoUnoR4WiFiBoard.class})
 public final class GroveDht22Monitor {
-    private GroveDht22Monitor() {
-    }
 
     public static void main(String[] args) {
         GroveBaseShield shield = new GroveBaseShield(MCU.getGpio());

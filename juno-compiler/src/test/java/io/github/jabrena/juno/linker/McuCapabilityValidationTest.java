@@ -97,6 +97,94 @@ class McuCapabilityValidationTest {
                     .hasMessageContaining("MCU.getWifi requires @Board(")
                     .hasMessageContaining("UNO R3");
         }
+
+        @Test
+        @DisplayName("A board query that still lets an incapable declared board reach the getter is rejected")
+        void shouldRejectAGetterGuardedForTheWrongBoard() throws Exception {
+            compile("demo.WrongGuard", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.BoardModel;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    @Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class})
+                    public final class WrongGuard {
+                        public static void main(String[] args) {
+                            if (MCU.getBoardModel() != BoardModel.UNO_R3) {
+                                MCU.getDisplay().flush();
+                            }
+                        }
+                    }
+                    """);
+
+            assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.WrongGuard",
+                    Optional.of(Board.UNO_R4_WIFI.id())))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("MCU.getDisplay requires @Board(")
+                    .hasMessageContaining("Nano ESP32");
+        }
+    }
+
+    @Nested
+    @DisplayName("Calls behind a board query")
+    class BoardGuarded {
+        @org.junit.jupiter.params.ParameterizedTest(name = "built for {0}")
+        @org.junit.jupiter.params.provider.EnumSource(value = Board.class, names = {"UNO_R4_WIFI", "NANO_ESP32"})
+        @DisplayName("A getter only the capable board can reach does not need the capability on the other boards")
+        void shouldAcceptAGetterTheIncapableBoardsFoldAway(Board target) throws Exception {
+            // Given: the display is used only where the board query says the board is the UNO R4 WiFi
+            compile("demo.GuardedDisplay", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.BoardModel;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    @Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class})
+                    public final class GuardedDisplay {
+                        public static void main(String[] args) {
+                            if (MCU.getBoardModel() == BoardModel.UNO_R4_WIFI) {
+                                MCU.getDisplay().flush();
+                            }
+                        }
+                    }
+                    """);
+
+            // When & Then: both declared boards link, each against the code it reaches
+            assertThat(CompilerTestSupport.link(temporaryDirectory, "demo.GuardedDisplay", Optional.of(target.id())))
+                    .isNotNull();
+        }
+
+        @org.junit.jupiter.params.ParameterizedTest(name = "built for {0}")
+        @org.junit.jupiter.params.provider.EnumSource(value = Board.class, names = {"UNO_R4_WIFI", "NANO_ESP32"})
+        @DisplayName("A getter guarded for the declared board that lacks it is rejected, whichever board is built")
+        void shouldRejectAGetterGuardedForTheIncapableBoard(Board target) throws Exception {
+            // Given: the display is used only where the board query says the board is the Nano ESP32, which has none
+            compile("demo.MisguardedDisplay", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.BoardModel;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    @Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class})
+                    public final class MisguardedDisplay {
+                        public static void main(String[] args) {
+                            if (MCU.getBoardModel() == BoardModel.NANO_ESP32) {
+                                MCU.getDisplay().flush();
+                            }
+                        }
+                    }
+                    """);
+
+            // When & Then: the Nano ESP32 reaches the getter, so even the UNO R4 WiFi build fails
+            assertThatThrownBy(() -> CompilerTestSupport.link(temporaryDirectory, "demo.MisguardedDisplay",
+                    Optional.of(target.id())))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("MCU.getDisplay requires @Board(")
+                    .hasMessageContaining("Nano ESP32 has no display");
+        }
     }
 
     @Nested
