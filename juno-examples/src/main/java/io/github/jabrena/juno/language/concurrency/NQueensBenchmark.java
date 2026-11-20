@@ -2,6 +2,7 @@ package io.github.jabrena.juno.language.concurrency;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -12,8 +13,8 @@ import java.util.concurrent.StructuredTaskScope;
 
 /**
  * Times one CPU-bound problem, counting the solutions of the N-Queens puzzle ({@link NQueens}), solved three ways on
- * the Nano ESP32's two cores: as one monolithic loop, split over two virtual threads, and split over two subtasks of a
- * {@link StructuredTaskScope}.
+ * an ESP32-S3's two cores (Nano ESP32 or M5Stack Cardputer): as one monolithic loop, split over two virtual threads,
+ * and split over two subtasks of a {@link StructuredTaskScope}.
  *
  * <p>Each split hands a worker every other column for the first row's queen. The board is mirror-symmetric and, on a
  * board of even size, column {@code c} and its mirror {@code n - 1 - c} have opposite parity, so both workers get the
@@ -25,7 +26,7 @@ import java.util.concurrent.StructuredTaskScope;
  * joining the workers, which dominates the smallest board. Build with {@code -Djuno.carriers=1} to run the same
  * program on one core and see the overhead without the parallelism.
  */
-@Board(ArduinoNanoEsp32Board.class)
+@Board({ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class})
 public final class NQueensBenchmark {
     /** The three ways the same search is run, in the order they are timed; the monolith comes first. */
     private enum Mode {

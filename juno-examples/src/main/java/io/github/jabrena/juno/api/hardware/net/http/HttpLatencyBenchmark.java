@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -19,8 +20,8 @@ import java.util.concurrent.StructuredTaskScope;
 
 /**
  * Times an I/O-bound job, {@value #REQUESTS} requests to a public endpoint that answers after a fixed second
- * ({@value #HTTP_URL}), done three ways on the Nano ESP32: one after another, on {@value #REQUESTS} virtual threads, and
- * as {@value #REQUESTS} subtasks of a {@link StructuredTaskScope}.
+ * ({@value #HTTP_URL}), done three ways on the Nano ESP32 or the M5Stack Cardputer: one after another, on
+ * {@value #REQUESTS} virtual threads, and as {@value #REQUESTS} subtasks of a {@link StructuredTaskScope}.
  *
  * <p>Unlike a CPU-bound job, a request spends almost all its time waiting for the server, so threads pay off even on
  * one core: while one request waits, another can be sent. The ESP32 runtime lets up to four HTTP requests be in flight
@@ -33,7 +34,7 @@ import java.util.concurrent.StructuredTaskScope;
  * trusted when all did) and the speed-up over the sequential time. Rounds repeat after a pause long enough for a serial
  * monitor started after the upload to attach, and for the public endpoint not to be hammered.
  */
-@Board(ArduinoNanoEsp32Board.class)
+@Board({ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class})
 public final class HttpLatencyBenchmark {
     static final String HTTP_URL = "http://httpbin.org/delay/1";
     static final int REQUESTS = 4;
