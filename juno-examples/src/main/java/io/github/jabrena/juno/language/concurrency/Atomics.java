@@ -2,6 +2,7 @@ package io.github.jabrena.juno.language.concurrency;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
@@ -20,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * {@code compareAndSet}; exactly one worker can win it. The owner uses {@code getAndSet} to reset and restore that
  * flag after the workers have joined. Every cell is allocated once before the workers start.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, ArduinoPortentaH7Board.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class})
 public final class Atomics {
     private static final int ROUNDS = 100;
 
