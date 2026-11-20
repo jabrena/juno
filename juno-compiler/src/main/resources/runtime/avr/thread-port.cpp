@@ -28,6 +28,11 @@ extern "C" {
 uint16_t juno_stack_limit = 0u;
 }
 
+// Once a time slice is over: this port's RTOS needs no time handed to lower-priority work.
+static void juno_port_breathe(uint32_t now) {
+  (void) now;
+}
+
 static void juno_port_set_limit(uint32_t slot) {
   juno_stack_limit = slot == 0u ? 0u
       : static_cast<uint16_t>(reinterpret_cast<uintptr_t>(juno_stacks[slot - 1u] + JUNO_STACK_GUARD_BYTES));

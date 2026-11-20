@@ -205,6 +205,38 @@ class ConcurrencyPrimitivesTest {
     }
 
     @Test
+    @DisplayName("A dual-carrier ESP32 thread gives its core one tick per breathe interval, outside the runtime lock")
+    void shouldBreatheOutsideTheRuntimeLockOnTwoCarriers() throws Exception {
+        CompilationResult result = compile("ArduinoNanoEsp32Board", "Thread.startVirtualThread(new Job()).join();");
+
+        String shim = result.runtimeShim();
+        assertThat(shim).contains("static uint32_t juno_breath_starts[2] = {};", "vTaskDelay(1);");
+        assertThat(shim).contains("""
+                  juno_sched_block();
+                  juno_runtime_exit();
+                  // Outside the runtime lock, so the other carrier never waits on a breath.
+                  juno_port_breathe(now);
+                }""");
+    }
+
+    @Test
+    @DisplayName("A single-carrier ESP32 thread gives its core one tick per breathe interval")
+    void shouldBreatheOnOneCarrier() throws Exception {
+        RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1"));
+
+        CompilationResult result = compile("ArduinoNanoEsp32Board",
+                "Thread.startVirtualThread(new Job()).join();", config);
+
+        String shim = result.runtimeShim();
+        assertThat(shim).contains("static uint32_t juno_breath_start = 0u;", "vTaskDelay(1);");
+        assertThat(shim).contains("""
+                  juno_slice_start = now;
+                  juno_sched_block();
+                  juno_port_breathe(now);
+                }""");
+    }
+
+    @Test
     @DisplayName("Dual-carrier ESP32 programs place main on its real core and start threads on an idle carrier")
     void shouldStartThreadsOnAnIdleCarrier() throws Exception {
         CompilationResult result = compile("ArduinoNanoEsp32Board", "Thread.startVirtualThread(new Job()).join();");
