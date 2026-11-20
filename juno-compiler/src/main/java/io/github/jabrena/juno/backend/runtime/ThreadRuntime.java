@@ -37,6 +37,16 @@ import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
  * baton semaphore keeps exactly one of them running Java code. The Nano ESP32 is preempted at safepoints, like AVR.
  */
 public final class ThreadRuntime {
+
+    /** How generated code is preempted once its time slice is over. */
+    public enum Preemption {
+        /** The port's tick preempts at any instruction ({@code juno_preempt_tick}, Thumb-2). */
+        TICK,
+        /** Safepoints read the clock (AVR, Mbed). */
+        SAFEPOINT_CLOCK,
+        /** Safepoints ask the port, per carrier and without a lock, whether the slice is over (ESP32). */
+        SAFEPOINT_PORT
+    }
     private final IoRuntime ioRuntime = new IoRuntime();
     private final RuntimeSource runtimeSource = new RuntimeSource();
 
@@ -120,20 +130,20 @@ public final class ThreadRuntime {
     /**
      * The preemptive scheduler and the {@code Thread} intrinsics, over a core's port.
      *
-     * @param asynchronousPreemption whether the port's tick preempts generated code at any instruction (Thumb-2:
-     *     the port defines {@code juno_port_preempt_start} and its tick calls {@code juno_preempt_tick}); otherwise
-     *     (AVR) a thread is preempted at the safepoints the backend emits once its time slice has expired
+     * @param preemption how generated code is preempted: from the port's tick at any instruction (Thumb-2), or at the
+     *     safepoints the backend emits once the slice is over, read from the clock (AVR, Mbed) or asked of the port
+     *     without a lock (ESP32)
      * @param maxHttpRequests the core's safe number of simultaneous HTTP transport leases
      * @param stackScanFunction the collector's scan of one stack range: word-aligned on Thumb-2, byte by byte on AVR,
      *     whose stack frames are unaligned
      */
-    String scheduler(boolean asynchronousPreemption, int maxHttpRequests, String delayFunction,
+    String scheduler(Preemption preemption, int maxHttpRequests, String delayFunction,
                             String stackScanFunction,
                             boolean exceptions, boolean threadEntry,
                             boolean taskCallableEntry, boolean structuredTasks, boolean scopedValues,
                             int failedExceptionClassId, int illegalStateExceptionClassId,
                             int interruptedExceptionClassId, int brokenBarrierExceptionClassId) {
-        return scheduler(asynchronousPreemption, maxHttpRequests, delayFunction, stackScanFunction,
+        return scheduler(preemption, maxHttpRequests, delayFunction, stackScanFunction,
                 exceptions, threadEntry, taskCallableEntry, structuredTasks, scopedValues,
                 failedExceptionClassId, illegalStateExceptionClassId, interruptedExceptionClassId,
                 brokenBarrierExceptionClassId, 1);
@@ -143,7 +153,7 @@ public final class ThreadRuntime {
      * Generates the common scheduler with the number of physical carriers supplied by the core. Keeping the old
      * overload above is deliberate: all single-carrier generated text follows the original template exactly.
      */
-    String scheduler(boolean asynchronousPreemption, int maxHttpRequests, String delayFunction,
+    String scheduler(Preemption preemption, int maxHttpRequests, String delayFunction,
                             String stackScanFunction,
                             boolean exceptions, boolean threadEntry,
                             boolean taskCallableEntry, boolean structuredTasks, boolean scopedValues,
@@ -193,11 +203,15 @@ public final class ThreadRuntime {
         String taskRuntime = structuredTasks ? taskRuntime() : "";
         String raiseInterrupted = raiseException(exceptions, interruptedExceptionClassId);
         String raiseBrokenBarrier = raiseException(exceptions, brokenBarrierExceptionClassId);
-        String preemption = asynchronousPreemption ? asynchronousPreemption(carrierCount) : safepointPreemption(carrierCount);
+        String preemptionSource = switch (preemption) {
+            case TICK -> asynchronousPreemption(carrierCount);
+            case SAFEPOINT_CLOCK -> safepointPreemption(carrierCount);
+            case SAFEPOINT_PORT -> portSlicedSafepoints(carrierCount);
+        };
         SchedulerCarriers carriers = SchedulerCarriers.of(carrierCount);
-        String startPreemption = asynchronousPreemption ? carriers.startPreemption() : "";
+        String startPreemption = preemption == Preemption.TICK ? carriers.startPreemption() : "";
         String source = runtimeSource.load("common/thread-scheduler.cpp").replace("${JUNO_IO_OWNERS}", ioRuntime.owners(maxHttpRequests))
-                .replace("${JUNO_PREEMPTION}", preemption)
+                .replace("${JUNO_PREEMPTION}", preemptionSource)
                 .replace("${JUNO_START_PREEMPTION}", startPreemption)
                 .replace("${JUNO_PENDING_SWAP}", pendingSave)
                 .replace("${JUNO_BINDINGS_SWAP}", bindingsSwap)
@@ -296,45 +310,24 @@ public final class ThreadRuntime {
     }
 
     /**
+     * The ESP32's preemption at safepoints: a safepoint asks the port whether its carrier's slice is over, without a
+     * lock, and only a due slice enters the scheduler and, on two carriers, takes the shared runtime lock.
+     */
+    private String portSlicedSafepoints(int carrierCount) {
+        return runtimeSource.load(carrierCount > 1 ? "esp32/preemption-dual.cpp" : "esp32/preemption.cpp");
+    }
+
+    /**
      * AVR's preemption at safepoints: the backend calls {@code juno_thread_backedge} on every loop backedge and
      * {@code juno_thread_safepoint} on every method entry, and either switches once the running thread's time slice
      * is over.
      */
     private String safepointPreemption(int carrierCount) {
-        String source = runtimeSource.load("avr/preemption.cpp");
         if (carrierCount > 1) {
-            source = source.replace("""
-                    static void juno_thread_slice_over() {
-                      if (juno_live_threads == 0u) return;
-                      uint32_t now = static_cast<uint32_t>(millis());
-                      if (now - juno_slice_start < JUNO_TIME_SLICE_MILLIS) return;
-                      juno_slice_start = now;
-                      juno_sched_block();
-                      juno_port_breathe(now);
-                    }
-                    """, """
-                    static void juno_thread_slice_over() {
-                      juno_gc_safepoint();
-                      juno_port_check_killed();
-                      juno_runtime_enter();
-                      if (juno_live_threads == 0u) {
-                        juno_runtime_exit();
-                        return;
-                      }
-                      uint32_t now = static_cast<uint32_t>(millis());
-                      if (now - juno_slice_start < JUNO_TIME_SLICE_MILLIS) {
-                        juno_runtime_exit();
-                        return;
-                      }
-                      juno_slice_start = now;
-                      juno_sched_block();
-                      juno_runtime_exit();
-                      // Outside the runtime lock, so the other carrier never waits on a breath.
-                      juno_port_breathe(now);
-                    }
-                    """);
+            // The only dual-carrier core preempted at safepoints, the ESP32, reads a tick flag instead.
+            throw new IllegalStateException("Clock-read safepoints run on one carrier, not " + carrierCount);
         }
-        return source.replace("${JUNO_CARRIER_COUNT}", Integer.toString(carrierCount));
+        return runtimeSource.load("avr/preemption.cpp").replace("${JUNO_CARRIER_COUNT}", "1");
     }
 
     /**

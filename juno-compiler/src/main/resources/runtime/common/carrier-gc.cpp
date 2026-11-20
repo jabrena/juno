@@ -2,10 +2,8 @@
 // The collector runs on one carrier while it holds the runtime lock. Every other carrier must not run Java meanwhile:
 // it could change a reference the collector has already scanned, or keep one only in a register. A carrier publishes
 // whether it runs Java; the collector waits until each other carrier is out of Java or parked, and a parked carrier
-// first spills its registers onto its stack, which the collector scans as a whole.
-#if defined(__XTENSA__)
-#include <xtensa/hal.h>
-#endif
+// first spills its registers onto its stack, which the collector scans as a whole. On Xtensa the spill comes from
+// xtensa/hal.h, which the core's thread includes bring.
 
 extern "C" uint32_t juno_port_carrier_id();
 extern "C" void juno_runtime_enter();

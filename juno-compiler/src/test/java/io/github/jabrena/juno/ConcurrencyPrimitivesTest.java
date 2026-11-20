@@ -215,8 +215,61 @@ class ConcurrencyPrimitivesTest {
                   juno_sched_block();
                   juno_runtime_exit();
                   // Outside the runtime lock, so the other carrier never waits on a breath.
-                  juno_port_breathe(now);
+                  juno_port_breathe();
                 }""");
+    }
+
+    @Test
+    @DisplayName("A dual-carrier ESP32 safepoint asks its carrier's slice clock before taking the runtime lock")
+    void shouldAskTheSliceClockBeforeTheLockOnTwoCarriers() throws Exception {
+        CompilationResult result = compile("ArduinoNanoEsp32Board", "Thread.startVirtualThread(new Job()).join();");
+
+        String shim = result.runtimeShim();
+        assertThat(shim).contains("static uint32_t juno_slice_marks[2] = {};",
+                "if (now - juno_slice_marks[carrier] < juno_slice_length()) return false;", "return xthal_get_ccount();");
+        String sliceOver = shim.substring(shim.indexOf("static void juno_thread_slice_over() {"));
+        sliceOver = sliceOver.substring(0, sliceOver.indexOf("\n}\n"));
+        assertThat(sliceOver.indexOf("if (!juno_port_slice_due()) return;"))
+                .isPositive()
+                .isLessThan(sliceOver.indexOf("juno_runtime_enter();"));
+        assertThat(shim).contains("""
+                extern "C" void juno_thread_backedge() {
+                  juno_thread_slice_over();
+                }""");
+    }
+
+    @Test
+    @DisplayName("An ESP32 thread program includes xtensa/hal.h exactly once, on one carrier and on two")
+    void shouldIncludeTheXtensaHalOnce() throws Exception {
+        RuntimeConfig oneCarrier = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1"));
+
+        String dual = compile("ArduinoNanoEsp32Board", "Thread.startVirtualThread(new Job()).join();").runtimeShim();
+        String single = compile("ArduinoNanoEsp32Board", "Thread.startVirtualThread(new Job()).join();", oneCarrier)
+                .runtimeShim();
+
+        assertThat(dual.split("#include <xtensa/hal.h>", -1)).hasSize(2);
+        assertThat(single.split("#include <xtensa/hal.h>", -1)).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("A single-carrier ESP32 safepoint asks the slice clock and never yields on its own")
+    void shouldAskTheSliceClockOnOneCarrier() throws Exception {
+        RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1"));
+
+        CompilationResult result = compile("ArduinoNanoEsp32Board",
+                "Thread.startVirtualThread(new Job()).join();", config);
+
+        String shim = result.runtimeShim();
+        assertThat(shim).contains("static uint32_t juno_slice_mark = 0u;");
+        assertThat(shim).contains("""
+                extern "C" void juno_thread_backedge() {
+                  juno_thread_slice_over();
+                }""");
+        assertThat(shim).contains("""
+                static void juno_thread_slice_over() {
+                  if (!juno_port_slice_due()) return;
+                  if (juno_live_threads == 0u) return;""");
+        assertThat(shim).doesNotContain("juno_runtime_enter");
     }
 
     @Test
@@ -232,7 +285,7 @@ class ConcurrencyPrimitivesTest {
         assertThat(shim).contains("""
                   juno_slice_start = now;
                   juno_sched_block();
-                  juno_port_breathe(now);
+                  juno_port_breathe();
                 }""");
     }
 

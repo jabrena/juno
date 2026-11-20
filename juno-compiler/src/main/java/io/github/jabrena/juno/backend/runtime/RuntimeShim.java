@@ -392,7 +392,9 @@ public final class RuntimeShim {
             shim.append(carrierGcRuntime.source(core, carrierCount));
             shim.append(core.carrierRuntime(carrierCount));
             shim.append(core.threadPort(config, carrierCount));
-            shim.append(threadRuntime.scheduler(core.preemptsAsynchronously(),
+            shim.append(threadRuntime.scheduler(core.preemptsAsynchronously() ? ThreadRuntime.Preemption.TICK
+                            : core.asksPortForSlices() ? ThreadRuntime.Preemption.SAFEPOINT_PORT
+                            : ThreadRuntime.Preemption.SAFEPOINT_CLOCK,
                     core.maxConcurrentHttpRequests(), core.delayMillisFunction(), "juno_gc_scan_range",
                     uses(ShimFeature.EXCEPTIONS),
                     uses(ShimFeature.THREAD_ENTRY), uses(ShimFeature.TASK_CALLABLE_ENTRY),

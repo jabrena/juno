@@ -16,6 +16,31 @@ static constexpr uint32_t JUNO_SWITCHER_STACK_BYTES = 4096u;
 
 extern "C" void yield(void);
 
+// Whether the running thread's time slice is over, asked at every safepoint: one clock read and a compare. Taking a yes
+// starts the next slice.
+// The slice clock: the core's own cycle counter (xtensa/hal.h, from the core's thread includes), one instruction to
+// read. Each carrier compares only against the counter of the core it runs on, so two cores' counters are never mixed.
+static uint32_t juno_slice_ticks_per_slice = 0u;
+
+static inline uint32_t juno_slice_clock() {
+  return xthal_get_ccount();
+}
+
+static inline uint32_t juno_slice_length() {
+  if (juno_slice_ticks_per_slice == 0u) {
+    juno_slice_ticks_per_slice = static_cast<uint32_t>(getCpuFrequencyMhz()) * 1000u * JUNO_TIME_SLICE_MILLIS;
+  }
+  return juno_slice_ticks_per_slice;
+}
+static uint32_t juno_slice_mark = 0u;
+
+static inline bool juno_port_slice_due() {
+  uint32_t now = juno_slice_clock();
+  if (now - juno_slice_mark < juno_slice_length()) return false;
+  juno_slice_mark = now;
+  return true;
+}
+
 // FreeRTOS runs the idle task and other lower-priority work only while every Juno task is blocked, and the Arduino
 // core's task watchdog resets the board once a core's idle task has not run for a few seconds. A thread that computes
 // without ever blocking therefore gives the core away for one tick every JUNO_BREATHE_INTERVAL_MILLIS, checked once a
@@ -23,8 +48,10 @@ extern "C" void yield(void);
 static constexpr uint32_t JUNO_BREATHE_INTERVAL_MILLIS = 100u;
 static uint32_t juno_breath_start = 0u;
 
-static void juno_port_breathe(uint32_t now) {
-  if (now - juno_breath_start < JUNO_BREATHE_INTERVAL_MILLIS) return;
+// The clock is read here, after the switch: a thread resumed by a switch would otherwise bring the time from before
+// it was switched out, which can be older than the last breath and would wrap into a breath at every slice.
+static void juno_port_breathe() {
+  if (static_cast<uint32_t>(millis()) - juno_breath_start < JUNO_BREATHE_INTERVAL_MILLIS) return;
   vTaskDelay(1);
   juno_breath_start = static_cast<uint32_t>(millis());
 }
