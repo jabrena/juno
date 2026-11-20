@@ -1,7 +1,12 @@
 package io.github.jabrena.juno.language;
 
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
@@ -11,7 +16,7 @@ import io.github.jabrena.juno.util.Delay;
  * and trigonometry. Double-precision libm is only on the boards with the DOUBLE_MATH capability, so the UNO R3 cannot
  * build it; {@link MathFunctionsSinglePrecision} covers the rest.
  */
-@Board(ArduinoUnoR4WiFiBoard.class)
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, ArduinoPortentaH7Board.class, M5StackCardputerBoard.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class})
 public final class MathFunctionsDoublePrecision {
 
     public static void main(String[] args) {
