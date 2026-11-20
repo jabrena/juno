@@ -4,6 +4,7 @@ static void juno_thread_slice_over() {
   if (now - juno_slice_start < JUNO_TIME_SLICE_MILLIS) return;
   juno_slice_start = now;
   juno_sched_block();
+  juno_port_breathe(now);
 }
 
 // Method entry: a safepoint.

@@ -16,6 +16,19 @@ static constexpr uint32_t JUNO_SWITCHER_STACK_BYTES = 4096u;
 
 extern "C" void yield(void);
 
+// FreeRTOS runs the idle task and other lower-priority work only while every Juno task is blocked, and the Arduino
+// core's task watchdog resets the board once a core's idle task has not run for a few seconds. A thread that computes
+// without ever blocking therefore gives the core away for one tick every JUNO_BREATHE_INTERVAL_MILLIS, checked once a
+// time slice is over.
+static constexpr uint32_t JUNO_BREATHE_INTERVAL_MILLIS = 100u;
+static uint32_t juno_breath_start = 0u;
+
+static void juno_port_breathe(uint32_t now) {
+  if (now - juno_breath_start < JUNO_BREATHE_INTERVAL_MILLIS) return;
+  vTaskDelay(1);
+  juno_breath_start = static_cast<uint32_t>(millis());
+}
+
 // The FreeRTOS objects behind one continuation, in one arena block that stays where it is while FreeRTOS uses it.
 struct JunoEsp32Task {
   StaticTask_t tcb;

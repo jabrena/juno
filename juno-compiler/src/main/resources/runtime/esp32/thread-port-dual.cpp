@@ -45,6 +45,20 @@ extern "C" uint32_t juno_port_carrier_id() {
   return static_cast<uint32_t>(xPortGetCoreID()) & 1u;
 }
 
+// FreeRTOS runs the idle task and other lower-priority work only while every Juno task on that core is blocked, and
+// the Arduino core's task watchdog resets the board once core 0's idle task has not run for a few seconds. A carrier
+// that computes without ever blocking therefore gives its core away for one tick every JUNO_BREATHE_INTERVAL_MILLIS,
+// checked once a time slice is over and outside the runtime lock. A collection waits at most that tick for it.
+static constexpr uint32_t JUNO_BREATHE_INTERVAL_MILLIS = 100u;
+static uint32_t juno_breath_starts[2] = {};
+
+static void juno_port_breathe(uint32_t now) {
+  uint32_t carrier = juno_port_carrier_id();
+  if (now - juno_breath_starts[carrier] < JUNO_BREATHE_INTERVAL_MILLIS) return;
+  vTaskDelay(1);
+  juno_breath_starts[carrier] = static_cast<uint32_t>(millis());
+}
+
 // The carrier a slot's task is pinned to, or JUNO_PORT_NO_CARRIER while the slot has no task yet.
 static uint32_t juno_port_fixed_carrier(uint32_t slot) {
   return juno_dual_tasks[slot] != nullptr ? juno_dual_cores[slot] : JUNO_PORT_NO_CARRIER;
