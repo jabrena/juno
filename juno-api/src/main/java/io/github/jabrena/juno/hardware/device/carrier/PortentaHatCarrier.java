@@ -4,6 +4,7 @@ import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.internal.NativeSdCard;
+import io.github.jabrena.juno.hardware.spi.Spi;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -31,6 +32,8 @@ public final class PortentaHatCarrier {
     /** The SDMMC slot is selected by its bus, not a pin; the SD runtime ignores this value on the Portenta. */
     private static final int SDMMC_NO_CHIP_SELECT = 0;
 
+    private final Gpio gpio;
+    private final @Nullable Spi spi;
     private final int lcdChipSelect;
     private final int lcdDataCommand;
     private final int lcdReset;
@@ -42,8 +45,18 @@ public final class PortentaHatCarrier {
         this(MCU.getGpio());
     }
 
-    /** Creates the carrier handle for a board GPIO context. Create it once, at startup, and reuse it. */
+    /**
+     * Creates the carrier handle for a board GPIO context, its header's SPI bus being the board's ({@link MCU#getSpi()}).
+     * Create it once, at startup, and reuse it.
+     */
     public PortentaHatCarrier(Gpio gpio) {
+        this(gpio, null);
+    }
+
+    /** Creates the carrier handle for {@code gpio} and the header's {@code spi} bus: mocked ones in a unit test. */
+    public PortentaHatCarrier(Gpio gpio, @Nullable Spi spi) {
+        this.gpio = gpio;
+        this.spi = spi;
         lcdChipSelect = gpio.digitalPin("D7");
         lcdDataCommand = gpio.digitalPin("GPIO161");
         lcdReset = gpio.digitalPin("D5");
@@ -62,6 +75,20 @@ public final class PortentaHatCarrier {
             sdCard = card;
         }
         return card;
+    }
+
+    /** The GPIO context the carrier's header pins belong to; a HAT on the header drives its control lines through it. */
+    public Gpio getGpio() {
+        return gpio;
+    }
+
+    /**
+     * The SPI bus on the header's pins 19, 21 and 23, which a HAT display and touch controller share: the board's
+     * primary bus ({@link MCU#getSpi()}) unless the carrier was given another. Allocates nothing.
+     */
+    public Spi getSpi() {
+        Spi bus = spi;
+        return bus != null ? bus : MCU.getSpi();
     }
 
     /** The chip select of a display on the header's SPI bus, pin 24 (D7). */

@@ -29,7 +29,7 @@ class Mhs35TftDisplayTest {
         when(pins.digitalPin("D5")).thenReturn(5);
         when(pins.digitalPin("D4")).thenReturn(4);
         spi = new ScriptedSpi();
-        tft = new Mhs35TftDisplay(pins, spi, new PortentaHatCarrier(pins));
+        tft = new Mhs35TftDisplay(new PortentaHatCarrier(pins, spi));
     }
 
     @Test
