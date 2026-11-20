@@ -81,7 +81,8 @@ class ThreadsTest {
 
     static Stream<Arguments> httpSubtaskBoards() {
         return Stream.of(
-                arguments("ArduinoUnoR4WiFiBoard", 2));
+                arguments("ArduinoUnoR4WiFiBoard", 2),
+                arguments("ArduinoNanoEsp32Board", 4));
     }
 
     private CompilationResult compile(String board, String body) throws Exception {
@@ -385,7 +386,10 @@ class ThreadsTest {
         assertThat(shim).as(board).contains("static constexpr uint32_t JUNO_HTTP_MAX_IN_FLIGHT = " + maxHttpRequests + "u;",
                         "extern \"C\" uint32_t juno_http_acquire(void* handle, void (*abort)(void*))",
                         "struct JunoHttpGuard {", "JunoHttpGuard guard(",
-                        "extern \"C\" int32_t juno_task_entry(int32_t callable);")
+                        "extern \"C\" int32_t juno_task_entry(int32_t callable);",
+                        // The leases come after network, storage and BLE, as many as the core allows.
+                        "static constexpr uint32_t JUNO_IO_HTTP_FIRST_OWNER = 3u;",
+                        "JUNO_IO_OWNED_DEVICES = JUNO_IO_HTTP_FIRST_OWNER + JUNO_HTTP_MAX_IN_FLIGHT;")
                 .doesNotContain("JunoIoGuard guard(JUNO_IO_NETWORK, &client,");
     }
 
