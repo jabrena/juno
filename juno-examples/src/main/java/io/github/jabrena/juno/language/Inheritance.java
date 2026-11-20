@@ -13,9 +13,6 @@ import io.github.jabrena.juno.util.Delay;
 @Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, ArduinoUnoR3Board.class, M5StackCardputerBoard.class})
 public final class Inheritance {
 
-    private Inheritance() {
-    }
-
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);

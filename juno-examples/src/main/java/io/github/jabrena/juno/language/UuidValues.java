@@ -8,8 +8,6 @@ import java.util.UUID;
 
 /** Demonstrates parsing and formatting a UUID without the larger object catalogue. */
 public final class UuidValues {
-    private UuidValues() {
-    }
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);

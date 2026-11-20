@@ -12,8 +12,6 @@ import java.util.concurrent.locks.ReentrantLock;
 /** Volatile publication, intrinsic monitor blocks, atomic counters, and Juno's restricted {@link ReentrantLock} subset. */
 @Board(ArduinoUnoR4WiFiBoard.class)
 public final class Synchronization {
-    static final class Guard {
-    }
 
     private final Guard guard = new Guard();
     private final ReentrantLock lock = new ReentrantLock();

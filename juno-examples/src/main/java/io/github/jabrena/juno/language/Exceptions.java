@@ -4,7 +4,6 @@ import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.language.Exceptions.SensorException;
 
 /**
  * Demonstrates throwing and catching exceptions: {@code try}/{@code catch}/{@code finally}, multi-catch,

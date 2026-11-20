@@ -11,8 +11,6 @@ import java.math.RoundingMode;
 
 /** Demonstrates a small arbitrary-precision calculation that fits the memory-constrained UNO R3. */
 public final class BigNumberValues {
-    private BigNumberValues() {
-    }
 
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
