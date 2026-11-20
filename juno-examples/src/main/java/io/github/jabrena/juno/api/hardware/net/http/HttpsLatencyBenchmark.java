@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 @Board(ArduinoNanoEsp32Board.class)
 public final class HttpsLatencyBenchmark {
     static final String HTTPS_URL = "https://httpbin.org/delay/1";
-    
+
     public static void main(String[] args) throws InterruptedException, ExecutionException {
         new HttpLatencyBenchmark("HTTPS", HTTPS_URL).run();
     }
