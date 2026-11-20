@@ -1,6 +1,5 @@
 package io.github.jabrena.juno.hardware.device.tft;
 
-import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.carrier.PortentaHatCarrier;
 import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
@@ -57,9 +56,12 @@ public final class Mhs35TftDisplay implements Display, TouchScreen {
     private int touchY;
     private int pixelsRemaining;
 
-    /** A display on the board's own pins, on the Portenta Hat Carrier. Create it once, at startup. */
+    /**
+     * A display plugged into the Portenta Hat Carrier's header, driven through the carrier's own GPIO context and SPI
+     * bus. Create it once, at startup.
+     */
     public Mhs35TftDisplay(PortentaHatCarrier carrier) {
-        this(MCU.getGpio(), MCU.getSpi(), carrier);
+        this(carrier.getGpio(), carrier.getSpi(), carrier);
     }
 
     /** A display driven through {@code gpio} and {@code spi}: mocked ones in a unit test. */

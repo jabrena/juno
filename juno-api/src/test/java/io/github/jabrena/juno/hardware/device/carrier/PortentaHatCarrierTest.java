@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.hardware.device.carrier;
 
 import io.github.jabrena.juno.hardware.gpio.Gpio;
+import io.github.jabrena.juno.hardware.spi.Spi;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -26,5 +27,17 @@ class PortentaHatCarrierTest {
         assertThat(carrier.getLcdDataCommand()).isEqualTo(161);
         assertThat(carrier.getLcdReset()).isEqualTo(5);
         assertThat(carrier.getTouchChipSelect()).isEqualTo(4);
+    }
+
+    @Test
+    @DisplayName("hands a HAT the carrier's own GPIO context and header SPI bus")
+    void providesItsGpioAndSpi() {
+        Gpio pins = mock(Gpio.class);
+        Spi spi = mock(Spi.class);
+
+        PortentaHatCarrier carrier = new PortentaHatCarrier(pins, spi);
+
+        assertThat(carrier.getGpio()).isSameAs(pins);
+        assertThat(carrier.getSpi()).isSameAs(spi);
     }
 }
