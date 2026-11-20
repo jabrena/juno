@@ -6,7 +6,7 @@
 
     <parent>
         <groupId>io.github.jabrena</groupId>
-        <artifactId>java-for-arduino</artifactId>
+        <artifactId>juno-parent</artifactId>
         <version>0.1.0</version>
     </parent>
 
@@ -15,6 +15,8 @@
     <description>Example Java programs demonstrating the Juno hardware API</description>
 
     <properties>
+        <!-- Not a library: never published to Maven Central (the deploy step skips this module). -->
+        <maven.deploy.skip>true</maven.deploy.skip>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <!-- Board programs run on hardware; the JaCoCo gate in the root pom does not apply to them. -->
         <jacoco.skip>true</jacoco.skip>

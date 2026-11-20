@@ -217,6 +217,10 @@ Traditionally, Java programs require a JVM to run. However, in memory-constraine
 
 Requirements: `Arduino CLI`, `JDK 27+`, `Maven 3.10+`.
 
+Every Juno artifact (`juno-api`, `juno-compiler`, `juno-maven-plugin` and the firmware modules) is compiled with
+`maven.compiler.release=27`, so a project that uses them needs Maven running on JDK 27 or newer and must itself compile
+with `maven.compiler.release` 27. The plugin's descriptor declares JDK 27 and Maven 3.10.1 as its minimums.
+
 On macOS, install Arduino CLI with [Homebrew](https://brew.sh/) and verify that it is on your `PATH`:
 
 ```bash
