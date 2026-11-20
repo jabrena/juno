@@ -399,13 +399,13 @@ own backend instead of the Thumb-2 or AVR one.</p>
 <td><code>int</code>, <code>long</code>, <code>float</code>, <code>double</code></td>
 <td align="center">✓</td>
 <td>Java semantics kept (a <code>long</code> division by zero stops the program, float-to-int casts saturate). <code>float</code> uses the S3's FPU; <code>double</code> is soft-float.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialWideMath.java"><code>SerialWideMath</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java"><code>SerialDoubleMath</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/PrimitiveTypes.java"><code>PrimitiveTypes</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java"><code>MathFunctionsDoublePrecision</code></a></td>
 </tr>
 <tr>
 <td>Double-precision <code>java.lang.Math</code></td>
 <td align="center">✓</td>
 <td>Uses the toolchain's libm.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java"><code>SerialDoubleMath</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java"><code>MathFunctionsDoublePrecision</code></a></td>
 </tr>
 <tr>
 <td>Objects, arrays, static and interface calls</td>
@@ -417,19 +417,19 @@ own backend instead of the Thumb-2 or AVR one.</p>
 <td>Lambdas and method references</td>
 <td align="center">✓</td>
 <td>Every shape.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialLambdas.java"><code>SerialLambdas</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Lambdas.java"><code>Lambdas</code></a></td>
 </tr>
 <tr>
 <td><code>BigInteger</code>, <code>BigDecimal</code>, <code>MathContext</code></td>
 <td align="center">✓</td>
 <td>Runs in the arena with the JDK's rounding and text rules.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialBigNumbers.java"><code>SerialBigNumbers</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/BigNumberValues.java"><code>BigNumberValues</code></a></td>
 </tr>
 <tr>
 <td>Threads, <code>synchronized</code>, <code>ReentrantLock</code>, <code>StructuredTaskScope</code>, <code>ScopedValue</code></td>
 <td align="center">✓</td>
 <td>Each thread is a FreeRTOS task with an 8 KiB stack (<code>-Djuno.Xss</code>); one runs Java at a time, handing over after a 1 ms slice. On the AVR boards at most four threads run, including <code>main</code>.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialThreads.java"><code>SerialThreads</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java"><code>VirtualThreads</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Synchronization.java"><code>Synchronization</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java"><code>StructuredConcurrency</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java"><code>ScopedValuesPrecision</code></a></td>
 </tr>
 <tr>
 <td><code>@Watchdog</code></td>
@@ -441,7 +441,7 @@ own backend instead of the Thumb-2 or AVR one.</p>
 <td><code>UUID.randomUUID()</code></td>
 <td align="center">✓</td>
 <td>Hardware RNG through <code>esp_fill_random</code>; may be weaker before Wi-Fi or Bluetooth start.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialUuids.java"><code>SerialUuids</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/UuidValues.java"><code>UuidValues</code></a></td>
 </tr>
 <tr>
 <td>Wi-Fi station</td>
@@ -495,7 +495,7 @@ own backend instead of the Thumb-2 or AVR one.</p>
 <td>USB HID mouse</td>
 <td align="center">✓</td>
 <td><code>MCU.getMouse()</code> through TinyUSB; shares the USB port with <code>Serial</code>.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/NanoRatonLoco.java"><code>NanoRatonLoco</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java"><code>RatonLoco</code></a></td>
 </tr>
 </tbody>
 </table>
@@ -534,7 +534,7 @@ while (true) {
 }
 </code></pre>
 <p>Once uploaded, the program keeps moving the pointer; disconnect the board or upload another program to stop it.
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/NanoRatonLoco.java"><code>NanoRatonLoco</code></a> also prints each side over <code>Serial</code>.</p>
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java"><code>RatonLoco</code></a> is the complete example; it runs on every board with a USB HID mouse.</p>
 <h2 id="shields">Shields</h2>
 <h3 id="nano-connector-carrier">Nano Connector Carrier</h3>
 <img src="../../images/shields/shield-nano-connector-carrier.png" alt="Arduino Nano Connector Carrier" width="280">
@@ -653,7 +653,7 @@ pir.begin(carrier.getGroveA2());
 boolean motion = pir.motionDetected(carrier.getGroveA2());
 float percent = light.getLightValue();
 </code></pre>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/carrier/NanoCarrierGroveSensors.java"><code>NanoCarrierGroveSensors</code></a> prints a
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/NanoCarrierGroveSensors.java"><code>NanoCarrierGroveSensors</code></a> prints a
 Grove PIR in the A2/A3 socket and a light sensor in the A0/A1 socket once a second.</p>
 <h5 id="remote-control-a-lego-rcx">Remote-control a LEGO RCX</h5>
 <p>With a Grove infrared emitter in the A0/A1 socket and a Grove infrared receiver on the I2C socket's

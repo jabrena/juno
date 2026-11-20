@@ -381,7 +381,7 @@ for it with the same Thumb-2 backend as the UNO R4 WiFi, linking against Earle P
 <td><code>Gpio</code>, <code>DigitalOutput</code></td>
 <td align="center">✓</td>
 <td>Resolve <code>A0</code>–<code>A2</code>, <code>GP*</code> and <code>GPIO*</code> names. <code>A0</code>–<code>A2</code> map to ADC pins GP26–GP28; the built-in LED is routed by the core through pin 64.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/RaspberryPico2Blink.java"><code>RaspberryPico2Blink</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a></td>
 </tr>
 <tr>
 <td><code>Delay</code>, <code>Serial</code></td>
@@ -440,8 +440,8 @@ for it with the same Thumb-2 backend as the UNO R4 WiFi, linking against Earle P
 <tr>
 <td><code>UUID.randomUUID()</code></td>
 <td align="center">✓</td>
-<td>Uses the RP2350's hardware TRNG through the Pico SDK's <code>pico_rand</code> generator, which mixes fresh TRNG samples into every 128-bit value. The SDK describes it as a software PRNG seeded from hardware entropy rather than a cryptographic DRBG, so the board is not listed among the cryptographic-entropy boards on <a href="../../features/board-features">Board features</a>. Compiles with <code>SerialUuids</code>; not yet flashed to hardware.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialUuids.java"><code>SerialUuids</code></a></td>
+<td>Uses the RP2350's hardware TRNG through the Pico SDK's <code>pico_rand</code> generator, which mixes fresh TRNG samples into every 128-bit value. The SDK describes it as a software PRNG seeded from hardware entropy rather than a cryptographic DRBG, so the board is not listed among the cryptographic-entropy boards on <a href="../../features/board-features">Board features</a>. Compiles with <code>UuidValues</code>; not yet flashed to hardware.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/UuidValues.java"><code>UuidValues</code></a></td>
 </tr>
 <tr>
 <td>Wi-Fi station</td>
@@ -507,7 +507,7 @@ for it with the same Thumb-2 backend as the UNO R4 WiFi, linking against Earle P
 <td><code>GrovePicoShield</code></td>
 <td align="center">✓</td>
 <td>D16, D18, D20, A0–A2, I2C0/I2C1, UART0/UART1 and SPI0 socket mappings.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/RaspberryPico2GroveShield.java"><code>RaspberryPico2GroveShield</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/RaspberryPico2GroveOled.java"><code>RaspberryPico2GroveOled</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/RaspberryPico2GroveOled.java"><code>RaspberryPico2GroveOled</code></a></td>
 </tr>
 </tbody>
 </table>
@@ -516,10 +516,10 @@ the arduino-pico BLE library is not compatible with its FreeRTOS menu.</p>
 <p>Install the core with <code>juno:install-deps</code>. To flash a new board, hold BOOTSEL while plugging it in; <code>juno:flash</code>
 finds its <code>UF2_Board</code> drive by itself, and later uploads reset the board through its USB serial port.</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.RaspberryPico2Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=raspberry-pi-pico-2-w
 </code></pre>
-<p><code>RaspberryPico2Blink</code> and the Grove Shield support are confirmed on hardware. The remaining network, BLE, concurrency,
+<p>Blinking the built-in LED and the Grove Shield support are confirmed on hardware. The remaining network, BLE, concurrency,
 watchdog, math and HID paths have compiler/toolchain coverage but have not been uploaded as part of this change.</p>
 <h2 id="grove-shield-for-pi-pico">Grove Shield for Pi Pico</h2>
 <img src="../../images/shields/shield-grove-pico.webp" alt="Grove Shield for Pi Pico" width="240">
@@ -641,8 +641,6 @@ public final class GrovePicoExample {
     }
 }
 </code></pre>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/RaspberryPico2GroveShield.java"><code>RaspberryPico2GroveShield</code></a>
-is the complete example.</p>
     </div>
   </section>
 </article>

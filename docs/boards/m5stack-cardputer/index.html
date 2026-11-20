@@ -488,19 +488,19 @@ point for its peripherals.</p>
 <td>USB HID mouse</td>
 <td align="center">✓</td>
 <td><code>MCU.getMouse()</code> through TinyUSB; shares the USB port with <code>Serial</code>.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/M5RatonLoco.java"><code>M5RatonLoco</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java"><code>RatonLoco</code></a></td>
 </tr>
 <tr>
 <td>UUIDs and double-precision math</td>
 <td align="center">✓</td>
 <td>Hardware random UUIDs and the Xtensa double-precision math implementation.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/M5CardputerUuids.java"><code>M5CardputerUuids</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/M5CardputerDoubleMath.java"><code>M5CardputerDoubleMath</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/UuidValues.java"><code>UuidValues</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java"><code>MathFunctionsDoublePrecision</code></a></td>
 </tr>
 <tr>
 <td>Virtual threads and structured concurrency</td>
 <td align="center">✓</td>
 <td>Virtual threads, structured task scopes and scoped values run on the dual-carrier scheduler.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/M5CardputerThreads.java"><code>M5CardputerThreads</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java"><code>StructuredConcurrency</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java"><code>ScopedValuesPrecision</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java"><code>VirtualThreads</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java"><code>StructuredConcurrency</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java"><code>ScopedValuesPrecision</code></a></td>
 </tr>
 </tbody>
 </table>
@@ -607,8 +607,7 @@ while (true) {
 </code></pre>
 <p>Once uploaded, the program keeps moving the pointer of the computer it is plugged into; disconnect the board or upload
 another program to stop it.</p>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/M5RatonLoco.java"><code>M5RatonLoco</code></a> moves the host pointer around a square and reports each side over the USB serial
-console. The native TinyUSB device may receive a new serial-port path after flashing: use <code>arduino-cli board list</code> and pass
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java"><code>RatonLoco</code></a> moves the host pointer around a square on every board with a USB HID mouse. The native TinyUSB device may receive a new serial-port path after flashing: use <code>arduino-cli board list</code> and pass
 that new <code>/dev/cu.usbmodem...</code> path as <code>-Djuno.port</code> if the monitor does not attach.</p>
 <h2 id="build-and-run">Build and run</h2>
 <p>Run <code>juno:install-deps</code> once to install the M5Stack ESP32 board package and the official M5Cardputer library along with
