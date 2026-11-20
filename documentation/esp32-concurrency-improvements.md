@@ -30,7 +30,7 @@ Already done:
   iteration; also fixed the breathe step waking at every slice. N=12 monolith 7.64 s → 1.13 s.
 - #416 — placement: a thread waiting in a join is not counted as load, a tie goes to the starter's carrier, and a slot
   is taken only if its task suits the target carrier. N=12 split 1.18 s → 0.733 s.
-- #417 (open) — four HTTP requests in flight on ESP32, and the HTTPS latency benchmark. HTTP 1.83× → 2.52×.
+- #417 — four HTTP requests in flight on ESP32, and the HTTPS latency benchmark. HTTP 1.83× → 2.52×.
 
 ## CPU-bound work
 
