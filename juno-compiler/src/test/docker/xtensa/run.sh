@@ -108,7 +108,8 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-# Decodes a panic backtrace ("Backtrace: 0xPC:0xSP ...") against the build's ELF, so a boot failure names its source.
+# Decodes a panic backtrace ("Backtrace: 0xPC:0xSP ...") against the build's ELF, so a boot failure or a panic in the
+# program names its source.
 decode_backtrace() {
     elf="$sketch-build/$name.ino.elf"
     addr2line="$(find /root/.arduino15/packages -name "xtensa-${machine}-elf-addr2line" -type f 2>/dev/null | head -1)"
@@ -192,6 +193,8 @@ while :; do
             esac
         fi
         case "$line" in
+            # A panic inside the program fails the transcript comparison anyway; name its source for the log too.
+            *'Backtrace:'*) decode_backtrace "$line" ;;
             *'[juno-begin]'*)
                 begun=1
                 : >"$tmpdir/begun"

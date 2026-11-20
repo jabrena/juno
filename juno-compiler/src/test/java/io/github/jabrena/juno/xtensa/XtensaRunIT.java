@@ -166,8 +166,11 @@ class XtensaRunIT {
         start = System.nanoTime();
         ExecResult run = runOnce(work);
         LOG.info("[{} / {}] run.sh exit {} in {} ms", mainClass, board.id(), run.getExitCode(), millisSince(start));
-        // run.sh reports where its time went (build, boot to [juno-begin], program) on stderr.
-        run.getStderr().lines().filter(line -> line.startsWith("run.sh timing:"))
+        // run.sh reports where its time went (build, boot to [juno-begin], program) and decodes a panic's backtrace
+        // (addr2line's "0x...: function at file:line" and "(inlined by)" lines) on stderr.
+        run.getStderr().lines().filter(line -> line.startsWith("run.sh timing:")
+                        || line.startsWith("run.sh: decoded backtrace") || line.startsWith("0x")
+                        || line.contains("(inlined by)"))
                 .forEach(line -> LOG.info("[{} / {}] {}", mainClass, board.id(), line));
         WORKSPACE.writeEmulatorLog(board, mainClass, "/harness/run.sh " + work, run.getStdout(), run.getStderr());
         if (run.getExitCode() == TIMED_OUT || run.getExitCode() == KILLED) {
