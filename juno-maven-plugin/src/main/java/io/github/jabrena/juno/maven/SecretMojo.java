@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.maven;
 
+import io.github.jabrena.juno.maven.provisioner.SecretProvisioner;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
@@ -9,16 +10,21 @@ import java.io.Console;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
- * Stores a named secret in the board's secure element and lists the stored names or empties the chip. The program is uploaded first, which
- * is {@code SecretProvisioner} in {@code juno-examples}: pass it with {@code -Djuno.main}. The value is typed at a hidden
- * prompt and sent over USB serial as hex, so it never appears on the command line, in the Maven log or on the SD card.
+ * Stores a named secret in the board's secure element, reports whether named secrets are stored, or empties the chip.
+ * The store cannot enumerate what it holds, so every name is the user's: no name is built in. The program is
+ * uploaded first: the plugin's own {@link SecretProvisioner}, unless {@code -Djuno.main} names another program that
+ * speaks the same protocol. The value is typed at a hidden prompt and sent over USB serial as hex, so it never appears
+ * on the command line, in the Maven log or on the SD card.
  *
  * <pre>
- * ./mvnw -f juno-examples/pom.xml juno:secret -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretProvisioner \
- *   -Djuno.board=arduino-uno-r4-wifi -Djuno.port=/dev/cu.usbmodemXXXX -Djuno.secret.key=wifi.ssid
+ * ./mvnw juno:secret -Djuno.board=arduino-uno-r4-wifi -Djuno.port=/dev/cu.usbmodemXXXX -Djuno.secret.key=wifi.ssid
+ * ./mvnw juno:secret -Djuno.board=arduino-uno-r4-wifi -Djuno.port=/dev/cu.usbmodemXXXX \
+ *   -Djuno.secret.list=wifi.ssid,wifi.password
  * </pre>
  */
 @Mojo(name = "secret", requiresDependencyResolution = ResolutionScope.COMPILE)
@@ -31,11 +37,11 @@ public final class SecretMojo extends AbstractJunoMojo {
     @Parameter(property = "juno.secret.key")
     private @Nullable String key;
 
-    /** Prints which names are stored, without their values. */
-    @Parameter(property = "juno.secret.list", defaultValue = "false")
-    private boolean list;
+    /** Comma-separated names to check: prints whether each one is stored, without its value. */
+    @Parameter(property = "juno.secret.list")
+    private @Nullable String list;
 
-    /** Empties every data slot on the chip after asking for the word {@code CLEAR}, then prints the list. */
+    /** Empties every data slot on the chip after asking for the word {@code CLEAR}. */
     @Parameter(property = "juno.secret.clear", defaultValue = "false")
     private boolean clear;
 
@@ -102,16 +108,23 @@ public final class SecretMojo extends AbstractJunoMojo {
     }
 
     @Override
+    Optional<BundledProgram> defaultProgram() {
+        return Optional.of(new BundledProgram(SecretProvisioner.class));
+    }
+
+    @Override
     void run() {
         String name = configured(key).orElse(null);
-        int modes = (name == null ? 0 : 1) + (list ? 1 : 0) + (clear ? 1 : 0);
+        List<String> listed = listedNames();
+        int modes = (name == null ? 0 : 1) + (listed.isEmpty() ? 0 : 1) + (clear ? 1 : 0);
         if (modes != 1) {
-            throw new ArduinoCliException("Choose exactly one of -Djuno.secret.key=<name>, -Djuno.secret.list=true or "
-                    + "-Djuno.secret.clear=true");
+            throw new ArduinoCliException("Choose exactly one of -Djuno.secret.key=<name>, "
+                    + "-Djuno.secret.list=<name>[,<name>...] or -Djuno.secret.clear=true");
         }
         if (name != null) {
             SecretProtocol.validateName(name);
         }
+        listed.forEach(SecretProtocol::validateName);
         if (!terminal.present() && (name != null || clear)) {
             throw new ArduinoCliException("juno:secret reads values and confirmations from a terminal, which this session "
                     + "does not have. Nothing was uploaded or written.");
@@ -136,10 +149,9 @@ public final class SecretMojo extends AbstractJunoMojo {
             if (name != null && value != null) {
                 store(session, name, value);
             } else if (clear) {
-                printList(session);
                 clearAll(session);
             } else {
-                printList(session);
+                printStates(session, listed);
             }
         }
     }
@@ -191,12 +203,27 @@ public final class SecretMojo extends AbstractJunoMojo {
         getLog().info("Stored " + name + " in the chip");
     }
 
-    private void printList(SerialSession session) {
-        session.send(SecretProtocol.listRequest());
-        String line = nextReply(session);
-        while (!"END".equals(line)) {
-            getLog().info(line);
-            line = nextReply(session);
+    /**
+     * The names {@code juno.secret.list} gives. A boolean there is the old switch, which listed names built into the
+     * program; there are none now, so it fails with how to name them.
+     */
+    private List<String> listedNames() {
+        String names = configured(list).orElse("");
+        if (names.equalsIgnoreCase("true") || names.equalsIgnoreCase("false")) {
+            throw new ArduinoCliException("-Djuno.secret.list takes the names to check, not true or false: "
+                    + "for example -Djuno.secret.list=wifi.ssid,wifi.password");
+        }
+        return Arrays.stream(names.split(",")).map(String::trim).filter(item -> !item.isEmpty()).toList();
+    }
+
+    private void printStates(SerialSession session, List<String> names) {
+        for (String listedName : names) {
+            session.send(SecretProtocol.listRequest(listedName));
+            String reply = nextReply(session);
+            if (!reply.startsWith("STATE " + listedName + " ")) {
+                throw new ArduinoCliException("The board did not report " + listedName + ": " + reply);
+            }
+            getLog().info(reply);
         }
     }
 
