@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.images;
+package io.github.jabrena.juno.api.hardware.display.tft;
 
 import io.github.jabrena.juno.hardware.device.tft.TftTouchShield;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -13,7 +13,7 @@ import io.github.jabrena.juno.util.image.JavaLogoImage;
  * allocated afterwards.
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \
- *   -Djuno.main=io.github.jabrena.juno.api.images.JavaLogoTFT -Djuno.board=arduino-uno-r4-wifi
+ *   -Djuno.main=io.github.jabrena.juno.api.hardware.display.tft.JavaLogoTFT -Djuno.board=arduino-uno-r4-wifi
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-uno-r4-wifi -Djuno.baudRate=115200
  * }</pre>
  */
