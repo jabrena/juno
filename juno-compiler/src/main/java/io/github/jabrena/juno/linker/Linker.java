@@ -88,18 +88,14 @@ public final class Linker {
         if (mainClass == null) {
             throw new CompileException("Main class not found on the classpath: " + mainClassName);
         }
-        List<Board> declaredBoards = declaredBoards(mainClass, requestedBoardId);
-        Board board = resolveBoard(declaredBoards, requestedBoardId);
+        DeclaredBoards declaredBoards = DeclaredBoards.of(mainClass, requestedBoardId);
+        Board board = declaredBoards.target(requestedBoardId);
         JavaMethod main = findMain(mainClass);
         MethodRef entryPoint = main.reference();
         JavaMethod mainInitializer = mainClass.findMethod("<clinit>", "()V");
         List<MethodRef> clojureFunctions = new ArrayList<>();
-        // Linked once, or twice when the program sends HTTP requests, so only what it uses is linked.
-        ReachabilityClosure.Result reachability = httpLinkScan.link(httpFacts -> {
-            clojureFunctions.clear();
-            return resolveReachability(classes, entryPoint, mainInitializer, board, declaredBoards, httpFacts,
-                    clojureFunctions);
-        });
+        ReachabilityClosure.Result reachability = linkFor(classes, entryPoint, mainInitializer, board,
+                clojureFunctions);
         structuredTaskSupport.validateNoCustomJoiners(reachability.instantiatedClasses(),
                 reachability.lambdaSites().values(), classes);
         for (Map.Entry<InterfaceCallSite, MethodRef> call : reachability.interfaceCalls().entrySet()) {
@@ -107,11 +103,13 @@ public final class Linker {
                 throw new CompileException(threadSupport.unresolvedMessage(call.getKey(), call.getValue()));
             }
         }
-        if (inheritanceSupport.usesClassInheritance(reachability, classes)) {
-            requireCapability(declaredBoards, Capability.CLASS_INHERITANCE, "");
+        // Every other declared board is linked too, only to check it against the code it reaches itself: a call
+        // behind a board query that folds away for that board needs no capability from it.
+        for (Board other : declaredBoards.others(board)) {
+            linkFor(classes, entryPoint, mainInitializer, other, new ArrayList<>());
         }
         if (mainClass.watchdogTimeoutMillis().isPresent()) {
-            requireCapability(declaredBoards, Capability.WATCHDOG, "");
+            requireCapability(declaredBoards.boards(), Capability.WATCHDOG, "");
         }
         esp32CamBusConflicts.validate(board, reachability.methods());
         return new Program(entryPoint, reachability.methods(), classes, board,
@@ -119,17 +117,35 @@ public final class Linker {
                 clojureFunctions);
     }
 
+    /**
+     * Links the program as {@code board} sees it, with its board queries folded for that board, and checks every
+     * capability the result reaches against {@code board} alone.
+     */
+    private ReachabilityClosure.Result linkFor(Map<String, JavaClass> classes, MethodRef entryPoint,
+            @Nullable JavaMethod mainInitializer, Board board, List<MethodRef> clojureFunctions) {
+        // Linked once, or twice when the program sends HTTP requests, so only what it uses is linked.
+        ReachabilityClosure.Result reachability = httpLinkScan.link(httpFacts -> {
+            clojureFunctions.clear();
+            return resolveReachability(classes, entryPoint, mainInitializer, board, httpFacts, clojureFunctions);
+        });
+        if (inheritanceSupport.usesClassInheritance(reachability, classes)) {
+            requireCapability(List.of(board), Capability.CLASS_INHERITANCE, "");
+        }
+        return reachability;
+    }
+
     /** Walks every method reachable from the entry point, deciding HTTP link-time queries with {@code httpFacts}. */
     private ReachabilityClosure.Result resolveReachability(Map<String, JavaClass> classes, MethodRef entryPoint,
-            @Nullable JavaMethod mainInitializer, Board board, List<Board> declaredBoards, HttpLinkFacts httpFacts,
+            @Nullable JavaMethod mainInitializer, Board board, HttpLinkFacts httpFacts,
             List<MethodRef> clojureFunctions) {
+        List<Board> checkedBoards = List.of(board);
         return reachabilityClosure.resolve(entryPoint,
                 mainInitializer == null ? null : mainInitializer.reference(), classes,
                 reference -> linkMethod(classes, reference, reference.equals(entryPoint), board, httpFacts),
-                (linked, work, calls, instantiated, lambdas) -> enqueueDependencies(linked, declaredBoards, classes,
+                (linked, work, calls, instantiated, lambdas) -> enqueueDependencies(linked, checkedBoards, classes,
                         work, calls, instantiated, lambdas, clojureFunctions), interfaceDispatchResolver,
                 method -> reachableBodySupport.hasReachableBody(method, classes),
-                (dispatch, method) -> validateInterfaceTargetCapability(dispatch, method, declaredBoards));
+                (dispatch, method) -> validateInterfaceTargetCapability(dispatch, method, checkedBoards));
     }
 
     private void validateInterfaceTargetCapability(InterfaceDispatch dispatch, MethodRef method,
@@ -137,44 +153,6 @@ public final class Linker {
         intrinsicRegistry.resolve(method).flatMap(capabilityRequirements::forIntrinsic).ifPresent(capability ->
                 requireCapability(declaredBoards, capability,
                         " (used through " + dispatch.interfaceMethod().displayName() + ")"));
-    }
-
-    /**
-     * Every board the entry point's {@code @Board} annotation names. Without the annotation the program
-     * is unrestricted and must receive its target from the requested board.
-     */
-    private List<Board> declaredBoards(JavaClass mainClass, Optional<String> requestedBoardId) {
-        List<String> boardApiClassNames = mainClass.boardApiClassNames();
-        if (boardApiClassNames.isEmpty()) {
-            if (requestedBoardId.isEmpty()) {
-                throw new CompileException("Target board is required when the entry point has no @Board annotation; "
-                        + "pass -Djuno.board=<id> for the Maven plugin or --board=<id> for the standalone CLI");
-            }
-            return List.of(Board.fromId(requestedBoardId.get()));
-        }
-        return boardApiClassNames.stream().map(Board::fromApiClassName).distinct().toList();
-    }
-
-    /** Picks the single board this build targets out of {@code declaredBoards} (see {@link #link}). */
-    private Board resolveBoard(List<Board> declaredBoards, Optional<String> requestedBoardId) {
-        if (requestedBoardId.isPresent()) {
-            Board requested = Board.fromId(requestedBoardId.get());
-            if (!declaredBoards.contains(requested)) {
-                throw new CompileException("Requested board '" + requestedBoardId.get()
-                        + "' is not one of @Board's declared boards: " + displayNames(declaredBoards));
-            }
-            return requested;
-        }
-        if (declaredBoards.size() > 1) {
-            throw new CompileException("@Board declares multiple boards (" + displayNames(declaredBoards)
-                    + "); pass the target board explicitly: -Djuno.board=<id> for the Maven plugin, "
-                    + "--board=<id> for the standalone CLI");
-        }
-        return declaredBoards.get(0);
-    }
-
-    private String displayNames(List<Board> boards) {
-        return boards.stream().map(Board::displayName).collect(Collectors.joining(", "));
     }
 
     /**
@@ -308,8 +286,9 @@ public final class Linker {
     }
 
     /**
-     * Every declared board must provide {@code capability}, not just the one this build targets, so a
-     * portable program never compiles for one of its boards and fails on another.
+     * Each of {@code boards} must provide {@code capability}. {@link #link} checks every declared board, not just the
+     * one this build targets, each against the code it reaches itself, so a portable program never compiles for one
+     * of its boards and fails on another.
      */
     private void requireCapability(List<Board> declaredBoards, Capability capability, String context) {
         declaredBoards.stream().filter(board -> !board.supports(capability)).findFirst().ifPresent(board -> {
