@@ -412,7 +412,7 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
 <td><code>BigInteger</code>, <code>BigDecimal</code>, <code>MathContext</code></td>
 <td align="center">✓</td>
 <td>Runs in Juno's fixed arena.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialBigNumbers.java"><code>SerialBigNumbers</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/BigNumberValues.java"><code>BigNumberValues</code></a></td>
 </tr>
 <tr>
 <td>Objects, arrays, inheritance, static and interface calls</td>
@@ -448,19 +448,19 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
 <td>Double-precision <code>java.lang.Math</code></td>
 <td align="center">✓</td>
 <td>The M7's floating-point toolchain assembles Juno's double runtime.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialDoubleMath.java"><code>SerialDoubleMath</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java"><code>MathFunctionsDoublePrecision</code></a></td>
 </tr>
 <tr>
 <td>Threads, locks, structured concurrency and scoped values</td>
 <td align="center">✓</td>
-<td>Uses the Portenta Mbed RTOS carrier for Java threads, locks, structured task scopes and scoped-value bindings. Confirmed on hardware with four soak programs that repeat their concurrent work every round: <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/PortentaLocks.java"><code>PortentaLocks</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/PortentaStructuredConcurrency.java"><code>PortentaStructuredConcurrency</code></a> and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/PortentaScopedValues.java"><code>PortentaScopedValues</code></a> beside the one linked here.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/PortentaThreads.java"><code>PortentaThreads</code></a></td>
+<td>Uses the Portenta Mbed RTOS carrier for Java threads, locks, structured task scopes and scoped-value bindings. Confirmed on hardware with soak programs that repeated their concurrent work every round.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/ThreadStartAndJoin.java"><code>ThreadStartAndJoin</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/Locks.java"><code>Locks</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/concurrency/StructuredRace.java"><code>StructuredRace</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/Synchronization.java"><code>Synchronization</code></a></td>
 </tr>
 <tr>
 <td>USB HID mouse</td>
 <td align="center">✓</td>
-<td>Uses the Mbed core's <code>USBMouse</code>; <code>PortentaMouse</code> keeps serial progress on the same USB connection.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/PortentaMouse.java"><code>PortentaMouse</code></a></td>
+<td>Uses the Mbed core's <code>USBMouse</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java"><code>RatonLoco</code></a></td>
 </tr>
 <tr>
 <td>Watchdog</td>
@@ -472,12 +472,12 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
 <td>Cryptographic UUID</td>
 <td align="center">✓</td>
 <td>Uses the Mbed hardware entropy provider behind <code>UUID.randomUUID()</code>.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialUuids.java"><code>SerialUuids</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/UuidValues.java"><code>UuidValues</code></a></td>
 </tr>
 <tr>
 <td><code>SecretStore</code> / SE050C2</td>
 <td align="center">✓</td>
-<td>The board's onboard NXP SE050C2 holds each name as a binary object; <code>MCU.getSecretStore()</code> picks that provider for this board, and the values are not embedded in firmware. Confirmed on hardware: writes, updates, per-name clears and the 63-byte maximum with <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java"><code>SecretStoreCheck</code></a>, a reboot that joins Wi-Fi from the stored credentials, and <code>clearAll()</code>, a whole-chip wipe that erases the Wi-Fi and SMTP credentials too, checked with <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/PortentaSecretClearAllRead.java"><code>PortentaSecretClearAllRead</code></a>.</td>
+<td>The board's onboard NXP SE050C2 holds each name as a binary object; <code>MCU.getSecretStore()</code> picks that provider for this board, and the values are not embedded in firmware. Confirmed on hardware: writes, updates, per-name clears and the 63-byte maximum with <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java"><code>SecretStoreCheck</code></a>, a reboot that joins Wi-Fi from the stored credentials, and <code>clearAll()</code>, a whole-chip wipe that erases the Wi-Fi and SMTP credentials too, checked with <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretClearAllRead.java"><code>SecretClearAllRead</code></a>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretWifiStatus.java"><code>SecretWifiStatus</code></a></td>
 </tr>
 <tr>
@@ -599,10 +599,10 @@ while (true) {
 </code></pre>
 <p>The display is write-only: it cannot be read back, and its backlight stays on whenever the board has power. Create one
 instance at startup and reuse it.</p>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/tft/BouncingTrianglesTFT.java"><code>BouncingTrianglesTFT</code></a>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/tft/BouncingTrianglesTFT.java"><code>BouncingTrianglesTFT</code></a>
 is the first demo for a new screen: three triangles bounce off the edges of the display. Build it with:</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.device.tft.BouncingTrianglesTFT \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.display.tft.BouncingTrianglesTFT \
   -Djuno.board=arduino-portenta-h7
 </code></pre>
 <h5 id="read-and-write-the-carriers-microsd-card">Read and write the carrier's microSD card</h5>

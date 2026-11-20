@@ -450,7 +450,7 @@ peripherals. The UNO R4 Minima is not a Juno target.</p>
 <td>Onboard LED matrix</td>
 <td align="center">✓</td>
 <td>12 × 8 through <code>MCU.getDisplay()</code>, a monochrome <code>Display</code>.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java"><code>LedMatrixScrollingText</code></a></td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/led/LedMatrixScrollingText.java"><code>LedMatrixScrollingText</code></a></td>
 </tr>
 <tr>
 <td>USB HID mouse</td>
@@ -535,7 +535,7 @@ for (int offset = 12; offset &gt;= -60; offset--) {
     Delay.millis(80);
 }
 </code></pre>
-<p><code>print</code> takes any <code>String</code>, and the matrix clips the text at its edges. <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/led/LedMatrixScrollingText.java"><code>LedMatrixScrollingText</code></a> scrolls a longer
+<p><code>print</code> takes any <code>String</code>, and the matrix clips the text at its edges. <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/led/LedMatrixScrollingText.java"><code>LedMatrixScrollingText</code></a> scrolls a longer
 message forever.</p>
 <h3 id="usb-hid-mouse">USB HID mouse</h3>
 <p><code>MCU.getMouse()</code> makes the board a USB mouse for the computer it is plugged into. Call <code>begin()</code> once, then
@@ -579,7 +579,7 @@ while (true) {
     }
 }
 </code></pre>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/tft/TouchPaintTFT.java"><code>TouchPaintTFT</code></a> is a finger-paint program, and
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/tft/TouchPaintTFT.java"><code>TouchPaintTFT</code></a> is a finger-paint program, and
 <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/weather/WeatherTFT.java"><code>WeatherTFT</code></a> a desk weather station that reads its Wi-Fi credentials from the
 shield's microSD card (<code>TftTouchShield.getSdCard()</code> on the shield instance, chip select D10).</p>
 <h3 id="grove-base-shield">Grove Base Shield</h3>
@@ -628,7 +628,7 @@ while (true) {
     Delay.millis(100);
 }
 </code></pre>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java"><code>LcdKeypadDemo</code></a> shows each button press, and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/pomodoro/Pomodoro.java"><code>Pomodoro</code></a>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lcd/LcdKeypadDemo.java"><code>LcdKeypadDemo</code></a> shows each button press, and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/pomodoro/Pomodoro.java"><code>Pomodoro</code></a>
 is a Pomodoro timer.</p>
 <h3 id="azdelivery-data-logger-shield">AZDelivery Data Logger Shield</h3>
 <img src="../../images/shields/shield-data-logger.png" alt="AZDelivery Data Logger Shield" width="280">

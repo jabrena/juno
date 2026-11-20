@@ -17,8 +17,6 @@ import io.github.jabrena.juno.util.Delay;
  */
 @Board({ArduinoUnoR3Board.class, ArduinoUnoR4WiFiBoard.class})
 public final class GroveSensorWiringMonitor {
-    private GroveSensorWiringMonitor() {
-    }
 
     public static void main(String[] args) {
         GroveBaseShield shield = new GroveBaseShield(MCU.getGpio());

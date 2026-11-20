@@ -13,9 +13,6 @@ import io.github.jabrena.juno.util.Delay;
 public final class M5CardputerBatteryLevel {
     private static final Battery BATTERY = MCU.getBattery();
 
-    private M5CardputerBatteryLevel() {
-    }
-
     /** Starts USB serial and reports the estimated battery charge level repeatedly. */
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);

@@ -29,7 +29,7 @@ for it with the same Thumb-2 backend as the UNO R4 WiFi, linking against Earle P
 
 | Feature | Status | Notes | Example |
 |---|:---:|---|---|
-| `Gpio`, `DigitalOutput` | ✓ | Resolve `A0`–`A2`, `GP*` and `GPIO*` names. `A0`–`A2` map to ADC pins GP26–GP28; the built-in LED is routed by the core through pin 64. | [`RaspberryPico2Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/RaspberryPico2Blink.java) |
+| `Gpio`, `DigitalOutput` | ✓ | Resolve `A0`–`A2`, `GP*` and `GPIO*` names. `A0`–`A2` map to ADC pins GP26–GP28; the built-in LED is routed by the core through pin 64. | [`Blink`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java) |
 | `Delay`, `Serial` | ✓ | Serial output uses the board's USB serial connection. | [`RaspberryPico2WifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/RaspberryPico2WifiStatus.java) |
 | `int`, `long`, `float`, `double` | ✓ | Java primitive semantics, including double-precision arithmetic. | |
 | Double-precision `java.lang.Math` | ✓ | Supported by the RP2350 Thumb-2 toolchain. | |
@@ -39,7 +39,7 @@ for it with the same Thumb-2 backend as the UNO R4 WiFi, linking against Earle P
 | Threads, `synchronized`, `ReentrantLock`, `StructuredTaskScope`, `ScopedValue` | ✓ | Uses Juno's non-FreeRTOS Thumb-2 scheduler. The arduino-pico BLE library is not compatible with its FreeRTOS menu. | |
 | `@Watchdog` | ✓ | Uses the RP2350 watchdog runtime. | |
 | `SecretStore` / TrustZone | ✓ | `Pico2WTrustZoneStore`: 16 slots fenced off by Juno's TrustZone secure firmware, which `juno:flash` installs in the boot slot; one carrier, Wi-Fi and BLE keep working. Not locked or encrypted — see [Secrets in a Secure Element](../../api/storage/secure-element). | [`SecretStoreCheck`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java) |
-| `UUID.randomUUID()` | ✓ | Uses the RP2350's hardware TRNG through the Pico SDK's `pico_rand` generator, which mixes fresh TRNG samples into every 128-bit value. The SDK describes it as a software PRNG seeded from hardware entropy rather than a cryptographic DRBG, so the board is not listed among the cryptographic-entropy boards on [Board features](../../features/board-features). Compiles with `SerialUuids`; not yet flashed to hardware. | [`SerialUuids`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/SerialUuids.java) |
+| `UUID.randomUUID()` | ✓ | Uses the RP2350's hardware TRNG through the Pico SDK's `pico_rand` generator, which mixes fresh TRNG samples into every 128-bit value. The SDK describes it as a software PRNG seeded from hardware entropy rather than a cryptographic DRBG, so the board is not listed among the cryptographic-entropy boards on [Board features](../../features/board-features). Compiles with `UuidValues`; not yet flashed to hardware. | [`UuidValues`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/UuidValues.java) |
 | Wi-Fi station | ✓ | `MCU.getWifi()` provides station mode, status, addresses and TCP/UDP networking. | [`RaspberryPico2WifiStatus`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/RaspberryPico2WifiStatus.java) |
 | Wi-Fi access point | ✓ | `beginAP(ssid, password)`. | |
 | `Udp`, SNTP (`LocalDateTime.now()`) | ✓ | Uses the CYW43439 Wi-Fi radio and the core's UDP support. | |
@@ -50,7 +50,7 @@ for it with the same Thumb-2 backend as the UNO R4 WiFi, linking against Earle P
 | `Smtp.send` (STARTTLS) | — | STARTTLS is not available on this board. | |
 | Bluetooth LE | ✓ | `MCU.getBluetoothLe()` uses the arduino-pico BTstack central adapter. | |
 | USB HID mouse | ✓ | `MCU.getMouse()` uses the core's `Mouse` library. | |
-| `GrovePicoShield` | ✓ | D16, D18, D20, A0–A2, I2C0/I2C1, UART0/UART1 and SPI0 socket mappings. | [`RaspberryPico2GroveShield`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/RaspberryPico2GroveShield.java), [`RaspberryPico2GroveOled`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/RaspberryPico2GroveOled.java) |
+| `GrovePicoShield` | ✓ | D16, D18, D20, A0–A2, I2C0/I2C1, UART0/UART1 and SPI0 socket mappings. | [`RaspberryPico2GroveOled`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/sensors/RaspberryPico2GroveOled.java) |
 
 The BLE-enabled board menu is selected automatically by the compiler. BLE uses the core's non-FreeRTOS build because
 the arduino-pico BLE library is not compatible with its FreeRTOS menu.
@@ -60,11 +60,11 @@ finds its `UF2_Board` drive by itself, and later uploads reset the board through
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:flash \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.RaspberryPico2Blink \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=raspberry-pi-pico-2-w
 ```
 
-`RaspberryPico2Blink` and the Grove Shield support are confirmed on hardware. The remaining network, BLE, concurrency,
+Blinking the built-in LED and the Grove Shield support are confirmed on hardware. The remaining network, BLE, concurrency,
 watchdog, math and HID paths have compiler/toolchain coverage but have not been uploaded as part of this change.
 
 ## Grove Shield for Pi Pico
@@ -144,5 +144,3 @@ public final class GrovePicoExample {
 }
 ```
 
-[`RaspberryPico2GroveShield`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/grove/RaspberryPico2GroveShield.java)
-is the complete example.

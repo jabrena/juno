@@ -9,8 +9,6 @@ import io.github.jabrena.juno.util.Delay;
 /** Initializes the Cardputer's built-in microSD socket and reports the result over USB serial. */
 @Board(M5StackCardputerBoard.class)
 public final class M5CardputerSd {
-    private M5CardputerSd() {
-    }
 
     /** Starts the USB serial port and the built-in microSD socket. */
     public static void main(String[] args) {

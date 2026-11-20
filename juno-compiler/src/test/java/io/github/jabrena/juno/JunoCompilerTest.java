@@ -377,6 +377,9 @@ class JunoCompilerTest {
                     "M5Cardputer.Display.fillScreen",
                     "M5Cardputer.Display.print(static_cast<char>(",
                     "M5Cardputer.Display.println");
+            // The program never calls begin(): the first drawing call starts the Cardputer itself
+            assertThat(result.runtimeShim()).contains(
+                    "juno_m5_display_fill_screen(int32_t color) {\n  juno_m5_begin(false);");
         }
 
         @Test

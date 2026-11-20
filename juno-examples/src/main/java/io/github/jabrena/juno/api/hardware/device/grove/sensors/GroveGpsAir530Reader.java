@@ -14,8 +14,6 @@ import io.github.jabrena.juno.hardware.time.Clock;
 /** Reads signed latitude, longitude and altitude from a Grove GPS Air530 on the Grove Base Shield's D2 socket. */
 @Board({ArduinoUnoR3Board.class, ArduinoUnoR4WiFiBoard.class})
 public final class GroveGpsAir530Reader {
-    private GroveGpsAir530Reader() {
-    }
 
     public static void main(String[] args) {
         Gpio gpio = MCU.getGpio();

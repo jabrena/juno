@@ -48,9 +48,9 @@ point for its peripherals.
 | Speaker | ✓ | `MCU.getAudio()`: `tone`, `setVolume`, `stop`. | No dedicated Cardputer example yet |
 | `@Watchdog` | ✓ | ESP32-S3 task watchdog; the timeout is rounded up to whole seconds. | |
 | Battery | ✓ | `MCU.getBattery()`: estimated level and voltage. | [`M5CardputerBatteryLevel`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/battery/M5CardputerBatteryLevel.java) |
-| USB HID mouse | ✓ | `MCU.getMouse()` through TinyUSB; shares the USB port with `Serial`. | [`M5RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/M5RatonLoco.java) |
-| UUIDs and double-precision math | ✓ | Hardware random UUIDs and the Xtensa double-precision math implementation. | [`M5CardputerUuids`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/M5CardputerUuids.java), [`M5CardputerDoubleMath`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/M5CardputerDoubleMath.java) |
-| Virtual threads and structured concurrency | ✓ | Virtual threads, structured task scopes and scoped values run on the dual-carrier scheduler. | [`M5CardputerThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/serial/M5CardputerThreads.java), [`StructuredConcurrency`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java), [`ScopedValuesPrecision`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java) |
+| USB HID mouse | ✓ | `MCU.getMouse()` through TinyUSB; shares the USB port with `Serial`. | [`RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java) |
+| UUIDs and double-precision math | ✓ | Hardware random UUIDs and the Xtensa double-precision math implementation. | [`UuidValues`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/UuidValues.java), [`MathFunctionsDoublePrecision`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/MathFunctionsDoublePrecision.java) |
+| Virtual threads and structured concurrency | ✓ | Virtual threads, structured task scopes and scoped values run on the dual-carrier scheduler. | [`VirtualThreads`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/VirtualThreads.java), [`StructuredConcurrency`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/StructuredConcurrency.java), [`ScopedValuesPrecision`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/ScopedValuesPrecision.java) |
 
 ## Features
 
@@ -193,8 +193,7 @@ while (true) {
 Once uploaded, the program keeps moving the pointer of the computer it is plugged into; disconnect the board or upload
 another program to stop it.
 
-[`M5RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/M5RatonLoco.java) moves the host pointer around a square and reports each side over the USB serial
-console. The native TinyUSB device may receive a new serial-port path after flashing: use `arduino-cli board list` and pass
+[`RatonLoco`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/hid/RatonLoco.java) moves the host pointer around a square on every board with a USB HID mouse. The native TinyUSB device may receive a new serial-port path after flashing: use `arduino-cli board list` and pass
 that new `/dev/cu.usbmodem...` path as `-Djuno.port` if the monitor does not attach.
 
 ## Build and run
