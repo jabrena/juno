@@ -45,6 +45,33 @@ extern "C" uint32_t juno_port_carrier_id() {
   return static_cast<uint32_t>(xPortGetCoreID()) & 1u;
 }
 
+// Whether this carrier's time slice is over, asked at every safepoint before the runtime lock: each carrier keeps its
+// own mark and only it reads or writes that mark, so the check needs no lock and no barrier. Taking a yes starts the
+// next slice.
+// The slice clock: the core's own cycle counter (xtensa/hal.h, from the core's thread includes), one instruction to
+// read. Each carrier compares only against the counter of the core it runs on, so two cores' counters are never mixed.
+static uint32_t juno_slice_ticks_per_slice = 0u;
+
+static inline uint32_t juno_slice_clock() {
+  return xthal_get_ccount();
+}
+
+static inline uint32_t juno_slice_length() {
+  if (juno_slice_ticks_per_slice == 0u) {
+    juno_slice_ticks_per_slice = static_cast<uint32_t>(getCpuFrequencyMhz()) * 1000u * JUNO_TIME_SLICE_MILLIS;
+  }
+  return juno_slice_ticks_per_slice;
+}
+static uint32_t juno_slice_marks[2] = {};
+
+static inline bool juno_port_slice_due() {
+  uint32_t carrier = juno_port_carrier_id();
+  uint32_t now = juno_slice_clock();
+  if (now - juno_slice_marks[carrier] < juno_slice_length()) return false;
+  juno_slice_marks[carrier] = now;
+  return true;
+}
+
 // FreeRTOS runs the idle task and other lower-priority work only while every Juno task on that core is blocked, and
 // the Arduino core's task watchdog resets the board once core 0's idle task has not run for a few seconds. A carrier
 // that computes without ever blocking therefore gives its core away for one tick every JUNO_BREATHE_INTERVAL_MILLIS,
@@ -52,9 +79,11 @@ extern "C" uint32_t juno_port_carrier_id() {
 static constexpr uint32_t JUNO_BREATHE_INTERVAL_MILLIS = 100u;
 static uint32_t juno_breath_starts[2] = {};
 
-static void juno_port_breathe(uint32_t now) {
+// The clock is read here, after the switch: a thread resumed by a switch would otherwise bring the time from before
+// it was switched out, which can be older than the last breath and would wrap into a breath at every slice.
+static void juno_port_breathe() {
   uint32_t carrier = juno_port_carrier_id();
-  if (now - juno_breath_starts[carrier] < JUNO_BREATHE_INTERVAL_MILLIS) return;
+  if (static_cast<uint32_t>(millis()) - juno_breath_starts[carrier] < JUNO_BREATHE_INTERVAL_MILLIS) return;
   vTaskDelay(1);
   juno_breath_starts[carrier] = static_cast<uint32_t>(millis());
 }

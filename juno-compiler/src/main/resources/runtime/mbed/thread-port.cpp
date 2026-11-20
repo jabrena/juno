@@ -39,8 +39,7 @@ static void juno_mbed_entry(void* argument) {
 }
 
 // Once a time slice is over: this port's RTOS needs no time handed to lower-priority work.
-static void juno_port_breathe(uint32_t now) {
-  (void) now;
+static void juno_port_breathe() {
 }
 
 static void juno_port_prepare(uint32_t slot) {

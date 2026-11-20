@@ -474,7 +474,13 @@ final class Esp32CoreRuntime implements CoreRuntime {
 
     @Override
     public String threadIncludes() {
-        return "#include <freertos/FreeRTOS.h>\n#include <freertos/semphr.h>\n#include <freertos/task.h>\n";
+        // xtensa/hal.h: the slice clock reads the core's cycle counter, and a dual-carrier collection spills windows.
+        return """
+                #include <freertos/FreeRTOS.h>
+                #include <freertos/semphr.h>
+                #include <freertos/task.h>
+                #include <xtensa/hal.h>
+                """;
     }
 
     /** FreeRTOS tasks carry the stacks; the backend preempts at safepoints rather than from a tick. */
@@ -502,6 +508,12 @@ final class Esp32CoreRuntime implements CoreRuntime {
     @Override
     public boolean preemptsAsynchronously() {
         return false;
+    }
+
+    /** The port answers whether a slice is over, per carrier and without the runtime lock. */
+    @Override
+    public boolean asksPortForSlices() {
+        return true;
     }
 
     private CompileException unsupported(String feature) {

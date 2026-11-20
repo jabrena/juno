@@ -254,7 +254,7 @@ public final class AvrRuntimeShim {
         }
         if (uses(ShimFeature.THREADS)) {
             shim.append(core.threadPort(config));
-            shim.append(threadRuntime.scheduler(false,
+            shim.append(threadRuntime.scheduler(ThreadRuntime.Preemption.SAFEPOINT_CLOCK,
                     core.maxConcurrentHttpRequests(), core.delayMillisFunction(), "juno_gc_scan_bytes",
                     uses(ShimFeature.EXCEPTIONS), uses(ShimFeature.THREAD_ENTRY),
                     uses(ShimFeature.TASK_CALLABLE_ENTRY), uses(ShimFeature.STRUCTURED_TASKS),

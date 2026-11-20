@@ -315,6 +315,15 @@ public interface CoreRuntime {
         return true;
     }
 
+    /**
+     * For a core preempted at safepoints: whether a safepoint asks the port whether the slice is over
+     * ({@code juno_port_slice_due}, per carrier and without the runtime lock) and its backedges never yield on their
+     * own; otherwise a safepoint reads the clock and every backedge yields to the core.
+     */
+    default boolean asksPortForSlices() {
+        return false;
+    }
+
     /** Core-specific header the thread port needs ({@code ""} when the core brings none). */
     String threadIncludes();
 
