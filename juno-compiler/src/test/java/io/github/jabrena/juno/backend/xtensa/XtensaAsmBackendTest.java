@@ -520,6 +520,8 @@ class XtensaAsmBackendTest {
                 .contains("#include <USB.h>\n#include <USBHIDMouse.h>\n", "static JunoUsbMouse Mouse;",
                         "extern \"C\" void juno_mouse_move(int32_t x, int32_t y)")
                 .doesNotContain("#include <Mouse.h>");
+        // A first move begins the HID class itself, so a program need not call begin() first
+        assertThat(result.runtimeShim()).contains("void move(signed char x, signed char y) {\n    begin();");
     }
 
     @Test
