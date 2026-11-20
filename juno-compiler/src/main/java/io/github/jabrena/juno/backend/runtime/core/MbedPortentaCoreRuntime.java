@@ -346,9 +346,14 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
         return runtimeSource.load("mbed/uuid-random.cpp");
     }
 
+    /**
+     * The core's USBHID library, named through {@code PluggableUSBHID.h} first: a bare {@code <USBMouse.h>} resolves to
+     * Mbed OS's own {@code drivers/usb} copy, whose mouse never joins the core's composite USB device, so the host sees
+     * only the serial port and no mouse.
+     */
     @Override
     public String mouseIncludes() {
-        return "#include <USBMouse.h>\n";
+        return "#include <PluggableUSBHID.h>\n#include <USBMouse.h>\n";
     }
 
     @Override

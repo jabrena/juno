@@ -104,7 +104,7 @@ class CoreRuntimeTest {
         assertThat(runtime.smtpStarttlsTrust()).isEqualTo("client.setCACert(juno_portenta_ca);");
         assertThat(runtime.watchdog(1000).begin()).contains("Watchdog::get_instance().start");
         assertThat(runtime.uuidRandomHelpers()).contains("mbedtls_hardware_poll");
-        assertThat(runtime.mouseIncludes()).isEqualTo("#include <USBMouse.h>\n");
+        assertThat(runtime.mouseIncludes()).isEqualTo("#include <PluggableUSBHID.h>\n#include <USBMouse.h>\n");
         assertThat(runtime.mouseHelpers()).contains("USBMouse", "void begin() {}");
     }
 
