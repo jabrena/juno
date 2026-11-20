@@ -411,6 +411,20 @@ class ConcurrencyPrimitivesTest {
     }
 
     @Test
+    @DisplayName("The Pico 2 W on one carrier times its SysTick from the SDK's clk_sys, not SystemCoreClock")
+    void shouldTimeThePicoSingleCarrierTickFromTheSdkClock() throws Exception {
+        RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1"));
+
+        CompilationResult result = compile("RaspberryPico2WifiBoard",
+                "Thread.startVirtualThread(new Job()).join();", config);
+
+        // arduino-pico defines no SystemCoreClock, so the UNO R4's reload would not link.
+        assertThat(result.runtimeShim()).contains("SysTick_Handler", "clock_get_hz(clk_sys) / 1000u")
+                .doesNotContain("SystemCoreClock");
+        assertThat(result.report().runtimeRisks().carrierCount()).isEqualTo(1);
+    }
+
+    @Test
     @DisplayName("Dual-carrier Xtensa fields emit a barrier and atomic wide helpers")
     void shouldEmitXtensaMemoryModelInstructions() throws Exception {
         CompilationResult result = compile("ArduinoNanoEsp32Board", """
