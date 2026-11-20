@@ -23,9 +23,6 @@ public final class WeakUuid {
     private static final Clock CLOCK = MCU.getClock();
     private static final byte[] UUID_BYTES = new byte[UuidCodec.BYTES];
 
-    private WeakUuid() {
-    }
-
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);

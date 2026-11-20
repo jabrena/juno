@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>juno-examples</artifactId>
-    <name>Juno Arduino Examples</name>
+    <name>Juno Examples</name>
     <description>Example Java programs demonstrating the Juno hardware API</description>
 
     <properties>

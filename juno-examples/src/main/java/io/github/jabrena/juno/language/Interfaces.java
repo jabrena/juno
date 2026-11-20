@@ -9,8 +9,6 @@ import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.language.Interfaces.Half;
-import io.github.jabrena.juno.language.Interfaces.Scale;
 import io.github.jabrena.juno.util.Delay;
 
 /** Demonstrates interface dispatch, inherited default methods, and an overriding implementation. */

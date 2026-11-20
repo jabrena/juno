@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>juno-api</artifactId>
-    <name>Juno Arduino API</name>
+    <name>Juno API</name>
     <description>The Java programming model (hardware API and annotations) that Juno programs are written against</description>
 
     <dependencies>
