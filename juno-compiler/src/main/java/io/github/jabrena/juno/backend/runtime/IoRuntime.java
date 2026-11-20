@@ -140,13 +140,12 @@ public final class IoRuntime {
         return """
 
                 // ---- Juno I/O: waits that let the other threads run, bounded HTTP and one thread per other device ----
+                // The HTTP leases come last: the core decides how many requests may be in flight at once.
                 enum : uint32_t {
-                  JUNO_IO_HTTP_FIRST,
-                  JUNO_IO_HTTP_SECOND,
                   JUNO_IO_NETWORK,
                   JUNO_IO_STORAGE,
                   JUNO_IO_BLE,
-                  JUNO_IO_DEVICES
+                  JUNO_IO_HTTP_FIRST
                 };
 
                 """ + implementation + (runtimeLock ? LOCKED_IO_GUARD : IO_GUARD) + """

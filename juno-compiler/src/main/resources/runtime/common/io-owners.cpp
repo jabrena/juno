@@ -6,9 +6,10 @@ struct JunoIoOwner {
   void (*abort)(void*);
 };
 static constexpr uint32_t JUNO_HTTP_MAX_IN_FLIGHT = ${JUNO_HTTP_MAX_IN_FLIGHT}u;
-static constexpr uint32_t JUNO_IO_HTTP_FIRST_OWNER = 0u;
-static constexpr uint32_t JUNO_IO_NETWORK_OWNER = 2u;
-static constexpr uint32_t JUNO_IO_OWNED_DEVICES = 5u;
+// The same order as the prelude's devices: network, storage and BLE, then one owner per HTTP lease.
+static constexpr uint32_t JUNO_IO_NETWORK_OWNER = 0u;
+static constexpr uint32_t JUNO_IO_HTTP_FIRST_OWNER = 3u;
+static constexpr uint32_t JUNO_IO_OWNED_DEVICES = JUNO_IO_HTTP_FIRST_OWNER + JUNO_HTTP_MAX_IN_FLIGHT;
 static JunoIoOwner juno_io_owners[JUNO_IO_OWNED_DEVICES];
 extern "C" void juno_thread_sleep(int64_t millis);
 
