@@ -22,7 +22,7 @@ import io.github.jabrena.juno.util.Delay;
  * program is linked, so only the chosen provider reaches the image.
  *
  * <p>For each name it prints the length the store returned, looking the name up the same way
- * {@link SecretProvisioner} stored it:
+ * {@code juno:secret}'s provisioning program stored it:
  *
  * <ul>
  *   <li>{@code read <n>} — the name holds {@code n} bytes. The value itself is never printed;</li>

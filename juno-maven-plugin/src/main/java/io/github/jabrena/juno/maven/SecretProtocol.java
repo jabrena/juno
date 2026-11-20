@@ -30,8 +30,9 @@ final class SecretProtocol {
         return "CLEAR ALL";
     }
 
-    static String listRequest() {
-        return "LIST";
+    /** {@code LIST <name>}: the store cannot enumerate its names, so each one checked is named. */
+    static String listRequest(String name) {
+        return "LIST " + name;
     }
 
     /** Checks the name syntax; the board accepts any name that passes it. */

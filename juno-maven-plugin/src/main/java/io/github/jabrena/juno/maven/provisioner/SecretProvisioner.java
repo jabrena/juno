@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.hardware.security;
+package io.github.jabrena.juno.maven.provisioner;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
@@ -24,13 +24,15 @@ import io.github.jabrena.juno.util.Delay;
  * <li>{@code CLEAR ALL}: empties every data slot on the chip, including names other programs wrote, and
  * answers {@code OK CLEAR ALL}. It decommissions the chip rather than this
  * program's names.</li>
- * <li>{@code LIST}: answers {@code STATE <name> written|missing} for each name the examples read, then {@code END}. No
- * value is printed.</li>
+ * <li>{@code LIST <name>}: answers {@code STATE <name> written} or {@code STATE <name> missing}. No value is printed.
+ * The store cannot enumerate what it holds, so the host names every key it asks about; the program knows no names of
+ * its own.</li>
  * </ul>
  * A bad request answers {@code ERR} with a short reason and stores nothing. The board prints {@code READY} once it can
  * take requests, and again every second until the first request arrives: a board's USB serial port can come back after
  * an upload later than the program starts, and a line printed before the host opens the port is lost. The store keeps each name next to its value, so a reading program only has to ask for the same name.
- * Upload this program with {@code juno:secret}.
+ * The {@code juno-maven-plugin} ships this program and {@code juno:secret} uploads it when no {@code -Djuno.main} is
+ * given, so any project can provision a board without a copy of its own.
  */
 @Board({ArduinoPortentaH7Board.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class,
         M5StackCardputerBoard.class, AiThinkerEsp32CamBoard.class, ArduinoUnoR4WiFiBoard.class})
@@ -39,12 +41,9 @@ public final class SecretProvisioner {
     private static final int VALUE_BYTES = 63;
     private static final int NAME_PREFIX_SET = 4;
     private static final int NAME_PREFIX_CLEAR = 6;
+    private static final int NAME_PREFIX_LIST = 5;
     private static final int POLL_MS = 5;
     private static final int READY_REPEAT_MS = 1000;
-    /** The names {@code LIST} reports: the ones the examples read. */
-    private static final String[] LISTED_NAMES = {"wifi.ssid", "wifi.password", "mailbox.apikey",
-        "smtp.host", "smtp.username", "smtp.password", "supabase.api.host", "supabase.api.key", "supabase.api.url"};
-    private static final int LISTED_COUNT = 9;
     private final SecretStore chip;
     private final byte[] line = new byte[LINE_BYTES];
     private final byte[] value = new byte[VALUE_BYTES];
@@ -166,12 +165,13 @@ public final class SecretProvisioner {
     }
 
     private void list() {
-        for (int i = 0; i < LISTED_COUNT; i++) {
-            String name = LISTED_NAMES[i];
-            boolean written = chip.read(name, readBack) >= 0;
-            Serial.println("STATE " + name + (written ? " written" : " missing"));
+        if (lineLength <= NAME_PREFIX_LIST || line[NAME_PREFIX_LIST - 1] != ' ') {
+            Serial.println("ERR missing name");
+            return;
         }
-        Serial.println("END");
+        String name = text(NAME_PREFIX_LIST, lineLength);
+        boolean written = chip.read(name, readBack) >= 0;
+        Serial.println("STATE " + name + (written ? " written" : " missing"));
     }
 
     private boolean startsWith(String prefix) {

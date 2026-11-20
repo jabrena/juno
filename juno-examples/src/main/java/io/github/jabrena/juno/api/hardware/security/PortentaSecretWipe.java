@@ -19,7 +19,6 @@ import io.github.jabrena.juno.util.Delay;
  *
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml juno:secret \
- *     -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretProvisioner \
  *     -Djuno.board=arduino-portenta-h7 -Djuno.port=<serial-port> -Djuno.secret.key=wifi.ssid
  * }</pre>
  *
@@ -38,11 +37,10 @@ import io.github.jabrena.juno.util.Delay;
  * </ol>
  *
  * <p>{@code failures 0} means the wipe worked. That the chip stays wiped across a reboot is worth one more check from
- * the host, which prints every name as {@code missing} without reading any value:
+ * the host, which prints each name it is given as {@code missing} without reading any value:
  *
  * <pre>{@code
- * ./mvnw -f juno-examples/pom.xml compile juno:secret -Djuno.secret.list=true \
- *     -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretProvisioner \
+ * ./mvnw -f juno-examples/pom.xml juno:secret -Djuno.secret.list=wifi.ssid,wifi.password \
  *     -Djuno.board=arduino-portenta-h7 -Djuno.port=<serial-port>
  * }</pre>
  */

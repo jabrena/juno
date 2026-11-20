@@ -29,13 +29,11 @@
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-pico-secure</artifactId>
         </dependency>
-        <!-- Only juno-compiler's transitive compile dependency in production code; declared explicitly, test
-             scope, because CompileMojoTest/VerifyMojoTest/FlashMojoTest's fixture entry point imports it
-             directly. -->
+        <!-- Compile scope: the bundled board-side programs (juno:secret's SecretProvisioner) are written against
+             it, and BundledProgram puts this same jar on their compile classpath. -->
         <dependency>
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-api</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
@@ -123,6 +121,19 @@
                             <version>${nullaway.version}</version>
                         </path>
                     </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <!-- The provisioner package holds board-side programs: Juno compiles them for the board, where their Serial
+                 and secret-store natives exist, so a JVM test cannot run them. They stay out of this module's
+                 coverage; every build-machine class is still gated. -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${maven-plugin-jacoco.version}</version>
+                <configuration>
+                    <excludes>
+                        <exclude>io/github/jabrena/juno/maven/provisioner/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
