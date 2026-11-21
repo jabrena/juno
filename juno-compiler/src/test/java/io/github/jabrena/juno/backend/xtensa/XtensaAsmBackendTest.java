@@ -350,6 +350,35 @@ class XtensaAsmBackendTest {
     }
 
     @Test
+    @DisplayName("The AI Thinker ESP32-CAM clocks its OV2640 at 10 MHz and switches frame sizes at run time")
+    void shouldClockTheEsp32CamSensorAt10Mhz() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
+                import io.github.jabrena.juno.annotations.Board;
+                import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.serial.Serial;
+                @Board(AiThinkerEsp32CamBoard.class)
+                public final class AiThinkerEsp32CamStart {
+                    public static void main(String[] args) {
+                        Serial.println(MCU.getCamera().begin());
+                        Serial.println(MCU.getCamera().setFrameSize(2));
+                    }
+                }
+                """;
+
+        // When
+        CompilationResult result = compileSource("demo.AiThinkerEsp32CamStart", source, AI_THINKER_ESP32_CAM);
+
+        // Then
+        assertThat(result.assembly()).contains("call8 juno_camera_begin", "call8 juno_camera_set_frame_size");
+        assertThat(result.runtimeShim()).contains("config.xclk_freq_hz = 10000000;", "config.pin_pwdn = 32;",
+                "config.frame_size = FRAMESIZE_SVGA;", "juno_camera_set_frame_size(int32_t frameSize)")
+                .doesNotContain("config.xclk_freq_hz = 20000000;");
+    }
+
+    @Test
     @DisplayName("Rejects a non-Xtensa board for the Xtensa backend")
     void shouldRejectANonXtensaBoard() {
         // When & Then

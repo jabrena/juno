@@ -1,5 +1,6 @@
 // The AI Thinker ESP32-CAM's OV2640 through the core's esp_camera driver, with the board's fixed wiring. Frames are JPEG
-// in PSRAM, which the board always has (its build defines BOARD_HAS_PSRAM), at QQVGA so a frame fits a small buffer.
+// in PSRAM, which the board always has (its build defines BOARD_HAS_PSRAM). The driver starts at SVGA, so its frame
+// buffers fit the largest size juno_camera_set_frame_size offers, then drops to QQVGA so a frame fits a small buffer.
 // The driver owns its frame buffer; juno_camera_capture copies the frame out and returns the buffer at once.
 #include <esp_heap_caps.h>
 #include <string.h>
@@ -30,9 +31,10 @@ extern "C" int32_t juno_camera_begin() {
   config.pin_sccb_scl = 27;
   config.pin_pwdn = 32;
   config.pin_reset = -1;
-  config.xclk_freq_hz = 20000000;
+  // 10 MHz rather than 20: OV2640 modules on worn ribbons fail or hang their SCCB probe at 20 MHz.
+  config.xclk_freq_hz = 10000000;
   config.pixel_format = PIXFORMAT_JPEG;
-  config.frame_size = FRAMESIZE_QQVGA;
+  config.frame_size = FRAMESIZE_SVGA;
   config.jpeg_quality = 12;
   config.fb_count = 2;
   config.fb_location = CAMERA_FB_IN_PSRAM;
@@ -50,7 +52,27 @@ extern "C" int32_t juno_camera_begin() {
   }
   sensor->set_vflip(sensor, 1);
   sensor->set_hmirror(sensor, 1);
+  if (sensor->set_framesize(sensor, FRAMESIZE_QQVGA) != 0) {
+    esp_camera_deinit();
+    return 0;
+  }
   juno_camera_ready = true;
+  return 1;
+}
+
+// Camera.FRAME_SIZE_* in order: 160x120, 320x240, 640x480, 800x600.
+static const framesize_t juno_camera_frame_sizes[] = {FRAMESIZE_QQVGA, FRAMESIZE_QVGA, FRAMESIZE_VGA, FRAMESIZE_SVGA};
+
+extern "C" int32_t juno_camera_set_frame_size(int32_t frameSize) {
+  constexpr int32_t count = sizeof(juno_camera_frame_sizes) / sizeof(juno_camera_frame_sizes[0]);
+  if (!juno_camera_ready || frameSize < 0 || frameSize >= count) return 0;
+  sensor_t* sensor = esp_camera_sensor_get();
+  if (sensor == nullptr || sensor->set_framesize(sensor, juno_camera_frame_sizes[frameSize]) != 0) return 0;
+  // Frames already queued were taken at the old size: drop them, so the next capture is at the new one.
+  for (int32_t i = 0; i < 2; i++) {
+    camera_fb_t* stale = esp_camera_fb_get();
+    if (stale != nullptr) esp_camera_fb_return(stale);
+  }
   return 1;
 }
 

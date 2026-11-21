@@ -424,6 +424,8 @@ public final class IntrinsicRegistry {
                     Intrinsic.CAMERA_BEGIN),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeCamera", "capture", "([BI)I"),
                     Intrinsic.CAMERA_CAPTURE),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeCamera", "setFrameSize", "(I)Z"),
+                    Intrinsic.CAMERA_SET_FRAME_SIZE),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpServer", "beginStream",
                     "(ILjava/lang/String;)V"), Intrinsic.HTTP_SERVER_BEGIN_STREAM),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/http/HttpServer", "streamBytes", "([BI)Z"),

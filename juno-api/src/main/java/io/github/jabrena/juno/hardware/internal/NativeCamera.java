@@ -26,6 +26,9 @@ public final class NativeCamera implements Camera {
         return capture(jpeg, jpeg.length);
     }
 
+    @Override
+    public native boolean setFrameSize(int frameSize);
+
     /** The native capture into {@code capacity} bytes of {@code jpeg}; see {@link Camera#capture(byte[])}. */
     native int capture(byte[] jpeg, int capacity);
 }
