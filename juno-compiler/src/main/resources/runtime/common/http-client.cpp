@@ -77,13 +77,27 @@ public:
   }
 };
 
+// What a client sets up before it connects, with the runtime still held: nothing, unless a core's client brings
+// its own overload (found by argument-dependent lookup), as the Portenta's HTTPS client does for its clock and roots.
+template <typename Client>
+static bool juno_http_prepare(Client&) {
+  return true;
+}
+
+// The connect, a TLS handshake included, blocks in the library for up to seconds: where the port allows, the other
+// threads run meanwhile (juno_native_leave).
 template <typename Client>
 static bool juno_http_connect(Client& client, const char* host, int32_t port) {
+  if (!juno_http_prepare(client)) return false;
+  JunoNativeCall call;
+  juno_native_leave(call);
 #if defined(ARDUINO_ARCH_ESP32)
-  return client.connect(host, static_cast<uint16_t>(port), static_cast<int32_t>(juno_http_timeout_ms));
+  bool connected = client.connect(host, static_cast<uint16_t>(port), static_cast<int32_t>(juno_http_timeout_ms));
 #else
-  return client.connect(host, static_cast<uint16_t>(port));
+  bool connected = client.connect(host, static_cast<uint16_t>(port));
 #endif
+  juno_native_return(call);
+  return connected;
 }
 
 static bool juno_http_method_is(const char* method, const char* name) {

@@ -324,6 +324,16 @@ public interface CoreRuntime {
         return false;
     }
 
+    /**
+     * Whether a thread may leave the runtime for a blocking library call, letting the other threads run meanwhile:
+     * only on a port whose every thread has a native stack of its own, which then defines the
+     * {@code juno_port_native_*} hooks {@code common/native-calls.cpp} uses. Ports whose threads are continuations on
+     * a shared carrier stack cannot, since another thread would run on the stack the call is still using.
+     */
+    default boolean releasesDuringNativeCalls() {
+        return false;
+    }
+
     /** Core-specific header the thread port needs ({@code ""} when the core brings none). */
     String threadIncludes();
 

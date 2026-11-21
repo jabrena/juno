@@ -11,6 +11,8 @@ struct JunoMbedTask {
   rtos::Semaphore* baton;
   uint8_t* stackBlock;
   unsigned char* stack;
+  // Raised by the thread when it is back from a native call outside the runtime (common/native-calls.cpp).
+  volatile uint32_t nativeReturned;
 };
 
 struct JunoPortSlot {
@@ -19,6 +21,7 @@ struct JunoPortSlot {
 
 static rtos::Semaphore juno_mbed_main_baton(0, 1);
 static const uint8_t* juno_mbed_main_marker = nullptr;
+static volatile uint32_t juno_mbed_main_native_returned = 0u;
 
 static JunoPortSlot& juno_port_state(uint32_t slot);
 static void* juno_thread_alloc(uint32_t size, const char* message);
@@ -90,6 +93,30 @@ static void juno_port_signal(uint32_t slot) {
   } else {
     juno_port_state(slot).task->baton->release();
   }
+}
+
+// Native calls: each thread runs on an Mbed thread of its own, so it may run a blocking library call outside the
+// runtime while another thread holds the baton. Its task (or main's statics) never moves, unlike the slot table.
+static volatile uint32_t* juno_port_native_flag(uint32_t slot) {
+  return slot == 0u ? &juno_mbed_main_native_returned : &juno_port_state(slot).task->nativeReturned;
+}
+
+static void* juno_port_native_handle(uint32_t slot) {
+  return slot == 0u ? &juno_mbed_main_baton : juno_port_state(slot).task->baton;
+}
+
+static void juno_port_native_wait(void* handle) {
+  static_cast<rtos::Semaphore*>(handle)->acquire();
+}
+
+// The collector scans main from its marker up; a thread's frames are scanned whole wherever they are.
+static void __attribute__((noinline)) juno_port_native_mark_stack(uint32_t slot) {
+  uint8_t marker;
+  if (slot == 0u) juno_mbed_main_marker = &marker;
+}
+
+static bool juno_port_native_returned(uint32_t slot) {
+  return *juno_port_native_flag(slot) != 0u;
 }
 
 static void juno_port_wait(uint32_t slot) {

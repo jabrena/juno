@@ -180,6 +180,12 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
                 };
 
                 struct JunoPortentaHttpsClient : WiFiSSLClient {
+                  // Run with the runtime held, before the connect leaves it: the clock and the shared roots are set
+                  // up once, by whichever connection comes first, and neither may be set up by two at a time.
+                  friend bool juno_http_prepare(JunoPortentaHttpsClient&) {
+                    return juno_portenta_tls_clock() && juno_portenta_ca_chain() != nullptr;
+                  }
+
                   void newMbedClient() override {
                     client.reset(new JunoPortentaTlsClient());
                     client->setNetwork(getNetwork());
@@ -442,6 +448,12 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
     @Override
     public boolean preemptsAsynchronously() {
         return false;
+    }
+
+    /** Every Juno thread is an Mbed RTOS thread with a stack of its own, so a blocking call can let the others run. */
+    @Override
+    public boolean releasesDuringNativeCalls() {
+        return true;
     }
 
     @Override

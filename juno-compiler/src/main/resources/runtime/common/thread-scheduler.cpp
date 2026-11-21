@@ -48,7 +48,10 @@ enum : uint32_t {
   JUNO_SLOT_JOINING_ALL,
   JUNO_SLOT_JOINING_SCOPE,
   JUNO_SLOT_WAITING_IO,
-  JUNO_SLOT_DRAINING
+  JUNO_SLOT_DRAINING,
+  // In a native call outside the runtime (juno_native_leave), and the same once a cancel reached it there.
+  JUNO_SLOT_NATIVE,
+  JUNO_SLOT_NATIVE_CANCELLED
 };
 
 struct JunoSlot {
@@ -156,7 +159,7 @@ static bool juno_slot_runnable(uint32_t index, uint32_t now) {
     case JUNO_SLOT_JOINING_SCOPE:
       return slot.scope->active == 0u || (slot.scope->flags & 8u) != 0u
           || (slot.scope->deadline != 0u && static_cast<int32_t>(now - slot.scope->deadline) >= 0);
-    default:
+${JUNO_NATIVE_RUNNABLE}    default:
       return false;
   }
 }

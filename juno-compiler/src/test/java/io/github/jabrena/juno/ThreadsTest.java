@@ -394,6 +394,29 @@ class ThreadsTest {
                 .doesNotContain("JunoIoGuard guard(JUNO_IO_NETWORK, &client,");
     }
 
+    @Test
+    @DisplayName("On the Portenta a connect leaves the runtime, so a TLS handshake no longer holds up the other threads")
+    void shouldLeaveTheRuntimeForAConnectOnThePortenta() throws Exception {
+        // Given
+        String portenta = parallelHttpsProgramShim("ArduinoPortentaH7Board");
+        String unoR4 = parallelHttpsProgramShim("ArduinoUnoR4WiFiBoard");
+
+        // When & Then: the connect is bracketed on every core, but only the Portenta's threads have stacks of their own
+        assertThat(portenta).contains("static bool juno_native_leave(JunoNativeCall& call) {",
+                        "juno_slots[from].state = JUNO_SLOT_NATIVE;", "juno_port_signal(to);",
+                        "case JUNO_SLOT_NATIVE:", "return juno_port_native_returned(index);",
+                        "static volatile uint32_t* juno_port_native_flag(uint32_t slot) {",
+                        // A cancel waits for the call to be over; the thread then releases what it owns and stops.
+                        "juno_slots[slot].state = JUNO_SLOT_NATIVE_CANCELLED;", "static void juno_native_stop(uint32_t slot) {",
+                        // The clock and the shared roots are set up with the runtime held, before the connect leaves it.
+                        "friend bool juno_http_prepare(JunoPortentaHttpsClient&) {",
+                        "if (!juno_http_prepare(client)) return false;", "juno_native_leave(call);",
+                        "juno_native_return(call);");
+        assertThat(unoR4).contains("static bool juno_native_leave(JunoNativeCall& call) {\n  call.released = false;\n"
+                        + "  return false;\n}", "juno_native_leave(call);")
+                .doesNotContain("JUNO_SLOT_NATIVE;", "juno_port_native_flag", "case JUNO_SLOT_NATIVE:");
+    }
+
     @ParameterizedTest(name = "an HTTP request waits without holding up the other threads on {0}")
     @ValueSource(strings = {"ArduinoUnoR4WiFiBoard"})
     @DisplayName("An HTTP request waits without holding up the other threads")

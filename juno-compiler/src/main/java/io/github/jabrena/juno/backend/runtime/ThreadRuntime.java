@@ -157,19 +157,23 @@ public final class ThreadRuntime {
         return scheduler(preemption, maxHttpRequests, delayFunction, stackScanFunction,
                 exceptions, threadEntry, taskCallableEntry, structuredTasks, scopedValues,
                 failedExceptionClassId, illegalStateExceptionClassId, interruptedExceptionClassId,
-                brokenBarrierExceptionClassId, 1);
+                brokenBarrierExceptionClassId, 1, false);
     }
 
     /**
      * Generates the common scheduler with the number of physical carriers supplied by the core. Keeping the old
      * overload above is deliberate: all single-carrier generated text follows the original template exactly.
+     *
+     * @param nativeCalls whether a thread may leave the runtime for a blocking library call ({@code
+     *     common/native-calls.cpp}): on one carrier, on a port whose threads each have a native stack
      */
     String scheduler(Preemption preemption, int maxHttpRequests, String delayFunction,
                             String stackScanFunction,
                             boolean exceptions, boolean threadEntry,
                             boolean taskCallableEntry, boolean structuredTasks, boolean scopedValues,
                             int failedExceptionClassId, int illegalStateExceptionClassId,
-                            int interruptedExceptionClassId, int brokenBarrierExceptionClassId, int carrierCount) {
+                            int interruptedExceptionClassId, int brokenBarrierExceptionClassId, int carrierCount,
+                            boolean nativeCalls) {
         String pendingSave = exceptions ? """
                 juno_slots[from].pending = juno_pending_exception;
                   juno_pending_exception = juno_slots[to].pending;""" : "";
@@ -245,9 +249,54 @@ public final class ThreadRuntime {
                 .replace("${JUNO_RAISE_INTERRUPTED}", raiseInterrupted)
                 .replace("${JUNO_RAISE_BROKEN_BARRIER}", raiseBrokenBarrier)
                 .replace("${JUNO_RUN_BARRIER_ACTION}", barrierAction(threadEntry))
-                .replace("${JUNO_EXCEPTION_PENDING}", pendingException(exceptions));
-        return carriers.apply(source, carrierLoad(exceptions, scopedValues), delayFunction);
+                .replace("${JUNO_EXCEPTION_PENDING}", pendingException(exceptions))
+                .replace("${JUNO_NATIVE_RUNNABLE}", nativeCalls ? """
+                            case JUNO_SLOT_NATIVE:
+                            case JUNO_SLOT_NATIVE_CANCELLED:
+                              return juno_port_native_returned(index);
+                        """ : "");
+        String scheduler = carriers.apply(source, carrierLoad(exceptions, scopedValues), delayFunction);
+        return nativeCalls ? scheduler + nativeCalls(pendingSave, bindingsSwap, structuredTasks, delayFunction)
+                : scheduler;
 
+    }
+
+    /**
+     * {@code juno_native_leave}/{@code juno_native_return}. With structured tasks a cancel can reach a thread inside its
+     * native call, where it cannot be stopped: the cancel only marks it, and the thread stops itself once the call is
+     * over, releasing its child tasks, monitors and devices (whose abort hooks close a half-used client) then.
+     */
+    private String nativeCalls(String pendingSave, String bindingsSwap, boolean structuredTasks, String delayFunction) {
+        String stop = structuredTasks ? """
+
+                static void juno_native_stop(uint32_t slot) {
+                  juno_task_cancel_owned(slot + 1u);
+                  juno_task_release_monitors(slot + 1u);
+                  juno_io_release_owned(slot + 1u);
+                  juno_slots[slot].state = JUNO_SLOT_FREE;
+                  juno_slots[slot].thread = nullptr;
+                  juno_slots[slot].joining = nullptr;
+                  juno_slots[slot].scope = nullptr;
+                  juno_live_threads--;
+                  for (;;) {
+                    uint32_t next = juno_sched_pick(false);
+                    if (next != JUNO_NO_SLOT) {
+                      juno_sched_handoff(next, true);
+                      return;
+                    }
+                    ${JUNO_CORE_DELAY}(1u);
+                  }
+                }
+                """.replace("${JUNO_CORE_DELAY}", delayFunction) : "";
+        String cancelCheck = structuredTasks
+                ? "if (juno_slots[juno_current_slot].state == JUNO_SLOT_NATIVE_CANCELLED) "
+                        + "juno_native_stop(juno_current_slot);\n  "
+                : "";
+        return runtimeSource.load("common/native-calls.cpp")
+                .replace("${JUNO_PENDING_SWAP}", pendingSave)
+                .replace("${JUNO_BINDINGS_SWAP}", bindingsSwap)
+                .replace("${JUNO_NATIVE_STOP}", stop)
+                .replace("${JUNO_NATIVE_CANCEL_CHECK}", cancelCheck);
     }
 
     /**
