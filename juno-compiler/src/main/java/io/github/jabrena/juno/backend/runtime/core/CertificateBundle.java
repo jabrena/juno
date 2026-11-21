@@ -68,7 +68,45 @@ final class CertificateBundle {
 
     /** The bundle as a C++ {@code static const uint8_t name[]} definition, sixteen bytes a line. */
     String cArray(String name) {
-        byte[] bytes = bytes();
+        return cBytes(name, bytes());
+    }
+
+    /**
+     * Every certificate in the PEM text {@code pem} as DER bytes in C++ arrays, {@code name_0}, {@code name_1}, ..., and
+     * a table {@code name} of {@code {bytes, length}} entries of type {@code entryType}, which the caller defines. A TLS
+     * library that parses DER in place (Mbed TLS's {@code mbedtls_x509_crt_parse_der_nocopy}) then keeps the bytes in
+     * flash, instead of a heap copy of every root as it makes when it parses PEM text.
+     */
+    static String cDerTable(String name, String entryType, String pem) {
+        try {
+            CertificateFactory factory = CertificateFactory.getInstance("X.509");
+            StringBuilder arrays = new StringBuilder();
+            StringBuilder table = new StringBuilder("static const ").append(entryType).append(' ').append(name)
+                    .append("[] = {\n");
+            Matcher block = PEM_BLOCK.matcher(pem);
+            int count = 0;
+            while (block.find()) {
+                byte[] der = factory.generateCertificate(
+                        new ByteArrayInputStream(block.group().getBytes(StandardCharsets.US_ASCII))).getEncoded();
+                if (der.length > MAX_FIELD) {
+                    throw new IllegalStateException("A " + der.length + "-byte certificate does not fit 16 bits");
+                }
+                String array = name + "_" + count;
+                arrays.append(cBytes(array, der));
+                table.append("  {").append(array).append(", ").append(der.length).append("u},\n");
+                count++;
+            }
+            if (count == 0) {
+                throw new IllegalStateException("The trusted roots must contain at least one PEM certificate");
+            }
+            return arrays.append(table).append("};\n").toString();
+        } catch (CertificateException exception) {
+            throw new IllegalStateException("Cannot read the trusted root certificates", exception);
+        }
+    }
+
+    /** {@code bytes} as a C++ {@code static const uint8_t name[]} definition, sixteen bytes a line. */
+    private static String cBytes(String name, byte[] bytes) {
         StringBuilder array = new StringBuilder("static const uint8_t ").append(name).append("[] = {");
         for (int index = 0; index < bytes.length; index++) {
             array.append(index % BYTES_PER_LINE == 0 ? "\n  " : " ")

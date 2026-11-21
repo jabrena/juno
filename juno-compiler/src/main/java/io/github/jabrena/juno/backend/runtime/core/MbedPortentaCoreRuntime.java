@@ -84,28 +84,31 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
         return runtimeSource.load("esp32/https-server-transport.cpp");
     }
 
-    /** The Mbed TLS peer certificate and the TLS socket behind the Wi-Fi client, which the date check reads. */
+    /**
+     * The Mbed TLS peer certificate and the TLS socket behind the Wi-Fi client, which the date check reads, and the
+     * Mbed TLS client the HTTPS client builds on.
+     */
     @Override
     public String httpsInclude() {
-        return "#include \"TLSSocket.h\"\n#include \"mbedtls/ssl.h\"\n#include \"mbedtls/x509_crt.h\"\n";
+        return """
+                #include "TLSSocket.h"
+                #include "MbedSSLClient.h"
+                #include "mbedtls/ssl.h"
+                #include "mbedtls/x509_crt.h"
+                """;
     }
 
     /**
      * The Portenta Mbed Wi-Fi library otherwise looks for its CA file on the module's {@code /wlan} filesystem.
      * That filesystem is not present on every board, so keep the same Mozilla root set used by the Nano ESP32 in the
-     * generated image and install it before each TLS client connects.
+     * generated image, as DER in flash (see {@link #trustedRootsDefinition}). Every TLS socket shares one chain built
+     * from it, in place of the Arduino client's {@code setCACert}, which parses the whole PEM bundle again, into heap
+     * copies, for each socket: that cost ~200 KB per connection and left room for a single session.
      *
      * <p>The Portenta core ships Mbed TLS prebuilt without certificate dates, so the handshake accepts an expired
      * certificate. Each connection therefore first sets the clock over SNTP ({@code JUNO_SNTP_HOST}, default
      * {@code pool.ntp.org}), then checks the validity dates of every certificate the server sent, and fails if one
      * is outside them. If no time can be set, the connection fails.
-     *
-     * <p>One TLS session at a time: each takes ~35-45 KB of the Mbed heap for its record buffers, and the heap left
-     * beside the Juno arena (which also holds every thread's stack) fits one, so a second handshake would fail to
-     * allocate. A connection therefore waits for the TLS slot with {@code juno_io_wait}, which lets the other threads
-     * run, and gives it back when it stops, after freeing the Mbed client that holds the session's memory (closing
-     * the socket alone leaves it allocated until the client is destroyed). A client allocates nothing before it holds
-     * the slot, so the clients queued behind it cannot fragment the heap. Plain HTTP keeps its own leases.
      */
     @Override
     public String httpsHelpers() {
@@ -158,22 +161,28 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
                       + static_cast<uint64_t>(minute) * 100ull + static_cast<uint64_t>(second);
                 }
 
-                // Whether a TLS session holds the one slot the Mbed heap has room for.
-                static bool juno_portenta_tls_busy = false;
+                // The Mbed TLS client behind each HTTPS client. Before every handshake it gives the socket the host name
+                // (SNI) and the shared roots, in place of MbedSSLClient's own hook, which would parse the bundle again.
+                struct JunoPortentaTlsClient : arduino::MbedSSLClient {
+                  const char* juno_host = nullptr;
 
-                struct JunoPortentaHttpsClient : WiFiSSLClient {
-                  bool juno_tls_slot = false;
-
-                  // Nothing is allocated before the slot is held: setCACert creates the Mbed client and its buffers,
-                  // and clients queued for the slot holding those would leave the heap too fragmented for a session.
-                  ~JunoPortentaHttpsClient() {
-                    juno_release_tls_slot();
+                  JunoPortentaTlsClient() {
+                    onBeforeConnect(mbed::callback(this, &JunoPortentaTlsClient::juno_configure));
                   }
 
-                  void juno_release_tls_slot() {
-                    if (!juno_tls_slot) return;
-                    juno_tls_slot = false;
-                    juno_portenta_tls_busy = false;
+                  int juno_configure() {
+                    TLSSocket* tls = static_cast<TLSSocket*>(getSocket());
+                    if (tls == nullptr) return -1;
+                    if (juno_host != nullptr) tls->set_hostname(juno_host);
+                    tls->set_ca_chain(juno_portenta_ca_chain());
+                    return 0;
+                  }
+                };
+
+                struct JunoPortentaHttpsClient : WiFiSSLClient {
+                  void newMbedClient() override {
+                    client.reset(new JunoPortentaTlsClient());
+                    client->setNetwork(getNetwork());
                   }
 
                   // Every certificate in the peer's chain must be within its validity dates. The prebuilt Mbed TLS
@@ -200,29 +209,25 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
 
                   int connect(const char* host, uint16_t port) override {
                     if (!juno_portenta_tls_clock()) return 0;
-                    if (!juno_tls_slot) {
-                      while (juno_portenta_tls_busy) juno_io_wait(1);
-                      juno_portenta_tls_busy = true;
-                      juno_tls_slot = true;
-                    }
-                    // The Mbed client, and the roots it holds, are created here and freed again by stop().
-                    setCACert(juno_portenta_ca);
-                    if (WiFiSSLClient::connect(host, port) != 1) {
-                      stop();
-                      return 0;
-                    }
+                    if (juno_portenta_ca_chain() == nullptr) return 0;
+                    if (!client) newMbedClient();
+                    static_cast<JunoPortentaTlsClient*>(client.get())->juno_host = host;
+                    if (WiFiSSLClient::connect(host, port) != 1) return 0;
                     if (juno_certificates_current()) return 1;
                     stop();
                     return 0;
                   }
-
-                  void stop() override {
-                    WiFiSSLClient::stop();
-                    client.reset();
-                    juno_release_tls_slot();
-                  }
                 };
                 """.replace("${HOST}", server.host()).replace("${PORT}", Integer.toString(server.port()));
+    }
+
+    /**
+     * Four requests in flight, as on the ESP32 cores: with the trusted roots parsed once and shared, a TLS session costs
+     * only its own buffers, and the Mbed heap has room for four of them; a fifth waits for a lease.
+     */
+    @Override
+    public int maxConcurrentHttpRequests() {
+        return 4;
     }
 
     @Override
@@ -243,12 +248,37 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
     }
 
     /**
-     * The trusted roots as one file-scope definition, {@code juno_portenta_ca}, shared by the HTTPS and STARTTLS clients.
-     * The guard keeps the list in flash once when a program uses both, since the bundle is about 120 KB of text.
+     * The trusted roots as one file-scope definition shared by the HTTPS and STARTTLS clients, kept once by its guard
+     * when a program uses both: every root's DER bytes in flash, and {@code juno_portenta_ca_chain()}, which builds one
+     * Mbed TLS chain from them on first use. {@code mbedtls_x509_crt_parse_der_nocopy} parses each root in place, so
+     * the heap holds only the parsed fields and the certificates stay in flash. A root that does not parse is skipped;
+     * with none parsed the chain is missing and no connection is made.
      */
     private String trustedRootsDefinition() {
-        return "#ifndef JUNO_PORTENTA_TRUST_ROOTS\n#define JUNO_PORTENTA_TRUST_ROOTS\n"
-                + CertificateBundle.cPem("juno_portenta_ca", trustedRootsPem()) + "#endif\n";
+        return "#ifndef JUNO_PORTENTA_TRUST_ROOTS\n#define JUNO_PORTENTA_TRUST_ROOTS\n#include \"mbedtls/x509_crt.h\"\n"
+                + "struct JunoPortentaRoot {\n  const uint8_t* der;\n  uint16_t length;\n};\n"
+                + CertificateBundle.cDerTable("juno_portenta_roots_der", "JunoPortentaRoot", trustedRootsPem())
+                + """
+                static mbedtls_x509_crt juno_portenta_roots;
+                static bool juno_portenta_roots_parsed = false;
+
+                static mbedtls_x509_crt* juno_portenta_ca_chain() {
+                  if (!juno_portenta_roots_parsed) {
+                    mbedtls_x509_crt_init(&juno_portenta_roots);
+                    int parsed = 0;
+                    for (const JunoPortentaRoot& root : juno_portenta_roots_der) {
+                      if (mbedtls_x509_crt_parse_der_nocopy(&juno_portenta_roots, root.der, root.length) == 0) parsed++;
+                    }
+                    if (parsed == 0) {
+                      mbedtls_x509_crt_free(&juno_portenta_roots);
+                      return nullptr;
+                    }
+                    juno_portenta_roots_parsed = true;
+                  }
+                  return &juno_portenta_roots;
+                }
+                #endif
+                """;
     }
 
     /**
@@ -292,8 +322,12 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
                     return open;
                   }
 
-                  void setCACert(const char* pem) {
-                    trust = tls.set_root_ca_cert(pem);
+                  void setCAChain(mbedtls_x509_crt* chain) {
+                    if (chain == nullptr) {
+                      trust = NSAPI_ERROR_PARAMETER;
+                      return;
+                    }
+                    tls.set_ca_chain(chain);
                   }
 
                   bool connectSSL() {
@@ -367,7 +401,7 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
 
     @Override
     public String smtpStarttlsTrust() {
-        return "client.setCACert(juno_portenta_ca);";
+        return "client.setCAChain(juno_portenta_ca_chain());";
     }
 
     @Override
