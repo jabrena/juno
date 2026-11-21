@@ -71,7 +71,7 @@ if (calculator.connect() && calculator.sendList(2, celsius, celsius.length, 0)) 
 }
 ```
 
-[`GroveDht11TiLists`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/ti/GroveDht11TiLists.java) logs a Grove DHT11 every five seconds: `L1` holds the UTC date and time as `YYYYMMDDHHMMSS`, `L2` the temperature and `L3` the humidity. On the calculator, `[stat]` → **Edit…** shows them as a table, and a STAT PLOT of `L1` against `L2` graphs them. [`UsbHostTiCalculatorProbe`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/ti/UsbHostTiCalculatorProbe.java) prints a calculator's USB IDs and descriptor.
+[`GroveDht11TiLists`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/ti/GroveDht11TiLists.java) logs a Grove DHT11 every five seconds: `L1` holds the UTC date and time as `YYYYMMDDHHMMSS`, `L2` the temperature and `L3` the humidity. On the calculator, `[stat]` → **Edit…** shows them as a table, and a STAT PLOT of `L1` against `L2` graphs them.
 
 The calculator takes variables at the home screen and in most menus; an app such as EasyData can keep it busy until it is closed. EasyData and the Hub app cannot read the board this way: they talk only to devices plugged into the calculator as USB host, through a mini-A plug.
 |}
