@@ -1,8 +1,10 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
+import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -34,7 +36,8 @@ import java.util.concurrent.StructuredTaskScope;
  * trusted when all did) and the speed-up over the sequential time. Rounds repeat after a pause long enough for a serial
  * monitor started after the upload to attach, and for the public endpoint not to be hammered.
  */
-@Board({ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class})
+@Board({ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class, RaspberryPico2WifiBoard.class,
+        ArduinoPortentaH7Board.class})
 public final class HttpLatencyBenchmark {
     static final String HTTP_URL = "http://httpbin.org/delay/1";
     static final int REQUESTS = 4;
