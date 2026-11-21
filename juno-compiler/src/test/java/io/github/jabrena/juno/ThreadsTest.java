@@ -82,7 +82,8 @@ class ThreadsTest {
     static Stream<Arguments> httpSubtaskBoards() {
         return Stream.of(
                 arguments("ArduinoUnoR4WiFiBoard", 2),
-                arguments("ArduinoNanoEsp32Board", 4));
+                arguments("ArduinoNanoEsp32Board", 4),
+                arguments("ArduinoPortentaH7Board", 4));
     }
 
     private CompilationResult compile(String board, String body) throws Exception {
@@ -407,6 +408,14 @@ class ThreadsTest {
                         "extern \"C\" void juno_io_acquire(uint32_t device, void* handle, void (*abort)(void*)) {")
                 // A single carrier has no runtime lock to release, and its port does not define one.
                 .doesNotContain("delay(1);", "juno_runtime_owned", "juno_runtime_enter", "juno_runtime_exit");
+        // A response that reached the socket in time is read even when the thread only ran after its deadline: the
+        // deadline ends a wait with nothing to read, so it is checked once no bytes are available.
+        String responseLoop = shim.substring(shim.indexOf("const unsigned long deadline = millis() + juno_http_timeout_ms;"));
+        assertThat(responseLoop).contains("for (;;) {")
+                .doesNotContain("while (millis() < deadline)");
+        assertThat(responseLoop.indexOf("if (!client.connected()) break;"))
+                .isLessThan(responseLoop.indexOf("if (static_cast<long>(millis() - deadline) >= 0) break;"))
+                .isLessThan(responseLoop.indexOf("juno_io_wait(1);"));
     }
 
     @Test
