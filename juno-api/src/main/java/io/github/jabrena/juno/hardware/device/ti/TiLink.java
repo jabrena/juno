@@ -28,8 +28,6 @@ import static io.github.jabrena.juno.hardware.device.ti.DusbTransport.putShort;
  *
  * <p>Allocation: the constructor allocates the transport's buffers; {@link #connect()} and {@link #sendList} are
  * allocation-free. Calls never throw: they return {@code false} and {@link #lastError()} says which step failed.
- *
- * @see <a href="https://github.com/debrouxl/tilibs">tilibs (libticalcs), whose DUSB implementation this follows</a>
  */
 public final class TiLink {
     public static final int VENDOR_ID = 0x0451;
