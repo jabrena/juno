@@ -49,8 +49,8 @@ public final class GroveDht11TiLists {
         }
 
         GroveBaseShield grove = new GroveBaseShield(MCU.getGpio());
-        GroveDht11 dht11 = new GroveDht11();
         int dht11Pin = grove.getD4();
+        GroveDht11 dht11 = new GroveDht11(dht11Pin);
         int[] reading = new int[GroveDht11.READING_LENGTH];
         int[] frame = new int[GroveDht11.FRAME_LENGTH];
         TiLink calculator = new TiLink();

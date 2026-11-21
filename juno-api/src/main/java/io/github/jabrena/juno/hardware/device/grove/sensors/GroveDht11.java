@@ -32,6 +32,15 @@ public final class GroveDht11 implements Thermometer, SampleProvider {
         this(new GroveDhtProtocol(), NO_PIN);
     }
 
+    /**
+     * A sensor on digital pin {@code signalPin} of the board, such as a Grove Base Shield socket's
+     * {@code getD4()}: the board-side form that works as a {@link Thermometer} and a
+     * {@link SampleProvider}. Create it once, at startup.
+     */
+    public GroveDht11(int signalPin) {
+        this(new GroveDhtProtocol(), signalPin);
+    }
+
     /** A sensor on {@code gpio} and {@code clock}: mocked or simulated ones in a unit test. */
     public GroveDht11(Gpio gpio, Clock clock) {
         this(new GroveDhtProtocol(gpio, clock), NO_PIN);
