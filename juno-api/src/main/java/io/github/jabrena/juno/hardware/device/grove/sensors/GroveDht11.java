@@ -32,14 +32,6 @@ public final class GroveDht11 implements Thermometer, SampleProvider {
         this(new GroveDhtProtocol(), NO_PIN);
     }
 
-    /**
-     * A sensor on digital pin {@code signalPin} of the board, such as a Grove Base Shield socket's
-     * {@code getD4()}, read with {@link #read(int[], int, int[], int)}. Create it once, at startup.
-     */
-    public GroveDht11(int signalPin) {
-        this(new GroveDhtProtocol(), signalPin);
-    }
-
     /** A sensor on {@code gpio} and {@code clock}: mocked or simulated ones in a unit test. */
     public GroveDht11(Gpio gpio, Clock clock) {
         this(new GroveDhtProtocol(gpio, clock), NO_PIN);
@@ -87,16 +79,6 @@ public final class GroveDht11 implements Thermometer, SampleProvider {
     }
 
     /**
-     * Reads one checksum-valid DHT11 frame from the pin the sensor was created on, using caller-owned
-     * buffers; see {@link #read(int, int[], int, int[], int)}.
-     *
-     * @throws IllegalStateException if the sensor was created without its signal pin
-     */
-    public boolean read(int[] reading, int readingLength, int[] frame, int frameLength) {
-        return read(requireBoundPin(), reading, readingLength, frame, frameLength);
-    }
-
-    /**
      * Returns the temperature in degrees Celsius, or {@link Float#NaN} when no valid frame was read.
      *
      * @throws IllegalStateException if the sensor was created without its signal pin
@@ -130,14 +112,10 @@ public final class GroveDht11 implements Thermometer, SampleProvider {
     }
 
     private boolean readBoundPin() {
-        return read(requireBoundPin(), boundReading, READING_LENGTH, boundFrame, FRAME_LENGTH);
-    }
-
-    private int requireBoundPin() {
         if (boundPin == NO_PIN) {
-            throw new IllegalStateException("create GroveDht11 with its signal pin to read it without one");
+            throw new IllegalStateException("create GroveDht11 with its signal pin to read it as a Thermometer");
         }
-        return boundPin;
+        return read(boundPin, boundReading, READING_LENGTH, boundFrame, FRAME_LENGTH);
     }
 
     boolean decode(int[] frame, int frameLength, int[] reading, int readingLength) {

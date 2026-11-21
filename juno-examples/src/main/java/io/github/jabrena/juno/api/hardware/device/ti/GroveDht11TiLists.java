@@ -49,7 +49,7 @@ public final class GroveDht11TiLists {
         }
 
         GroveBaseShield grove = new GroveBaseShield(MCU.getGpio());
-        GroveDht11 dht11 = new GroveDht11(grove.getD4());
+        GroveDht11 dht11 = new GroveDht11();
         int[] reading = new int[GroveDht11.READING_LENGTH];
         int[] frame = new int[GroveDht11.FRAME_LENGTH];
         TiLink calculator = new TiLink();
@@ -62,7 +62,7 @@ public final class GroveDht11TiLists {
             LocalDateTime now = LocalDateTime.now();
             if (now.equals(LocalDateTime.MIN)) {
                 Serial.println("waiting for SNTP time");
-            } else if (!dht11.read(reading, reading.length, frame, frame.length)) {
+            } else if (!dht11.read(grove.getD4(), reading, reading.length, frame, frame.length)) {
                 Serial.println("DHT11 read failed");
             } else {
                 if (count == TiLink.MAX_LIST_LENGTH) {
