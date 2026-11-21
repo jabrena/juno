@@ -181,13 +181,17 @@ static int32_t juno_http_request(Client& client, const char* method, const char*
   bool chunkExtension = false;
   int availableBytes = 0;
 
-  while (millis() < deadline) {
+  // The deadline ends a wait with nothing to read, not a read: a thread that did not get the CPU until after its
+  // deadline (other threads' TLS handshakes can hold it for seconds) still reads the response that reached its socket
+  // in time, instead of reporting no status at all.
+  for (;;) {
     // Some transports refill over RPC on every available() call. Drain the reported batch
     // before polling again, otherwise a request can spend its entire deadline fetching single bytes.
     if (availableBytes == 0) availableBytes = client.available();
     if (availableBytes <= 0) {
       availableBytes = 0;
       if (!client.connected()) break;
+      if (static_cast<long>(millis() - deadline) >= 0) break;
       juno_io_wait(1);
       continue;
     }
