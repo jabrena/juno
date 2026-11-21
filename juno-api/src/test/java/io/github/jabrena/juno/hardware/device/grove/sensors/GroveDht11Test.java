@@ -147,6 +147,31 @@ class GroveDht11Test {
     }
 
     @Test
+    @DisplayName("Reads temperature and humidity from the pin it was created on")
+    void shouldReadFromItsBoundPinIntoCallerBuffers() {
+        // Given
+        Wire.dhtReply(55, 0, 24, 0, 79).install(pins);
+        GroveDht11 bound = new GroveDht11(pins, SimulatedTime.clock(), digitalPin);
+        int[] reading = new int[GroveDht11.READING_LENGTH];
+        int[] frame = new int[GroveDht11.FRAME_LENGTH];
+
+        // When
+        boolean read = bound.read(reading, reading.length, frame, frame.length);
+
+        // Then
+        assertThat(read).isTrue();
+        assertThat(reading).containsExactly(24, 55);
+    }
+
+    @Test
+    @DisplayName("Refuses to read without a pin when it was created without one")
+    void shouldRefuseToReadWithoutABoundPin() {
+        // When & Then
+        assertThatThrownBy(() -> dht11.read(new int[2], 2, new int[5], 5))
+                .isInstanceOf(IllegalStateException.class);
+    }
+
+    @Test
     @DisplayName("Reads the temperature in degrees Celsius through its bound pin")
     void shouldReadTheTemperatureThroughItsBoundPin() {
         // Given
