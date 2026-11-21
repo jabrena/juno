@@ -734,6 +734,8 @@ public final class IntrinsicLowering {
         shim(Intrinsic.CAMERA_BEGIN, "juno_camera_begin", Result.WORD, List.of(), ShimFeature.CAMERA);
         shim(Intrinsic.CAMERA_CAPTURE, "juno_camera_capture", Result.WORD, List.of(arg(0), arg(1)),
                 ShimFeature.CAMERA);
+        shim(Intrinsic.CAMERA_SET_FRAME_SIZE, "juno_camera_set_frame_size", Result.WORD, List.of(arg(0)),
+                ShimFeature.CAMERA);
         shim(Intrinsic.HTTP_SERVER_BEGIN_STREAM, "juno_http_server_begin_stream", Result.NONE,
                 parameters(List.of(1), 0, 1), ShimFeature.HTTP_STREAM);
         shim(Intrinsic.HTTP_SERVER_STREAM_BYTES, "juno_http_server_stream_bytes", Result.WORD,

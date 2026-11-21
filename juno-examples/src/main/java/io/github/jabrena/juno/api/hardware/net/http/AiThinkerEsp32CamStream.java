@@ -2,65 +2,78 @@ package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.Board;
+import io.github.jabrena.juno.annotations.Watchdog;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.camera.Camera;
-import io.github.jabrena.juno.hardware.device.sd.SdCard;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.net.http.HttpMethod;
 import io.github.jabrena.juno.hardware.net.http.HttpServer;
 import io.github.jabrena.juno.hardware.net.http.HttpStatus;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
-import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.util.Delay;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 /**
  * Serves the AI Thinker ESP32-CAM's camera over Wi-Fi. {@code GET /} is a page with the live view; {@code GET /stream}
- * is an MJPEG stream of JPEG frames, one part per frame. While streaming, the newest frame is also saved to the
- * microSD card as {@code /frames/latest.jpg} every ten seconds.
+ * is an MJPEG stream of 160x120 JPEG frames, one part per frame; {@code GET /capture} takes one fresh 640x480 photo
+ * on every request and returns it as a single JPEG, then puts the sensor back to the stream's size.
  *
- * <p>The card needs {@code wifi.ssid} and {@code wifi.password} in {@code application.properties}, as in
- * {@link io.github.jabrena.juno.api.hardware.net.AiThinkerEsp32CamWifiFromSd}. Open {@code http://<address>/} in a
- * browser on the same network. One viewer streams at a time.
+ * <p>The Wi-Fi credentials come from the board's secret store (its NVS partition), provisioned once with
+ * {@code juno:secret} as {@code wifi.ssid} and {@code wifi.password}. Open {@code http://<address>/} in a browser on
+ * the same network. One viewer streams at a time.
+ *
+ * <p>The OV2640's connection on the ribbon can be flaky: a camera start that fails is retried every two seconds,
+ * and one that hangs inside the driver stops feeding the watchdog, which reboots the board after 15 s.
+ *
+ * <p>The 48 KB frame buffer does not fit the default 8 KB arena: build with {@code -Djuno.Xmx=63k}.
+ * <pre>{@code
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash -Djuno.board=ai-thinker-esp32-cam -Djuno.port=<PORT> \
+ *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.http.AiThinkerEsp32CamStream -Djuno.Xmx=63k
+ * }</pre>
  */
 @Board(AiThinkerEsp32CamBoard.class)
+@Watchdog(timeoutMillis = 15000)
 public final class AiThinkerEsp32CamStream {
     private static final Wifi WIFI = MCU.getWifi();
-    private static final SdCard SD_CARD = MCU.getSdCard();
     private static final Camera CAMERA = MCU.getCamera();
-    private static final Clock CLOCK = MCU.getClock();
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
+    private static final int CAMERA_RETRY_MILLIS = 2000;
     private static final int HTTP_PORT = 80;
-    private static final int FRAME_CAPACITY = 4096;
-    private static final int SAVE_INTERVAL_MILLIS = 10000;
-    private static final String CREDENTIALS_FILE = "application.properties";
-    private static final String FRAME_FILE = "/frames/latest.jpg";
+    /**
+     * Room for one JPEG frame, shared by the stream and {@code /capture} since the server answers one request at a
+     * time: a 640x480 photo takes tens of kilobytes, and a frame that does not fit is dropped.
+     */
+    private static final int FRAME_CAPACITY = 49152;
+    private static final int CAPTURE_ATTEMPTS = 3;
+    private static final int DROPPED_FRAMES_REPORT = 50;
     private static final String STREAM_CONTENT_TYPE = "multipart/x-mixed-replace; boundary=frame";
     private static final String PART_PREFIX = "--frame\r\nContent-Type: image/jpeg\r\nContent-Length: ";
     private static final String PART_HEADER_END = "\r\n\r\n";
     private static final String PART_END = "\r\n";
-    private static final String PAGE = "<html><body><h1>ESP32-CAM</h1><img src=\"/stream\"></body></html>";
+    private static final String PAGE = "<html><body><h1>ESP32-CAM</h1><img src=\"/stream\">"
+            + "<p><a href=\"/capture\">640x480 capture</a></p></body></html>";
     private static final int[] LOCAL_IP = new int[4];
 
     private AiThinkerEsp32CamStream() {
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        if (!CAMERA.begin()) {
-            Serial.println("Camera initialization failed");
-            return;
+        Serial.println("Starting camera");
+        int attempts = 1;
+        while (!CAMERA.begin()) {
+            Serial.print("Camera initialization failed, attempt ");
+            Serial.print(attempts);
+            Serial.println("; retrying (check the camera ribbon)");
+            attempts = attempts + 1;
+            Delay.millis(CAMERA_RETRY_MILLIS);
         }
+        Serial.println("Camera ready");
         if (!connectWifi()) {
             return;
         }
         printLocalIp();
-        SD_CARD.createDirectory("/frames");
 
         HttpServer.begin(HTTP_PORT);
         Serial.println("Listening on port 80");
@@ -80,6 +93,8 @@ public final class AiThinkerEsp32CamStream {
                 Serial.println("GET /stream started");
                 streamFrames(frame, digits);
                 Serial.println("GET /stream ended");
+            } else if (method.equals(HttpMethod.GET) && path.equals("/capture")) {
+                sendCapture(frame);
             } else if (method.equals(HttpMethod.GET) && path.equals("/")) {
                 HttpServer.respond(HttpStatus.OK, "text/html", PAGE);
             } else {
@@ -88,13 +103,40 @@ public final class AiThinkerEsp32CamStream {
         }
     }
 
-    /** Sends one MJPEG part per captured frame until the viewer disconnects, saving the newest frame every interval. */
+    /** Takes one 640x480 photo and answers with it as a single JPEG; the sensor goes back to the stream's size. */
+    private static void sendCapture(byte[] frame) {
+        int length = -1;
+        if (CAMERA.setFrameSize(Camera.FRAME_SIZE_VGA)) {
+            for (int attempt = 0; attempt < CAPTURE_ATTEMPTS && length < 0; attempt++) {
+                length = CAMERA.capture(frame);
+            }
+        }
+        CAMERA.setFrameSize(Camera.FRAME_SIZE_QQVGA);
+        if (length < 0) {
+            Serial.println("GET /capture failed");
+            HttpServer.respond(HttpStatus.INTERNAL_SERVER_ERROR, "text/plain", "capture failed");
+            return;
+        }
+        Serial.print("GET /capture sent ");
+        Serial.print(length);
+        Serial.println(" bytes");
+        HttpServer.beginStream(HttpStatus.OK, "image/jpeg");
+        HttpServer.streamBytes(frame, length);
+        HttpServer.endStream();
+    }
+
+    /** Sends one MJPEG part per captured frame until the viewer disconnects. */
     private static void streamFrames(byte[] frame, byte[] digits) {
         HttpServer.beginStream(HttpStatus.OK, STREAM_CONTENT_TYPE);
-        int lastSaveMillis = CLOCK.millis();
+        int dropped = 0;
         while (true) {
             int length = CAMERA.capture(frame);
             if (length < 0) {
+                dropped = dropped + 1;
+                if (dropped % DROPPED_FRAMES_REPORT == 0) {
+                    Serial.print("Frames dropped (no frame, or larger than the buffer): ");
+                    Serial.println(dropped);
+                }
                 Delay.millis(20);
                 continue;
             }
@@ -105,15 +147,6 @@ public final class AiThinkerEsp32CamStream {
                     || !HttpServer.streamBytes(frame, length)
                     || !HttpServer.streamText(PART_END)) {
                 break;
-            }
-            int now = CLOCK.millis();
-            if (now - lastSaveMillis >= SAVE_INTERVAL_MILLIS) {
-                lastSaveMillis = now;
-                if (SD_CARD.writeBytes(FRAME_FILE, frame, length)) {
-                    Serial.println("Saved /frames/latest.jpg");
-                } else {
-                    Serial.println("Could not save the frame");
-                }
             }
         }
         HttpServer.endStream();
@@ -135,23 +168,15 @@ public final class AiThinkerEsp32CamStream {
         return digits;
     }
 
-    private static boolean connectWifi() throws IOException {
-        String ssid;
-        String password;
-        try (InputStream file = SD_CARD.open(CREDENTIALS_FILE)) {
-            if (file == null) {
-                Serial.println("application.properties not found");
-                return false;
-            }
-            Properties properties = new Properties();
-            properties.load(file);
-            ssid = properties.getProperty("wifi.ssid");
-            password = properties.getProperty("wifi.password");
-        }
+    private static boolean connectWifi() {
+        String ssid = MCU.getSecretStore().getString("wifi.ssid");
+        String password = MCU.getSecretStore().getString("wifi.password");
         if (ssid == null || password == null) {
-            Serial.println("WiFi credentials are missing");
+            Serial.println("wifi.ssid or wifi.password missing from the secret store: run juno:secret");
             return false;
         }
+        Serial.print("Connecting to Wi-Fi ");
+        Serial.println(ssid);
         WIFI.begin(ssid, password);
         int attempts = 0;
         while (WIFI.status() != Wifi.STATUS_CONNECTED && attempts < MAX_CONNECTION_ATTEMPTS) {
