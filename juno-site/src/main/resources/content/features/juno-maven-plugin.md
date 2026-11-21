@@ -53,6 +53,7 @@ many programs, so every `compile`, `verify` or `flash` names one, for example
 | `juno.arduinoCli` | `verify`, `flash`, `boards`, `monitor`, `install-deps` | `arduino-cli` | Executable name or path. |
 | `juno.fqbn` | `compile`, `verify`, `flash`, `monitor` | derived from `@Board` | Overrides the target FQBN. |
 | `juno.port` | `flash`, `monitor` | auto-detected | Serial port, when more than one matching board is connected. |
+| `juno.dfuSerial` | `flash`, `secret` | *(unset)* | USB serial number of the board to upload to, for boards that upload with `dfu-util` (Portenta H7, Nano ESP32). `dfu-util` stops when more than one DFU device is connected (a Nano ESP32 offers DFU whenever it is plugged in); this narrows it to one. `system_profiler SPUSBDataType` (macOS) or `lsusb -v` (Linux) shows the serial. |
 | `juno.baudRate` | `monitor` | `115200` | Must match the program's `Serial.begin(...)` rate (see [docs/SERIAL.md](../../api/observability/serial)). |
 | `juno.syslog` | `monitor` | *(unset: serial)* | UDP port to receive RFC 5424 syslog on, e.g. `5514`; no board or serial port is needed (see [Remote logging with syslog](../../api/internet/wifi#remote-logging-with-syslog)). |
 
