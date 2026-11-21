@@ -84,6 +84,11 @@ static void juno_task_cancel(JunoThreadObject* task) {
   task->flags |= JUNO_THREAD_FINISHED | JUNO_TASK_CANCELLED;
   for (uint32_t slot = 1u; slot < juno_slot_count; slot++) {
     if (juno_slots[slot].thread != task) continue;
+    // Inside a native call the thread cannot be stopped: it stops itself, releasing what it owns, once the call is over.
+    if (juno_slots[slot].state == JUNO_SLOT_NATIVE) {
+      juno_slots[slot].state = JUNO_SLOT_NATIVE_CANCELLED;
+      return;
+    }
     juno_task_cancel_owned(slot + 1u);
     juno_task_release_monitors(slot + 1u);
     juno_io_release_owned(slot + 1u);

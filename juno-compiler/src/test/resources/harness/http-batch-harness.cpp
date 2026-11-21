@@ -7,6 +7,14 @@
 static unsigned long now = 0;
 static unsigned long millis() { return now; }
 static void juno_io_wait(int delay) { now += delay; }
+struct JunoNativeCall {
+  bool released;
+};
+static bool juno_native_leave(JunoNativeCall& call) {
+  call.released = false;
+  return false;
+}
+static void juno_native_return(JunoNativeCall&) {}
 
 // available() is counted as a library call even when unread bytes remain buffered.
 class RpcClient {

@@ -69,6 +69,32 @@ public final class IoRuntime {
             };
             """;
 
+    private static final String NATIVE_CALLS = """
+
+            // A blocking library call bracketed by these runs outside the runtime: the other threads run meanwhile.
+            struct JunoNativeCall {
+              bool released;
+              volatile uint32_t* returned;
+              void* handle;
+            };
+            static bool juno_native_leave(JunoNativeCall& call);
+            static void juno_native_return(JunoNativeCall& call);
+            """;
+
+    private static final String NO_NATIVE_CALLS = """
+
+            // This port keeps the runtime through a blocking library call.
+            struct JunoNativeCall {
+              bool released;
+            };
+            static bool juno_native_leave(JunoNativeCall& call) {
+              call.released = false;
+              return false;
+            }
+            static void juno_native_return(JunoNativeCall&) {
+            }
+            """;
+
     private final RuntimeSource runtimeSource = new RuntimeSource();
 
 
@@ -89,8 +115,16 @@ public final class IoRuntime {
      * waits and guards release the runtime lock, which single-carrier ports do not define.
      */
     String preludeFor(Set<ShimFeature> features, int carrierCount) {
+        return preludeFor(features, carrierCount, false);
+    }
+
+    /**
+     * {@link #preludeFor(Set, int)}, with {@code nativeCalls} when a blocking library call may leave the runtime
+     * ({@code juno_native_leave}); otherwise those calls are stubs that keep the runtime.
+     */
+    String preludeFor(Set<ShimFeature> features, int carrierCount, boolean nativeCalls) {
         boolean threads = features.contains(ShimFeature.THREADS);
-        return needed(features) ? prelude(threads, threads && carrierCount > 1) : "";
+        return needed(features) ? prelude(threads, threads && carrierCount > 1, threads && nativeCalls) : "";
     }
 
     /**
@@ -101,6 +135,15 @@ public final class IoRuntime {
      * @param runtimeLock whether threads run on several carriers, so a wait or guard releases the runtime lock
      */
     String prelude(boolean threads, boolean runtimeLock) {
+        return prelude(threads, runtimeLock, false);
+    }
+
+    /**
+     * {@link #prelude(boolean, boolean)} plus the native-call token: a blocking library call is bracketed by
+     * {@code juno_native_leave(call)} and {@code juno_native_return(call)}, which let the other threads run in between
+     * when {@code nativeCalls}, and do nothing otherwise.
+     */
+    String prelude(boolean threads, boolean runtimeLock, boolean nativeCalls) {
         String offload = """
                 static void juno_io_offload(void (*job)(void*), void* argument) {
                   job(argument);
@@ -148,7 +191,8 @@ public final class IoRuntime {
                   JUNO_IO_HTTP_FIRST
                 };
 
-                """ + implementation + (runtimeLock ? LOCKED_IO_GUARD : IO_GUARD) + """
+                """ + implementation + (runtimeLock ? LOCKED_IO_GUARD : IO_GUARD) + (nativeCalls ? NATIVE_CALLS
+                        : NO_NATIVE_CALLS) + """
 
                 struct JunoHttpGuard {
                   uint32_t device;

@@ -230,7 +230,7 @@ public final class RuntimeShim {
     }
 
     private void appendPeripheralHelpers(StringBuilder shim) {
-        shim.append(ioRuntime.preludeFor(features, carrierCount));
+        shim.append(ioRuntime.preludeFor(features, carrierCount, nativeCalls()));
         if (uses(ShimFeature.M5_DEVICE)) {
             shim.append(runtimeSource.load("common/m5-device.cpp"));
         }
@@ -402,10 +402,17 @@ public final class RuntimeShim {
                     throwableClasses.indexOf("java/util/concurrent/ExecutionException"),
                     throwableClasses.indexOf("java/lang/IllegalStateException"),
                     throwableClasses.indexOf("java/lang/InterruptedException"),
-                    throwableClasses.indexOf("java/util/concurrent/BrokenBarrierException"), carrierCount));
+                    throwableClasses.indexOf("java/util/concurrent/BrokenBarrierException"), carrierCount,
+                    nativeCalls()));
         } else if (uses(ShimFeature.THREAD_BASICS)) {
             shim.append(threadRuntime.basics(core.delayMillisFunction()));
         }
+    }
+
+    /** Whether a blocking library call leaves the runtime: one carrier, a port that allows it, and I/O to make it. */
+    private boolean nativeCalls() {
+        return uses(ShimFeature.THREADS) && carrierCount == 1 && core.releasesDuringNativeCalls()
+                && ioRuntime.needed(features);
     }
 
     private static Set<ShimFeature> withExceptions(Set<ShimFeature> features) {
