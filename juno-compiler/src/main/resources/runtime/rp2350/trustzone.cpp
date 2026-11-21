@@ -5,10 +5,36 @@
 #include <hardware/irq.h>
 #include <hardware/resets.h>
 #include <pico/bootrom.h>
+#ifdef __FREERTOS
+#include <FreeRTOS.h>
+#include <task.h>
+#endif
 
+// A call runs with this core's interrupts masked. The secure side keeps one stack per core, and an RTOS preempting a
+// task inside the gateway (FreeRTOS SMP on two carriers saves no secure context) would let another task enter on the
+// same stack; a store write also takes the flash out of XIP mode, where an interrupt handler run from flash would
+// fault. The other core waits on the firmware's own lock instead.
 static int32_t juno_pico_tz_call(uint32_t op, uint32_t a, uint32_t b, uint32_t c) {
   typedef int32_t (*juno_pico_tz_gateway)(uint32_t, uint32_t, uint32_t, uint32_t);
-  return reinterpret_cast<juno_pico_tz_gateway>(0x10002F01u)(op, a, b, c);
+  uint32_t interrupts = save_and_disable_interrupts();
+  int32_t result = reinterpret_cast<juno_pico_tz_gateway>(0x10002F01u)(op, a, b, c);
+  restore_interrupts(interrupts);
+  return result;
+}
+
+// A store write rewrites flash, which takes the flash out of XIP mode: the other core, once started, is idled for it
+// the way arduino-pico's EEPROM library idles it for its own flash writes.
+static int32_t juno_pico_tz_flash_call(uint32_t op, uint32_t a, uint32_t b, uint32_t c) {
+#ifndef __FREERTOS
+  noInterrupts();
+#endif
+  rp2040.idleOtherCore();
+  int32_t result = juno_pico_tz_call(op, a, b, c);
+  rp2040.resumeOtherCore();
+#ifndef __FREERTOS
+  interrupts();
+#endif
+  return result;
 }
 
 extern "C" {
@@ -72,6 +98,61 @@ __attribute__((constructor)) static void juno_pico_tz_route_gpio_irq(void) {
   irq_set_enabled(IO_IRQ_BANK0_NS, true);
 }
 
+// The second core. The firmware starts core 1 into a relay that answers the SDK's launch handshake on the non-secure
+// FIFO, so multicore_launch_core1, FreeRTOS SMP's included, starts it as usual. What the two cores then signal each
+// other with, the SIO doorbells (FreeRTOS's cross-core yield, arduino-pico's idleOtherCore) and the inter-core FIFO,
+// interrupts non-secure code on SIO_IRQ_BELL_NS and SIO_IRQ_FIFO_NS, while the SDK only ever enables SIO_IRQ_BELL and
+// SIO_IRQ_FIFO. The sketch is linked with --wrap=irq_set_enabled,--wrap=irq_set_priority, so on whichever core the SDK
+// enables or prioritises one of those, the non-secure line follows, running the handler the SDK installed.
+void __real_irq_set_enabled(uint num, bool enabled);
+void __real_irq_set_priority(uint num, uint8_t hardware_priority);
+
+static void juno_pico_tz_bell_ns_irq(void) {
+  irq_get_vtable_handler(SIO_IRQ_BELL)();
+}
+
+static void juno_pico_tz_fifo_ns_irq(void) {
+  irq_get_vtable_handler(SIO_IRQ_FIFO)();
+}
+
+static int juno_pico_tz_ns_line(uint num) {
+  if (!pico_processor_state_is_nonsecure()) return -1;
+  if (num == SIO_IRQ_BELL) return SIO_IRQ_BELL_NS;
+  if (num == SIO_IRQ_FIFO) return SIO_IRQ_FIFO_NS;
+  return -1;
+}
+
+void __wrap_irq_set_enabled(uint num, bool enabled) {
+  __real_irq_set_enabled(num, enabled);
+  int line = juno_pico_tz_ns_line(num);
+  if (line < 0) return;
+  if (enabled && !irq_has_handler(static_cast<uint>(line))) {
+    irq_set_exclusive_handler(static_cast<uint>(line),
+                              line == SIO_IRQ_BELL_NS ? juno_pico_tz_bell_ns_irq : juno_pico_tz_fifo_ns_irq);
+  }
+  __real_irq_set_enabled(static_cast<uint>(line), enabled);
+}
+
+void __wrap_irq_set_priority(uint num, uint8_t hardware_priority) {
+  __real_irq_set_priority(num, hardware_priority);
+  int line = juno_pico_tz_ns_line(num);
+  if (line >= 0) __real_irq_set_priority(static_cast<uint>(line), hardware_priority);
+}
+
+#ifdef __FREERTOS
+// arduino-pico builds FreeRTOS secure-only (configRUN_FREERTOS_SECURE_ONLY), which seeds every new task's stack with
+// an EXC_RETURN back to the secure state; started non-secure, the first switch to a task would fault. The sketch is
+// linked with --wrap=pxPortInitialiseStack, and the seed, just above the PSPLIM slot the port returns, becomes a
+// return to the non-secure state. Later switches save the EXC_RETURN the hardware gave, so only the seed is wrong.
+StackType_t* __real_pxPortInitialiseStack(StackType_t* top, StackType_t* end, TaskFunction_t code, void* parameters);
+
+StackType_t* __wrap_pxPortInitialiseStack(StackType_t* top, StackType_t* end, TaskFunction_t code, void* parameters) {
+  StackType_t* stack = __real_pxPortInitialiseStack(top, end, code, parameters);
+  if (pico_processor_state_is_nonsecure() && stack[1] == 0xFFFFFFFDu) stack[1] = 0xFFFFFFBCu;
+  return stack;
+}
+#endif
+
 // Only a non-secure sketch has the firmware behind it: flashed without it, the sketch runs secure and the gateway
 // address holds arduino-pico's OTA stage, not an entry, so it is never called.
 int32_t juno_pico_tz_begin() {
@@ -86,12 +167,12 @@ int32_t juno_pico_tz_read(int32_t slot, int8_t* buffer, int32_t capacity) {
 
 int32_t juno_pico_tz_write(int32_t slot, int8_t* value, int32_t length) {
   if (length < 0) return -1;
-  return juno_pico_tz_call(2u, static_cast<uint32_t>(slot), reinterpret_cast<uint32_t>(value),
-                           static_cast<uint32_t>(length));
+  return juno_pico_tz_flash_call(2u, static_cast<uint32_t>(slot), reinterpret_cast<uint32_t>(value),
+                                 static_cast<uint32_t>(length));
 }
 
 int32_t juno_pico_tz_clear_all() {
-  return juno_pico_tz_call(4u, 0u, 0u, 0u) == 0 ? 1 : 0;
+  return juno_pico_tz_flash_call(4u, 0u, 0u, 0u) == 0 ? 1 : 0;
 }
 
 // Flash writes. The sketch is linked with --wrap=flash_range_erase,--wrap=flash_range_program, so the SDK's own calls,

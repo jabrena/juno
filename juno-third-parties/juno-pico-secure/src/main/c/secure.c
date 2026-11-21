@@ -5,6 +5,10 @@
 // non-secure world, and starts the arduino-pico image at 0x10003000 non-secure. From then on the image reaches the
 // store only through the gateway at 0x10002F00: juno_secure_call(op, a, b, c).
 //
+// Core 1 is started too, into a secure relay that gives it the same fence and then waits on the non-secure
+// inter-core FIFO for the launch handshake the boot ROM would answer: the image's own multicore_launch_core1 then
+// starts its second core non-secure, as it would without this firmware.
+//
 // The board is never locked: no OTP fuse is written, secure boot stays off and debug stays on. The fence keeps the
 // secrets from the program running on the board, not from someone holding the board and a USB cable.
 #include <arm_cmse.h>
@@ -69,8 +73,18 @@
 #define BOOTRAM            0x400E0000u
 #define WATCHDOG_CTRL      0x400D8000u
 #define WATCHDOG_SCRATCH   0x400D800Cu
+#define PSM_FRCE_OFF       0x40018004u
+#define PSM_PROC1          (1u << 24)
+#define SIO_SECURE         0xD0000000u  // this world's SIO bank: the FIFO core 1's boot ROM listens on
+#define SIO_NONSECURE      0xD0020000u  // the image's SIO bank, as the secure world reaches it
+#define SIO_FIFO_ST        0x050u
+#define SIO_FIFO_WR        0x054u
+#define SIO_FIFO_RD        0x058u
+#define FIFO_VLD           0x1u
+#define FIFO_RDY           0x2u
 
 extern uint32_t __data_load, __data_start, __data_end, __bss_start, __bss_end;
+extern const uint32_t secure_vectors[];
 
 typedef void *(*rom_table_lookup_fn)(uint32_t code, uint32_t mask);
 
@@ -98,7 +112,9 @@ static void set_access(uint32_t offset, uint32_t bits) {
     REG(ACCESSCTRL + offset) = ACCESSCTRL_PASS | bits;
 }
 
-static void fence(void) {
+// What each core holds of its own: its SAU, which interrupts and coprocessors are the image's, and which faults stay
+// here. Core 0 sets it in fence(), core 1 in its relay, before either runs any of the image.
+static void fence_core(void) {
     // The CPU's view: only what is listed here is non-secure; everything else, this firmware's flash, the store
     // sector, every flash alias above 4 MB, the maintenance aliases and the top 8 KB of SRAM, stays secure.
     sau_region(0, APP_VECTORS, STORE_SECTOR - 1u, 0);
@@ -109,6 +125,18 @@ static void fence(void) {
     sau_region(5, 0x20080000u, 0x20082000u - 1u, 0);
     sau_region(6, 0x10002F00u, APP_VECTORS - 1u, 1);
     REG(SAU_CTRL) = 1u;
+
+    // Interrupts and coprocessors (GPIO, double, FPU) belong to the image. HardFault, BusFault and NMI stay with this
+    // firmware (AIRCR.BFHFNMINS clear), so a crash in the image reboots into BOOTSEL and the board stays reflashable
+    // without pressing its button.
+    REG(NVIC_ITNS0) = 0xFFFFFFFFu;
+    REG(NVIC_ITNS0 + 4u) = 0xFFFFFFFFu;
+    REG(SCB_NSACR) = 0x00000CFFu;
+    REG(SCB_SHCSR) |= (1u << 19) | (1u << 18) | (1u << 16);              // SecureFault, UsageFault, MemManage
+}
+
+static void fence(void) {
+    fence_core();
 
     // The peripherals: all to both worlds except the OTP fuses, and the flash controller, the XIP cache and stream,
     // the QSPI pads and pins, any of which would let code reach the flash past the SAU.
@@ -145,14 +173,6 @@ static void fence(void) {
     dma_mpu_secure(6, SECURE_RAM, 0x20080000u - 1u);
     dma_mpu_secure(7, BOOTRAM, BOOTRAM + 0xFFFu);
     REG(DMA_BASE + 0x500u) = 0x8u;  // NS_HIDE_ADDR; addresses outside the regions are non-secure
-
-    // Interrupts and coprocessors (GPIO, double, FPU) belong to the image. HardFault, BusFault and NMI stay with this
-    // firmware (AIRCR.BFHFNMINS clear), so a crash in the image reboots into BOOTSEL and the board stays reflashable
-    // without pressing its button.
-    REG(NVIC_ITNS0) = 0xFFFFFFFFu;
-    REG(NVIC_ITNS0 + 4u) = 0xFFFFFFFFu;
-    REG(SCB_NSACR) = 0x00000CFFu;
-    REG(SCB_SHCSR) |= (1u << 19) | (1u << 18) | (1u << 16);              // SecureFault, UsageFault, MemManage
 }
 
 static void hand_over_rom(void) {
@@ -364,7 +384,21 @@ static int image_flash_program(uint32_t offset, uint32_t data, uint32_t count) {
     return 0;
 }
 
+// Both cores may call the gateway: one call at a time, since the store image, the page buffer and the flash controller
+// are shared. A word in secure SRAM taken with LDAEX/STREX, as the SDK's own RP2350 spin locks are.
+static volatile uint32_t gateway_lock;
+
+static int dispatch(uint32_t op, uint32_t a, uint32_t b, uint32_t c);
+
 int juno_secure_call(uint32_t op, uint32_t a, uint32_t b, uint32_t c) {
+    while (__atomic_exchange_n(&gateway_lock, 1u, __ATOMIC_ACQUIRE) != 0u) {
+    }
+    int result = dispatch(op, a, b, c);
+    __atomic_store_n(&gateway_lock, 0u, __ATOMIC_RELEASE);
+    return result;
+}
+
+static int dispatch(uint32_t op, uint32_t a, uint32_t b, uint32_t c) {
     switch (op) {
         case OP_VERSION:
             return FIRMWARE_MAGIC;
@@ -403,6 +437,12 @@ void secure_fault_c(uint32_t *frame, uint32_t exc_return) {
     REG(WATCHDOG_SCRATCH + 0u) = frame[6];
     REG(WATCHDOG_SCRATCH + 4u) = 0xA0000000u | ((sfsr & 0xFFu) << 8) | (REG(SCB_ICSR) & 0xFFu);
     REG(WATCHDOG_CTRL) |= 0x80000000u;
+#endif
+#ifdef JUNO_SECURE_FAULT_PC
+    // Development only: the faulting PC and which core took the fault, in the two scratch registers that survive.
+    REG(WATCHDOG_SCRATCH + 0u) = frame[6];
+    REG(WATCHDOG_SCRATCH + 4u) = (REG(SIO_SECURE) << 31) | ((exc_return & 0xFFu) << 16) | ((sfsr & 0xFFu) << 8)
+            | (REG(SCB_ICSR) & 0xFFu);
 #endif
     typedef int (*reboot_fn)(uint32_t flags, uint32_t delay_ms, uint32_t p0, uint32_t p1);
     ((reboot_fn)rom_lookup('R', 'B'))(0x2u /* REBOOT2_FLAG_REBOOT_TYPE_BOOTSEL */, 10u, 0u, 0u);
@@ -448,6 +488,99 @@ static int diagnostics_fallback(void) {
 }
 #endif
 
+// ---- Core 1 -----------------------------------------------------------------------------------------------------
+
+// Core 1's secure stack, for the relay, a gateway call made from core 1 and a fault taken there.
+static uint32_t core1_stack[256] __attribute__((aligned(8)));
+static volatile uint32_t core1_fenced;
+
+static uint32_t __attribute__((section(".ramfunc"), noinline)) fifo_pop(uint32_t sio) {
+    while ((REG(sio + SIO_FIFO_ST) & FIFO_VLD) == 0u) {
+        __asm volatile("wfe");
+    }
+    return REG(sio + SIO_FIFO_RD);
+}
+
+static void __attribute__((section(".ramfunc"), noinline)) fifo_push(uint32_t sio, uint32_t value) {
+    while ((REG(sio + SIO_FIFO_ST) & FIFO_RDY) == 0u) {
+    }
+    REG(sio + SIO_FIFO_WR) = value;
+    __asm volatile("sev");
+}
+
+/**
+ * Core 1 answers the image's launch handshake as the boot ROM would: it echoes every word of 0, 0, 1, vector table,
+ * stack pointer, entry, starting over on a 0, and then enters the entry non-secure. It waits from RAM, so the image
+ * erasing or programming flash through the gateway never pulls code from under it. Values the image could not itself
+ * use (a secure entry, stack or vector table) are refused and the handshake starts over.
+ */
+static void __attribute__((section(".ramfunc"), noreturn, noinline)) core1_relay_wait(void) {
+    uint32_t values[3] = {0u, 0u, 0u};
+    uint32_t seq = 0u;
+    for (;;) {
+        uint32_t word = fifo_pop(SIO_NONSECURE);
+        fifo_push(SIO_NONSECURE, word);
+        if (word == 0u) {
+            seq = seq == 1u || seq == 2u ? 2u : 1u;
+        } else if (seq == 2u) {
+            seq = word == 1u ? 3u : 0u;
+        } else if (seq >= 3u) {
+            values[seq - 3u] = word;
+            seq++;
+        } else {
+            seq = 0u;
+        }
+        if (seq == 6u) {
+            uint32_t vectors = values[0];
+            uint32_t stack = values[1];
+            uint32_t entry = values[2] & ~1u;
+            if ((vectors & 0x7Fu) == 0u && caller_may_access(vectors, 64u, 0) && caller_may_access(stack - 8u, 8u, 1)
+                    && caller_may_access(entry, 2u, 0)) {
+                REG(SCB_VTOR_NS) = vectors;
+                // BXNS to an address with bit 0 clear switches to the non-secure state.
+                __asm volatile("msr msp_ns, %0\n bxns %1" : : "r"(stack), "r"(entry));
+            }
+            seq = 0u;
+        }
+    }
+}
+
+static void __attribute__((noreturn)) core1_relay(void) {
+    fence_core();
+    typedef int (*state_reset_fn)(uint32_t flags);
+    ((state_reset_fn)rom_lookup('S', 'R'))(0x1u /* CURRENT_CORE */);
+    core1_fenced = 1u;
+    __asm volatile("sev");
+    core1_relay_wait();
+}
+
+/** Starts core 1 from its boot ROM into core1_relay, on this world's FIFO, and waits until it is fenced. */
+static void start_core1(void) {
+    REG(PSM_FRCE_OFF + 0x2000u) = PSM_PROC1;  // set: hold core 1 off
+    while ((REG(PSM_FRCE_OFF) & PSM_PROC1) == 0u) {
+    }
+    REG(PSM_FRCE_OFF + 0x3000u) = PSM_PROC1;  // clear: back into its boot ROM, which drains its FIFO and sends a 0
+    (void)fifo_pop(SIO_SECURE);
+    const uint32_t sequence[6] = {0u, 0u, 1u, (uint32_t)secure_vectors,
+                                  (uint32_t)&core1_stack[sizeof core1_stack / sizeof core1_stack[0]],
+                                  (uint32_t)&core1_relay | 1u};
+    uint32_t seq = 0u;
+    while (seq < 6u) {
+        uint32_t word = sequence[seq];
+        if (word == 0u) {
+            while ((REG(SIO_SECURE + SIO_FIFO_ST) & FIFO_VLD) != 0u) {
+                (void)REG(SIO_SECURE + SIO_FIFO_RD);
+            }
+            __asm volatile("sev");
+        }
+        fifo_push(SIO_SECURE, word);
+        seq = fifo_pop(SIO_SECURE) == word ? seq + 1u : 0u;
+    }
+    while (core1_fenced == 0u) {
+        __asm volatile("wfe");
+    }
+}
+
 static void __attribute__((noreturn)) start_image(void) {
     const uint32_t *vectors = (const uint32_t *)APP_VECTORS;
     REG(SCB_VTOR_NS) = APP_VECTORS;
@@ -470,6 +603,7 @@ void secure_reset(void) {
 #endif
     fence();
     hand_over_rom();
+    start_core1();
 #ifdef JUNO_SECURE_DIAGNOSTICS
     diagnostics_arm();
 #endif

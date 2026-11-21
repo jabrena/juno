@@ -300,7 +300,8 @@ class ArduinoCliTest {
             assertThat(executor.invocations()).containsExactly(
                     captured(List.of("/opt/arduino-cli", "compile", "--fqbn", fqbn, "--build-property",
                             "build.ram_length=504k", "--build-property",
-                            "compiler.c.elf.extra_flags=-Wl,--wrap=flash_range_erase,--wrap=flash_range_program",
+                            "compiler.c.elf.extra_flags=-Wl,--wrap=flash_range_erase,--wrap=flash_range_program,"
+                                    + "--wrap=irq_set_enabled,--wrap=irq_set_priority,--wrap=pxPortInitialiseStack",
                             "--build-path", buildPath, sketchPath)),
                     captured(List.of("/opt/arduino-cli", "upload", "--port", "/dev/cu.usbmodem1", "--fqbn", fqbn,
                             "--input-dir", buildPath, sketchPath)));

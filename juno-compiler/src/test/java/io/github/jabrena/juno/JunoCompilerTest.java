@@ -1822,9 +1822,9 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("The Pico 2 W's TrustZone store refuses a program on two carriers")
-        void shouldRejectTheTrustZoneStoreOnTwoCarriers() throws Exception {
-            // Given: virtual threads give the Pico 2 W its second carrier, which the non-secure world cannot start
+        @DisplayName("The Pico 2 W's TrustZone store runs a program on two carriers, its doorbells routed non-secure")
+        void shouldRunTheTrustZoneStoreOnTwoCarriers() throws Exception {
+            // Given: virtual threads give the Pico 2 W its second carrier, which the secure firmware's relay starts
             String source = """
                     package demo;
                     import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
@@ -1842,10 +1842,13 @@ class JunoCompilerTest {
                     """;
             CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.PicoThreads", source);
 
-            // When & Then
-            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.PicoThreads"))
-                    .isInstanceOf(CompileException.class)
-                    .hasMessageContaining("-Djuno.carriers=1");
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.PicoThreads");
+
+            // Then
+            assertThat(result.fqbn()).contains("os=freertos");
+            assertThat(result.runtimeShim()).contains("juno_pico_tz_clear_all", "void __wrap_irq_set_enabled(",
+                    "SIO_IRQ_BELL_NS", "rp2040.idleOtherCore();");
         }
 
     }
