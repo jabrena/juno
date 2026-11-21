@@ -95,13 +95,15 @@ class CoreRuntimeTest {
         CoreRuntime runtime = coreRuntimes.of(ArduinoCore.MBED_PORTENTA);
 
         assertThat(runtime.httpsServerTransport()).contains("mbedtls_ssl_config", "WiFiServer");
-        assertThat(runtime.httpsHelpers()).contains("juno_portenta_ca", "setCACert(juno_portenta_ca)");
+        assertThat(runtime.httpsHelpers()).contains("mbedtls_x509_crt_parse_der_nocopy", "set_ca_chain(juno_portenta_ca_chain())")
+                .doesNotContain("R\"JUNO_CA(");
+        assertThat(runtime.maxConcurrentHttpRequests()).isEqualTo(4);
         assertThat(runtime.httpsClientDeclaration()).isEqualTo("JunoPortentaHttpsClient client;");
         assertThat(runtime.smtpStarttlsInclude()).contains("netsocket/TLSSocketWrapper.h");
         assertThat(runtime.smtpStarttlsHelpers()).contains("struct JunoMbedSmtpClient", "TRANSPORT_KEEP",
                 "JUNO_PORTENTA_TRUST_ROOTS", "juno_portenta_ca");
         assertThat(runtime.smtpStarttlsClient()).isEqualTo("JunoMbedSmtpClient client;");
-        assertThat(runtime.smtpStarttlsTrust()).isEqualTo("client.setCACert(juno_portenta_ca);");
+        assertThat(runtime.smtpStarttlsTrust()).isEqualTo("client.setCAChain(juno_portenta_ca_chain());");
         assertThat(runtime.watchdog(1000).begin()).contains("Watchdog::get_instance().start");
         assertThat(runtime.uuidRandomHelpers()).contains("mbedtls_hardware_poll");
         assertThat(runtime.mouseIncludes()).isEqualTo("#include <PluggableUSBHID.h>\n#include <USBMouse.h>\n");

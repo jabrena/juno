@@ -86,6 +86,28 @@ class CertificateBundleTest {
     }
 
     @Test
+    @DisplayName("Emits every root as DER bytes and a table of their lengths, for a parser that keeps them in flash")
+    void shouldEmitEveryRootAsDerInATable() throws Exception {
+        // Given
+        String first = PEM.substring(PEM.indexOf("-----BEGIN CERTIFICATE-----"),
+                PEM.indexOf("-----END CERTIFICATE-----") + "-----END CERTIFICATE-----".length());
+        byte[] der = java.security.cert.CertificateFactory.getInstance("X.509").generateCertificate(
+                new java.io.ByteArrayInputStream(first.getBytes(StandardCharsets.US_ASCII))).getEncoded();
+
+        // When
+        String one = CertificateBundle.cDerTable("roots", "Root", "comment\n" + first + "\n");
+        String all = CertificateBundle.cDerTable("roots", "Root", PEM);
+
+        // Then
+        assertThat(one).startsWith(String.format("static const uint8_t roots_0[] = {%n  0x%02x, 0x%02x,",
+                        der[0] & 0xFF, der[1] & 0xFF).replace(System.lineSeparator(), "\n"))
+                .contains("static const Root roots[] = {\n  {roots_0, " + der.length + "u},\n};\n")
+                .doesNotContain("roots_1");
+        assertThat(all.split("static const uint8_t roots_", -1)).hasSize(certificates(PEM) + 1);
+        assertThat(all.split("\\{roots_", -1)).hasSize(certificates(PEM) + 1);
+    }
+
+    @Test
     @DisplayName("Leaves out the one P-521 root of the shipped list, and keeps every root on a curve nothing uses")
     void shouldLeaveOutRootsOnTheCurveTheMbedBuildLacks() {
         // When
