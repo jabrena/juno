@@ -2,6 +2,7 @@ package io.github.jabrena.juno.language.concurrency;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
@@ -28,8 +29,8 @@ import java.util.concurrent.StructuredTaskScope;
  * joining the workers, which dominates the smallest board. Build with {@code -Djuno.carriers=1} to run the same
  * program on one core and see the overhead without the parallelism.
  */
-@Board({ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class, RaspberryPico2WifiBoard.class,
-        ArduinoPortentaH7Board.class})
+@Board({ArduinoNanoEsp32Board.class, ArduinoUnoR4WiFiBoard.class, M5StackCardputerBoard.class,
+        RaspberryPico2WifiBoard.class, ArduinoPortentaH7Board.class})
 public final class NQueensBenchmark {
     /** The three ways the same search is run, in the order they are timed; the monolith comes first. */
     private enum Mode {

@@ -2,9 +2,11 @@ package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
+import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
+import io.github.jabrena.juno.hardware.BoardModel;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
@@ -21,9 +23,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.StructuredTaskScope;
 
 /**
- * Times an I/O-bound job, {@value #REQUESTS} requests to a public endpoint that answers after a fixed second
- * ({@value #HTTP_URL}), done three ways on the Nano ESP32 or the M5Stack Cardputer: one after another, on
- * {@value #REQUESTS} virtual threads, and as {@value #REQUESTS} subtasks of a {@link StructuredTaskScope}.
+ * Times an I/O-bound job, up to {@value #MAX_REQUESTS} requests to a public endpoint that answers after a fixed second
+ * ({@value #HTTP_URL}), done three ways: one after another, on one virtual thread per request, and as one subtask of a
+ * {@link StructuredTaskScope} per request. The UNO R4 WiFi makes two requests, the other boards four
+ * ({@link #requestCount}); build it with {@code -Djuno.Xss=5120 -Djuno.Xmx=7168}, as one request needs more than its
+ * default 2 KB carrier stack (see {@code documentation/esp32-concurrency-improvements.md}, "UNO R4 WiFi").
  *
  * <p>Unlike a CPU-bound job, a request spends almost all its time waiting for the server, so threads pay off even on
  * one core: while one request waits, another can be sent. The ESP32 runtime lets up to four HTTP requests be in flight
@@ -36,11 +40,12 @@ import java.util.concurrent.StructuredTaskScope;
  * trusted when all did) and the speed-up over the sequential time. Rounds repeat after a pause long enough for a serial
  * monitor started after the upload to attach, and for the public endpoint not to be hammered.
  */
-@Board({ArduinoNanoEsp32Board.class, M5StackCardputerBoard.class, RaspberryPico2WifiBoard.class,
-        ArduinoPortentaH7Board.class})
+@Board({ArduinoNanoEsp32Board.class, ArduinoUnoR4WiFiBoard.class, M5StackCardputerBoard.class,
+        RaspberryPico2WifiBoard.class, ArduinoPortentaH7Board.class})
 public final class HttpLatencyBenchmark {
     static final String HTTP_URL = "http://httpbin.org/delay/1";
-    static final int REQUESTS = 4;
+    // An array length must be a compile-time constant on the board: the arrays hold the most requests any board makes.
+    static final int MAX_REQUESTS = 4;
     private static final int ROUND_PAUSE_MILLIS = 15_000;
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
 
@@ -86,33 +91,40 @@ public final class HttpLatencyBenchmark {
     private final Clock clock = MCU.getClock();
     private final String name;
     private final String url;
-    private final Request first;
-    private final Request second;
-    private final Request third;
-    private final Request fourth;
+    private final int count = requestCount();
+    private final Request[] requests = new Request[MAX_REQUESTS];
+    private final Thread[] threads = new Thread[MAX_REQUESTS];
 
     /** A benchmark that prints {@code name} at the start of each round and requests {@code url}. */
     HttpLatencyBenchmark(String name, String url) {
         this.name = name;
         this.url = url;
-        this.first = new Request(url);
-        this.second = new Request(url);
-        this.third = new Request(url);
-        this.fourth = new Request(url);
+        for (int index = 0; index < count; index++) {
+            requests[index] = new Request(url);
+        }
+    }
+
+    /**
+     * How many requests a round makes on this board: two on the UNO R4 WiFi, as many as it lets be in flight, whose
+     * 32 KB of RAM fits two parked requests with a 5 KB carrier stack and a 7 KiB arena; four elsewhere.
+     */
+    private static int requestCount() {
+        return MCU.getBoardModel() == BoardModel.UNO_R4_WIFI ? 2 : MAX_REQUESTS;
     }
 
     public static void main(String[] args) throws InterruptedException, ExecutionException {
+        // Serial first, so a failure while the benchmark is built can still be reported.
+        Serial.begin(BaudRate.BAUD_115200);
         new HttpLatencyBenchmark("HTTP", HTTP_URL).run();
     }
 
     void run() throws InterruptedException, ExecutionException {
-        Serial.begin(BaudRate.BAUD_115200);
         if (!connectWifi()) {
             return;
         }
         for (int round = 1; ; round++) {
             Thread.sleep(ROUND_PAUSE_MILLIS);
-            Serial.println(name + " latency benchmark round " + round + ": " + REQUESTS + " x " + url);
+            Serial.println(name + " latency benchmark round " + round + ": " + count + " x " + url);
             int sequential = 0;
             for (int index = 0; index < MODES.length; index++) {
                 Mode mode = MODES[index];
@@ -125,9 +137,8 @@ public final class HttpLatencyBenchmark {
                 String speedUp = mode == Mode.SEQUENTIAL ? "" : " speed-up=" + hundredths(sequential * 100 / elapsed) + "x";
                 int answered = answered();
                 // A timing only counts when every request answered; otherwise the statuses say which did not.
-                String statuses = answered == REQUESTS ? "" : " statuses=" + first.status + "," + second.status + ","
-                        + third.status + "," + fourth.status;
-                Serial.println(mode.label() + " elapsed=" + elapsed + "ms ok=" + answered + "/" + REQUESTS + speedUp
+                String statuses = answered == count ? "" : " statuses=" + statuses();
+                Serial.println(mode.label() + " elapsed=" + elapsed + "ms ok=" + answered + "/" + count + speedUp
                         + statuses);
             }
         }
@@ -137,27 +148,25 @@ public final class HttpLatencyBenchmark {
     private void fetchAll(Mode mode) throws InterruptedException, ExecutionException {
         switch (mode) {
             case SEQUENTIAL -> {
-                first.fetch();
-                second.fetch();
-                third.fetch();
-                fourth.fetch();
+                for (int index = 0; index < count; index++) {
+                    requests[index].fetch();
+                }
             }
             case THREADS -> {
-                Thread firstThread = Thread.startVirtualThread(() -> first.fetch());
-                Thread secondThread = Thread.startVirtualThread(() -> second.fetch());
-                Thread thirdThread = Thread.startVirtualThread(() -> third.fetch());
-                Thread fourthThread = Thread.startVirtualThread(() -> fourth.fetch());
-                firstThread.join();
-                secondThread.join();
-                thirdThread.join();
-                fourthThread.join();
+                for (int index = 0; index < count; index++) {
+                    Request request = requests[index];
+                    threads[index] = Thread.startVirtualThread(() -> request.fetch());
+                }
+                for (int index = 0; index < count; index++) {
+                    threads[index].join();
+                }
             }
             case SCOPE -> {
                 try (var scope = StructuredTaskScope.open()) {
-                    scope.fork(() -> first.fetch());
-                    scope.fork(() -> second.fetch());
-                    scope.fork(() -> third.fetch());
-                    scope.fork(() -> fourth.fetch());
+                    for (int index = 0; index < count; index++) {
+                        Request request = requests[index];
+                        scope.fork(() -> request.fetch());
+                    }
                     // A request records its own failure, so no subtask throws and join() never reports one.
                     scope.join();
                 }
@@ -167,7 +176,20 @@ public final class HttpLatencyBenchmark {
 
     /** How many requests answered 200 in the last mode. */
     private int answered() {
-        return ok(first) + ok(second) + ok(third) + ok(fourth);
+        int answered = 0;
+        for (int index = 0; index < count; index++) {
+            answered += ok(requests[index]);
+        }
+        return answered;
+    }
+
+    /** Every request's status in the last mode, comma-separated. */
+    private String statuses() {
+        String statuses = "" + requests[0].status;
+        for (int index = 1; index < count; index++) {
+            statuses = statuses + "," + requests[index].status;
+        }
+        return statuses;
     }
 
     private static int ok(Request request) {
