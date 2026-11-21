@@ -25,6 +25,13 @@ abstract class AbstractArduinoMojo extends AbstractMojo {
     @Parameter(property = "juno.port")
     private @Nullable String port;
 
+    /**
+     * USB serial number of the board to upload to, for boards that upload with dfu-util (Portenta H7, Nano ESP32):
+     * dfu-util stops when more than one DFU device is connected, and this narrows it to one ({@code dfu-util -S}).
+     */
+    @Parameter(property = "juno.dfuSerial")
+    private @Nullable String dfuSerial;
+
     /** Runs {@code arduino-cli} itself, except in tests, which substitute a fake so no real process is touched. */
     private CommandExecutor commandExecutor = new SystemCommandExecutor();
 
@@ -66,6 +73,11 @@ abstract class AbstractArduinoMojo extends AbstractMojo {
     }
 
     /** A Maven parameter's trimmed value, or empty when it is unset or blank. */
+    /** The configured {@code juno.dfuSerial}, or {@code null} when the upload need not pick a DFU device. */
+    final @Nullable String dfuSerial() {
+        return configured(dfuSerial).orElse(null);
+    }
+
     final Optional<String> configured(@Nullable String value) {
         return Optional.ofNullable(value).map(String::trim).filter(text -> !text.isEmpty());
     }

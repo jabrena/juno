@@ -281,6 +281,49 @@ class ArduinoCliTest {
         }
 
         @Test
+        @DisplayName("Narrows a dfu-util upload to one board by its USB serial number")
+        void shouldNarrowADfuUploadToOneBoardBySerial() {
+            // Given: arduino-cli first reports the board's unexpanded properties, then uploads
+            String fqbn = "arduino:mbed_portenta:envie_m7";
+            FakeExecutor executor = new FakeExecutor().respond(0, """
+                    tools.dfu-util.cmd=dfu-util
+                    tools.dfu-util.upload.pattern="{path}/{cmd}" --device {upload.vid}:{upload.pid} -D x.bin:leave
+                    upload.tool=dfu-util
+                    """).respond(0, "uploaded");
+            ArduinoCli cli = new ArduinoCli("/opt/arduino-cli", executor, ignored -> { });
+            Path sketch = Path.of("target/juno/Blink");
+            String sketchPath = sketch.toAbsolutePath().normalize().toString();
+
+            // When
+            cli.upload(fqbn, "1-1.2", sketch, "001D00293230510F31303431");
+
+            // Then
+            assertThat(executor.invocations()).containsExactly(
+                    captured(List.of("/opt/arduino-cli", "compile", "--fqbn", fqbn, "--show-properties=unexpanded",
+                            sketchPath)),
+                    captured(List.of("/opt/arduino-cli", "upload", "--port", "1-1.2", "--fqbn", fqbn,
+                            "--upload-property", "upload.pattern=\"{path}/{cmd}\" --device "
+                                    + "{upload.vid}:{upload.pid} -D x.bin:leave -S \"001D00293230510F31303431\"",
+                            sketchPath)));
+        }
+
+        @Test
+        @DisplayName("Uploads exactly as before when no DFU serial number is given")
+        void shouldUploadAsBeforeWithoutADfuSerial() {
+            // Given
+            FakeExecutor executor = new FakeExecutor().respond(0, "uploaded");
+            ArduinoCli cli = new ArduinoCli("/opt/arduino-cli", executor, ignored -> { });
+            Path sketch = Path.of("target/juno/Blink");
+
+            // When
+            cli.upload(FQBN, "COM3", sketch, " ");
+
+            // Then
+            assertThat(executor.invocations()).containsExactly(captured(List.of("/opt/arduino-cli", "upload",
+                    "--port", "COM3", "--fqbn", FQBN, sketch.toAbsolutePath().normalize().toString())));
+        }
+
+        @Test
         @DisplayName("Builds and uploads a Pico 2 W secure-firmware sketch through its own build directory")
         void shouldBuildAndUploadThroughTheBuildDirectoryForThePicoSecureFirmware() {
             // Given

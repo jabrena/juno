@@ -67,13 +67,48 @@ final class ArduinoCli {
 
     /** Uploads the build in {@code inputDirectory}, as {@link #compileForPicoSecureFirmware} left it. */
     void upload(String fqbn, String port, Path sketchDirectory, Path inputDirectory) {
-        run(captured("upload", "--port", requireText(port, "port"), "--fqbn", requireText(fqbn, "FQBN"),
-                "--input-dir", absolute(inputDirectory), absolute(sketchDirectory)));
+        upload(fqbn, port, sketchDirectory, inputDirectory, null);
+    }
+
+    /**
+     * {@link #upload(String, String, Path, Path)}, narrowed to the DFU device with USB serial {@code dfuSerial} when
+     * it is given (see {@link DfuUploadPattern}).
+     */
+    void upload(String fqbn, String port, Path sketchDirectory, Path inputDirectory, @Nullable String dfuSerial) {
+        List<String> arguments = uploadArguments(fqbn, port, sketchDirectory, dfuSerial);
+        arguments.addAll(List.of("--input-dir", absolute(inputDirectory), absolute(sketchDirectory)));
+        run(captured(arguments.toArray(String[]::new)));
     }
 
     void upload(String fqbn, String port, Path sketchDirectory) {
-        run(captured("upload", "--port", requireText(port, "port"), "--fqbn", requireText(fqbn, "FQBN"),
-                absolute(sketchDirectory)));
+        upload(fqbn, port, sketchDirectory, (String) null);
+    }
+
+    /** {@link #upload(String, String, Path)}, narrowed to the DFU device with USB serial {@code dfuSerial} if given. */
+    void upload(String fqbn, String port, Path sketchDirectory, @Nullable String dfuSerial) {
+        List<String> arguments = uploadArguments(fqbn, port, sketchDirectory, dfuSerial);
+        arguments.add(absolute(sketchDirectory));
+        run(captured(arguments.toArray(String[]::new)));
+    }
+
+    private List<String> uploadArguments(String fqbn, String port, Path sketchDirectory, @Nullable String dfuSerial) {
+        String requiredFqbn = requireText(fqbn, "FQBN");
+        List<String> arguments = new ArrayList<>(List.of("upload", "--port", requireText(port, "port"), "--fqbn",
+                requiredFqbn));
+        if (dfuSerial != null && !dfuSerial.isBlank()) {
+            arguments.addAll(List.of("--upload-property",
+                    dfuUploadPattern(requiredFqbn, sketchDirectory).selecting(dfuSerial.trim())));
+        }
+        return arguments;
+    }
+
+    /** The board's dfu-util recipe as arduino-cli resolves it, read without printing the properties. */
+    private DfuUploadPattern dfuUploadPattern(String fqbn, Path sketchDirectory) {
+        Command command = captured("compile", "--fqbn", fqbn, "--show-properties=unexpanded",
+                absolute(sketchDirectory));
+        CommandResult result = executor.execute(command);
+        checkExit(command, result);
+        return DfuUploadPattern.from(fqbn, result.output());
     }
 
     /**
