@@ -42,7 +42,24 @@ locks, and the resets of JTAG, DMA, IO_QSPI and PADS_QSPI, whose reset-done bits
 It also cannot erase or program flash itself, so it is linked with `--wrap=flash_range_erase,--wrap=flash_range_program`
 and those calls, BTstack's bond storage and the EEPROM library among them, go through gateway operations 5 and 6, which
 accept only the sketch's own image area and the EEPROM sector. Juno's Pico 2 W runtime does all of this when the
-program uses `SecretStore`; the second core stays unused, as it cannot be started from the non-secure world.
+program uses `SecretStore`.
+
+## The second core
+
+Core 1 waits in the boot ROM for a launch handshake that only the secure world's inter-core FIFO reaches, so this
+firmware starts it itself, before the sketch: into a relay that gives core 1 the same SAU regions, interrupt and
+coprocessor hand-over as core 0, and then waits, from secure RAM, on the non-secure FIFO. There it answers the boot
+ROM's handshake (0, 0, 1, vector table, stack pointer, entry), checks that the three values are the sketch's own, and
+enters the entry non-secure. The sketch's `multicore_launch_core1`, FreeRTOS SMP's included, therefore starts its
+second core unchanged. Both cores may call the gateway; a lock in secure RAM runs one call at a time. A sketch that
+resets core 1 itself (`multicore_reset_core1`, `rp2040.restartCore1()`) sends it back to the boot ROM, which the
+non-secure FIFO cannot reach, so its relaunch never returns.
+
+Three things differ for a non-secure image on two cores, and Juno's runtime handles them: the SIO doorbells and the
+inter-core FIFO interrupt non-secure code on `SIO_IRQ_BELL_NS` and `SIO_IRQ_FIFO_NS`, which the SDK never enables
+(the sketch wraps `irq_set_enabled` and `irq_set_priority`); arduino-pico builds FreeRTOS secure-only, seeding each task
+with a return to the secure state (the sketch wraps `pxPortInitialiseStack`); and a store write idles the other core,
+as the EEPROM library does, since the flash leaves XIP mode while it is rewritten.
 
 ## What it does not do
 
@@ -52,6 +69,8 @@ and a USB cable can still read or replace the whole flash. The values are not en
 key would live in the same readable flash.
 
 A crash in the sketch (HardFault, BusFault and NMI stay with this firmware), a TrustZone violation or a fault in this
-firmware reboots the board into BOOTSEL with a record in the watchdog scratch registers. `JUNO_SECURE_FLAGS=-DJUNO_SECURE_DIAGNOSTICS ./build.sh` builds a development variant into `target/`
+firmware reboots the board into BOOTSEL with a record in the watchdog scratch registers. `JUNO_SECURE_FLAGS=-DJUNO_SECURE_FAULT_PC ./build.sh` builds, into `target/` only, a variant whose fault record
+keeps the faulting PC in scratch 0 and the core, `EXC_RETURN`, SFSR and exception in scratch 1, the two registers a
+BOOTSEL reboot leaves alone. `JUNO_SECURE_FLAGS=-DJUNO_SECURE_DIAGNOSTICS ./build.sh` builds a development variant into `target/`
 only, which instead reboots a hung or faulting start into an ordinary secure start of the sketch, so a probe sketch
 can print where it stopped. That variant defeats the fence by design and is never shipped.
