@@ -28,10 +28,12 @@ public final class PicoSecureFirmware {
     public static final String RAM_LENGTH_PROPERTY = "build.ram_length=504k";
     /**
      * The arduino-pico build property that routes the SDK's flash writes (BTstack's bonds, the EEPROM library) through
-     * the gateway: the sketch cannot erase or program flash itself from the non-secure world.
+     * the gateway, as the sketch cannot erase or program flash itself from the non-secure world, and that lets a
+     * program run on both cores: the SDK's inter-core doorbell and FIFO interrupts signal the non-secure world on
+     * their own lines, and arduino-pico's secure-only FreeRTOS seeds its tasks with a return to the secure state.
      */
-    public static final String WRAP_FLASH_PROPERTY =
-            "compiler.c.elf.extra_flags=-Wl,--wrap=flash_range_erase,--wrap=flash_range_program";
+    public static final String LINKER_WRAPS_PROPERTY = "compiler.c.elf.extra_flags=-Wl,--wrap=flash_range_erase,"
+            + "--wrap=flash_range_program,--wrap=irq_set_enabled,--wrap=irq_set_priority,--wrap=pxPortInitialiseStack";
 
     private static final String RESOURCE = "pico-secure/juno-pico-secure.bin";
     private static final int UF2_BLOCK = 512;

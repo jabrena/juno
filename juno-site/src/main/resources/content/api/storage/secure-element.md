@@ -35,9 +35,9 @@ fences off, and starts the program in the non-secure world, which reaches the sl
 `juno:flash` installs it with any program that uses the store; nothing has to be flashed first. Code on the board,
 libraries included, cannot read the sector directly — the read faults — but no fuse is written and debug stays on,
 so anyone with the board and a USB cable can still read or replace the whole flash, and the values are not encrypted.
-Such a program runs on one carrier, as the second core cannot be started from the non-secure world; its flash writes
-(BTstack's bonds, the EEPROM library) go through the firmware, so Wi-Fi and Bluetooth LE keep working. A crash
-reboots the board into BOOTSEL.
+Such a program still runs its virtual threads on both cores: the firmware starts the second core into a small relay
+that fences it the same way and hands it to the program non-secure. Its flash writes (BTstack's bonds, the EEPROM
+library) go through the firmware, so Wi-Fi and Bluetooth LE keep working. A crash reboots the board into BOOTSEL.
 
 **Status:** the SE050C2 path is confirmed on a Portenta H7 — writes, updates, per-name clears, a rewrite after a clear
 and a 63-byte value round-trip, plus a reboot that joins Wi-Fi from the stored credentials. The ESP32 NVS path is
