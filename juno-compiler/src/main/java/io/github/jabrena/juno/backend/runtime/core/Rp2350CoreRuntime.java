@@ -309,8 +309,8 @@ final class Rp2350CoreRuntime implements CoreRuntime {
 
     @Override
     public String threadPort(ResolvedRuntimeConfig config) {
-        return threadRuntime.renesasPort(
-                config.threadStackBytes());
+        return threadRuntime.rp2350Port(
+                config.threadStackBytes(), 1);
     }
 
     @Override

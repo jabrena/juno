@@ -61,7 +61,7 @@ final class ArduinoCli {
      */
     void compileForPicoSecureFirmware(String fqbn, Path sketchDirectory, Path buildDirectory) {
         run(captured("compile", "--fqbn", requireText(fqbn, "FQBN"), "--build-property",
-                PicoSecureFirmware.RAM_LENGTH_PROPERTY, "--build-property", PicoSecureFirmware.WRAP_FLASH_PROPERTY,
+                PicoSecureFirmware.RAM_LENGTH_PROPERTY, "--build-property", PicoSecureFirmware.LINKER_WRAPS_PROPERTY,
                 "--build-path", absolute(buildDirectory), absolute(sketchDirectory)));
     }
 

@@ -245,8 +245,7 @@ static bool juno_port_live_range(uint32_t slot, const uint8_t* marker, const uin
 // The preemption tick: SysTick, which the core leaves free (its startup code only binds a weak
 // default handler). Juno threads run on the main stack, but the handler reads EXC_RETURN anyway, so
 // the interrupted frame is found whichever stack the thread used.
-extern "C" uint32_t SystemCoreClock;
-extern "C" void juno_preempt_tick(uint32_t* frame);
+${JUNO_CORE_CLOCK_DECLARATION}extern "C" void juno_preempt_tick(uint32_t* frame);
 extern "C" void SysTick_Handler(void);
 __asm__(
     ".syntax unified\n"
@@ -268,7 +267,7 @@ __asm__(
 static void juno_port_preempt_start() {
   volatile uint32_t* systick = reinterpret_cast<volatile uint32_t*>(0xE000E010u);
   *reinterpret_cast<volatile uint8_t*>(0xE000ED23u) = 0xFFu;
-  systick[1] = SystemCoreClock / 1000u * JUNO_TIME_SLICE_MILLIS - 1u;
+  systick[1] = ${JUNO_CORE_CLOCK_HZ} / 1000u * JUNO_TIME_SLICE_MILLIS - 1u;
   systick[2] = 0u;
   systick[0] = 7u;
 }

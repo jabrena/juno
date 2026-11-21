@@ -64,11 +64,22 @@ public final class ThreadRuntime {
      * carrier stack of {@code stackBytes}. A context switch saves the AAPCS callee-saved registers (and, with an FPU,
      * {@code s16}-{@code s31}) on the outgoing stack before swapping {@code sp}; a thread that loses the carrier to
      * another one is frozen (its frames copied into an arena chunk) and thawed back to the same addresses later, by a
-     * switcher running on a small stack of its own.
+     * switcher running on a small stack of its own. The SysTick reload comes from the Renesas core's
+     * {@code SystemCoreClock}.
      */
     public String renesasPort(int stackBytes) {
+        return continuationPort(stackBytes, "extern \"C\" uint32_t SystemCoreClock;\n", "SystemCoreClock");
+    }
+
+    /**
+     * The same continuation port on one carrier with the core clock taken from {@code clockHz}: arduino-pico has no
+     * {@code SystemCoreClock}, so the RP2350 asks the SDK for {@code clk_sys}, which also follows an overclock.
+     */
+    private String continuationPort(int stackBytes, String clockDeclaration, String clockHz) {
         return runtimeSource.load("renesas/thread-port.cpp")
-                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
+                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes))
+                .replace("${JUNO_CORE_CLOCK_DECLARATION}", clockDeclaration)
+                .replace("${JUNO_CORE_CLOCK_HZ}", clockHz);
     }
 
     /**
@@ -121,7 +132,7 @@ public final class ThreadRuntime {
      * arduino-pico's FreeRTOS SMP, and every Juno thread is a FreeRTOS task pinned to one core, as on the ESP32.
      */
     public String rp2350Port(int stackBytes, int carrierCount) {
-        if (carrierCount == 1) return renesasPort(stackBytes);
+        if (carrierCount == 1) return continuationPort(stackBytes, "", "clock_get_hz(clk_sys)");
         return runtimeSource.load("rp2350/thread-port-dual.cpp")
                 .replace("${JUNO_DUAL_CARRIER_SLOTS}", Integer.toString(RuntimeLimits.MAX_DUAL_CARRIER_THREADS))
                 .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
