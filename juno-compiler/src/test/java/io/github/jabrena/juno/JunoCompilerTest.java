@@ -1560,8 +1560,11 @@ class JunoCompilerTest {
             assertThat(result.runtimeShim()).contains("static bool juno_portenta_tls_clock()", "set_time(static_cast<time_t>(",
                     "gmtime_r(&nowSeconds, &now);", "bool juno_certificates_current() {",
                     "mbedtls_ssl_get_peer_cert(tls->get_ssl_context())",
-                    "if (WiFiSSLClient::connect(host, port) != 1) return 0;")
+                    "if (WiFiSSLClient::connect(host, port) != 1) {")
                     .doesNotContain("mbedtls_x509_time_is_past(");
+            // and only one TLS session at a time, as the Mbed heap fits one: a second waits for the slot, not fails
+            assertThat(result.runtimeShim()).contains("while (juno_portenta_tls_busy) juno_io_wait(1);",
+                    "void stop() override {", "client.reset();", "juno_release_tls_slot();");
         }
 
 

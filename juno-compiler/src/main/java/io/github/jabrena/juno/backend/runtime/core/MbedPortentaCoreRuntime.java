@@ -99,6 +99,13 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
      * certificate. Each connection therefore first sets the clock over SNTP ({@code JUNO_SNTP_HOST}, default
      * {@code pool.ntp.org}), then checks the validity dates of every certificate the server sent, and fails if one
      * is outside them. If no time can be set, the connection fails.
+     *
+     * <p>One TLS session at a time: each takes ~35-45 KB of the Mbed heap for its record buffers, and the heap left
+     * beside the Juno arena (which also holds every thread's stack) fits one, so a second handshake would fail to
+     * allocate. A connection therefore waits for the TLS slot with {@code juno_io_wait}, which lets the other threads
+     * run, and gives it back when it stops, after freeing the Mbed client that holds the session's memory (closing
+     * the socket alone leaves it allocated until the client is destroyed). A client allocates nothing before it holds
+     * the slot, so the clients queued behind it cannot fragment the heap. Plain HTTP keeps its own leases.
      */
     @Override
     public String httpsHelpers() {
@@ -151,9 +158,22 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
                       + static_cast<uint64_t>(minute) * 100ull + static_cast<uint64_t>(second);
                 }
 
+                // Whether a TLS session holds the one slot the Mbed heap has room for.
+                static bool juno_portenta_tls_busy = false;
+
                 struct JunoPortentaHttpsClient : WiFiSSLClient {
-                  JunoPortentaHttpsClient() {
-                    setCACert(juno_portenta_ca);
+                  bool juno_tls_slot = false;
+
+                  // Nothing is allocated before the slot is held: setCACert creates the Mbed client and its buffers,
+                  // and clients queued for the slot holding those would leave the heap too fragmented for a session.
+                  ~JunoPortentaHttpsClient() {
+                    juno_release_tls_slot();
+                  }
+
+                  void juno_release_tls_slot() {
+                    if (!juno_tls_slot) return;
+                    juno_tls_slot = false;
+                    juno_portenta_tls_busy = false;
                   }
 
                   // Every certificate in the peer's chain must be within its validity dates. The prebuilt Mbed TLS
@@ -180,10 +200,26 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
 
                   int connect(const char* host, uint16_t port) override {
                     if (!juno_portenta_tls_clock()) return 0;
-                    if (WiFiSSLClient::connect(host, port) != 1) return 0;
+                    if (!juno_tls_slot) {
+                      while (juno_portenta_tls_busy) juno_io_wait(1);
+                      juno_portenta_tls_busy = true;
+                      juno_tls_slot = true;
+                    }
+                    // The Mbed client, and the roots it holds, are created here and freed again by stop().
+                    setCACert(juno_portenta_ca);
+                    if (WiFiSSLClient::connect(host, port) != 1) {
+                      stop();
+                      return 0;
+                    }
                     if (juno_certificates_current()) return 1;
                     stop();
                     return 0;
+                  }
+
+                  void stop() override {
+                    WiFiSSLClient::stop();
+                    client.reset();
+                    juno_release_tls_slot();
                   }
                 };
                 """.replace("${HOST}", server.host()).replace("${PORT}", Integer.toString(server.port()));
