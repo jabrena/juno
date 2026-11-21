@@ -8,6 +8,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.function.IntConsumer;
 
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -70,15 +71,16 @@ public final class FakeUsbBus implements Spi {
     private int hostReceiveToggle;
 
     public boolean connected = true;
-    boolean oscillatorOk = true;
+    public boolean oscillatorOk = true;
     int revision = 0x13;
-    int vendorId = 0x10C4;
+    public int vendorId = 0x10C4;
+    public int productId = 0xEA60;
     /** HXFR never completes: no device or a broken SPI link. */
     public boolean deadController;
     /** The bulk OUT endpoint answers with this result instead of accepting data (0 = accept). */
-    int bulkOutResult;
+    public int bulkOutResult;
     /** Interrupt and control requests answer STALL from this request number on (-1 = never). */
-    int stallRequest = -1;
+    public int stallRequest = -1;
     /** Bytes delivered per bulk IN packet, at most 64. */
     int bulkPacket = 64;
     public final List<Integer> lidarCommands = new ArrayList<>();
@@ -87,6 +89,10 @@ public final class FakeUsbBus implements Spi {
     public boolean lidarAnswers = true;
     /** Bytes the lidar streams after a scan command, queued on demand by the test. */
     public final Deque<Integer> scanStream = new ArrayDeque<>();
+    /** Handles each byte the host writes to the bulk OUT endpoint; the RPLIDAR unless a test plugs in another device. */
+    public IntConsumer bulkOutByte = this::lidarByte;
+    /** Whole bulk IN packets, each delivered by one IN transaction, before any UART bytes. */
+    private final Deque<int[]> bulkPackets = new ArrayDeque<>();
 
     public FakeUsbBus() {
         when(gpio.digitalPin("D10")).thenReturn(CHIP_SELECT);
@@ -107,6 +113,11 @@ public final class FakeUsbBus implements Spi {
         for (int result : results) {
             scriptedResults.add(result);
         }
+    }
+
+    /** Queues one whole bulk IN packet: the next IN transaction delivers exactly these bytes. */
+    public void receivePacket(int... bytes) {
+        bulkPackets.add(bytes.clone());
     }
 
     public void receive(int... bytes) {
@@ -259,6 +270,8 @@ public final class FakeUsbBus implements Spi {
             if ((value >> 8) == 1) {
                 descriptor[8] = (byte) vendorId;
                 descriptor[9] = (byte) (vendorId >> 8);
+                descriptor[10] = (byte) productId;
+                descriptor[11] = (byte) (productId >> 8);
             }
             for (int i = 0; i < descriptor.length && i < length; i++) {
                 controlData.add(descriptor[i] & 0xFF);
@@ -321,12 +334,18 @@ public final class FakeUsbBus implements Spi {
             return 6;
         }
         pumpLidar();
-        if (uartIn.isEmpty()) {
-            return 4;
-        }
         receiveFifo.clear();
         int count = 0;
-        while (!uartIn.isEmpty() && count < bulkPacket) {
+        int[] whole = bulkPackets.poll();
+        if (whole != null) {
+            for (int value : whole) {
+                receiveFifo.add(value);
+            }
+            count = whole.length;
+        } else if (uartIn.isEmpty()) {
+            return 4;
+        }
+        while (whole == null && !uartIn.isEmpty() && count < bulkPacket) {
             receiveFifo.add(uartIn.poll());
             count++;
         }
@@ -346,7 +365,7 @@ public final class FakeUsbBus implements Spi {
         if (hostSendToggle == deviceReceiveToggle) {
             for (int i = 0; i < sendCount && i < data.length; i++) {
                 uartOut.write(data[i]);
-                lidarByte(data[i] & 0xFF);
+                bulkOutByte.accept(data[i] & 0xFF);
             }
             deviceReceiveToggle ^= 1;
         }
