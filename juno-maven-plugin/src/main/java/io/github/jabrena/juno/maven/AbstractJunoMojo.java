@@ -143,9 +143,9 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
      */
     final void upload(ArduinoCli cli, CompiledSketch sketch, String port) {
         if (sketch.picoSecureFirmware()) {
-            cli.upload(sketch.fqbn(), port, sketch.directory(), sketch.buildDirectory());
+            cli.upload(sketch.fqbn(), port, sketch.directory(), sketch.buildDirectory(), dfuSerial());
         } else {
-            cli.upload(sketch.fqbn(), port, sketch.directory());
+            cli.upload(sketch.fqbn(), port, sketch.directory(), dfuSerial());
         }
     }
 

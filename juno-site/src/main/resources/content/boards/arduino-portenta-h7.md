@@ -112,6 +112,18 @@ Flash over USB serial by passing the Portenta's `/dev/cu.*` device to `juno:flas
   -Djuno.port=/dev/cu.usbmodem11201
 ```
 
+The Portenta uploads with `dfu-util`, which stops with "More than one DFU capable USB device found" when another DFU
+board is connected, a Nano ESP32 among them, since it offers DFU whenever it is plugged in. Name the Portenta by its USB
+serial number to upload with both connected:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:flash \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
+  -Djuno.board=arduino-portenta-h7 \
+  -Djuno.port=/dev/cu.usbmodem11201 \
+  -Djuno.dfuSerial=<Portenta USB serial>
+```
+
 The Portenta H7 Blink path has been uploaded successfully to the M7 core. `Blink` does not print serial output; use
 `juno:monitor` after upload when testing an example that calls `Serial.begin(...)`.
 
