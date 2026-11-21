@@ -55,7 +55,7 @@ public final class LidarExample {
 
 ## TI-84 Plus CE calculator
 
-`TiLink` (`io.github.jabrena.juno.hardware.device.ti`) puts sensor readings straight into a TI-84 Plus CE's lists. The calculator plugs into the shield with its ordinary computer cable, so it is the USB device and the board plays the part of TI Connect: it enumerates the calculator (`0451:E008`), agrees on a packet size, and sends variables over TI's USB link protocol (DUSB), as [tilibs](https://github.com/debrouxl/tilibs) implements it.
+`TiLink` (`io.github.jabrena.juno.hardware.device.ti`) puts sensor readings straight into a TI-84 Plus CE's lists. The calculator plugs into the shield with its ordinary computer cable, so it is the USB device and the board plays the part of TI Connect: it enumerates the calculator (`0451:E008`), agrees on a packet size, and sends variables over TI's USB link protocol (DUSB).
 
 | Method | What it does |
 |---|---|
