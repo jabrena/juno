@@ -20,12 +20,12 @@ class DfuUploadPatternTest {
     void shouldAppendTheSerialToTheCoresRecipe() {
         // When
         String property = DfuUploadPattern.from("arduino:mbed_portenta:envie_m7", PORTENTA)
-                .selecting("001D00293230510F31303431");
+                .selecting("0123456789ABCDEF01234567");
 
         // Then
         assertThat(property).isEqualTo("upload.pattern=\"{path}/{cmd}\" --device {upload.vid}:"
                 + "{upload.pid} -D \"{build.path}/{build.project_name}.bin\" -a{upload.interface} "
-                + "--dfuse-address={upload.address}:leave -S \"001D00293230510F31303431\"");
+                + "--dfuse-address={upload.address}:leave -S \"0123456789ABCDEF01234567\"");
     }
 
     @Test
@@ -40,8 +40,8 @@ class DfuUploadPatternTest {
                 """;
 
         // When & Then
-        assertThat(DfuUploadPattern.from("arduino:esp32:nano_nora", nano).selecting("206EF1332EC4"))
-                .startsWith("upload.pattern=").endsWith("-Q -S \"206EF1332EC4\"");
+        assertThat(DfuUploadPattern.from("arduino:esp32:nano_nora", nano).selecting("0A1B2C3D4E5F"))
+                .startsWith("upload.pattern=").endsWith("-Q -S \"0A1B2C3D4E5F\"");
     }
 
     @Test

@@ -295,7 +295,7 @@ class ArduinoCliTest {
             String sketchPath = sketch.toAbsolutePath().normalize().toString();
 
             // When
-            cli.upload(fqbn, "1-1.2", sketch, "001D00293230510F31303431");
+            cli.upload(fqbn, "1-1.2", sketch, "0123456789ABCDEF01234567");
 
             // Then
             assertThat(executor.invocations()).containsExactly(
@@ -303,7 +303,7 @@ class ArduinoCliTest {
                             sketchPath)),
                     captured(List.of("/opt/arduino-cli", "upload", "--port", "1-1.2", "--fqbn", fqbn,
                             "--upload-property", "upload.pattern=\"{path}/{cmd}\" --device "
-                                    + "{upload.vid}:{upload.pid} -D x.bin:leave -S \"001D00293230510F31303431\"",
+                                    + "{upload.vid}:{upload.pid} -D x.bin:leave -S \"0123456789ABCDEF01234567\"",
                             sketchPath)));
         }
 
