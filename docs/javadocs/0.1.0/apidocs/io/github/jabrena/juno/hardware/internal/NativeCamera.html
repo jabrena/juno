@@ -76,6 +76,7 @@ initTheme();
 <li><a href="#camera()" tabindex="0">camera()</a></li>
 <li><a href="#begin()" tabindex="0">begin()</a></li>
 <li><a href="#capture(byte%5B%5D)" tabindex="0">capture(byte[])</a></li>
+<li><a href="#setFrameSize(io.github.jabrena.juno.hardware.device.camera.FrameSize)" tabindex="0">setFrameSize(FrameSize)</a></li>
 </ol>
 </li>
 </ol>
@@ -119,7 +120,7 @@ core's <code>esp_camera</code> driver, so they have no Java body and cannot run,
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#begin()" class="member-name-link">begin</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Starts the camera at its fixed JPEG frame size and returns whether it initialized.</div>
+<div class="block">Starts the camera at <a href="../device/camera/FrameSize.html#QQVGA"><code>FrameSize.QQVGA</code></a> and returns whether it initialized.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="../device/camera/Camera.html" title="interface in io.github.jabrena.juno.hardware.device.camera">Camera</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#camera()" class="member-name-link">camera</a>()</code></div>
@@ -130,6 +131,12 @@ core's <code>esp_camera</code> driver, so they have no Java body and cannot run,
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#capture(byte%5B%5D)" class="member-name-link">capture</a><wbr>(byte[]&nbsp;jpeg)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Waits for the next frame and copies its JPEG bytes into <code>jpeg</code> from index 0.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFrameSize(io.github.jabrena.juno.hardware.device.camera.FrameSize)" class="member-name-link">setFrameSize</a><wbr>(<a href="../device/camera/FrameSize.html" title="enum class in io.github.jabrena.juno.hardware.device.camera">FrameSize</a>&nbsp;frameSize)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Switches the sensor to <code>frameSize</code> and drops the frames already taken at the old size, so the next
+<a href="../device/camera/Camera.html#capture(byte%5B%5D)"><code>Camera.capture(byte[])</code></a> is at the new one.</div>
 </div>
 </div>
 </div>
@@ -163,7 +170,7 @@ core's <code>esp_camera</code> driver, so they have no Java body and cannot run,
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">begin</span>()</div>
 <div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../device/camera/Camera.html#begin()">Camera</a></code></span></div>
-<div class="block">Starts the camera at its fixed JPEG frame size and returns whether it initialized.</div>
+<div class="block">Starts the camera at <a href="../device/camera/FrameSize.html#QQVGA"><code>FrameSize.QQVGA</code></a> and returns whether it initialized.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../device/camera/Camera.html#begin()">begin</a></code>&nbsp;in interface&nbsp;<code><a href="../device/camera/Camera.html" title="interface in io.github.jabrena.juno.hardware.device.camera">Camera</a></code></dd>
@@ -182,6 +189,22 @@ bytes, or <code>-1</code> when the camera is not started, no frame arrived, or t
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../device/camera/Camera.html#capture(byte%5B%5D)">capture</a></code>&nbsp;in interface&nbsp;<code><a href="../device/camera/Camera.html" title="interface in io.github.jabrena.juno.hardware.device.camera">Camera</a></code></dd>
+</dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="setFrameSize(io.github.jabrena.juno.hardware.device.camera.FrameSize)">
+<h3>setFrameSize</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">setFrameSize</span><wbr><span class="parameters">(<a href="../device/camera/FrameSize.html" title="enum class in io.github.jabrena.juno.hardware.device.camera">FrameSize</a>&nbsp;frameSize)</span></div>
+<div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../device/camera/Camera.html#setFrameSize(io.github.jabrena.juno.hardware.device.camera.FrameSize)">Camera</a></code></span></div>
+<div class="block">Switches the sensor to <code>frameSize</code> and drops the frames already taken at the old size, so the next
+<a href="../device/camera/Camera.html#capture(byte%5B%5D)"><code>Camera.capture(byte[])</code></a> is at the new one. Returns <code>false</code> when the camera is not started. A larger frame
+needs a larger <code>jpeg</code> buffer.</div>
+<dl class="notes">
+<dt>Specified by:</dt>
+<dd><code><a href="../device/camera/Camera.html#setFrameSize(io.github.jabrena.juno.hardware.device.camera.FrameSize)">setFrameSize</a></code>&nbsp;in interface&nbsp;<code><a href="../device/camera/Camera.html" title="interface in io.github.jabrena.juno.hardware.device.camera">Camera</a></code></dd>
 </dl>
 </div>
 </section>

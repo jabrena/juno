@@ -386,7 +386,7 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 <tr>
 <td>HTTP response streaming</td>
 <td align="center">✓</td>
-<td><code>sendResponseHeaders(200, 0)</code> sends the camera's MJPEG response until the viewer disconnects; build it with <code>-Djuno.Xmx=16k</code>.</td>
+<td><code>sendResponseHeaders(200, 0)</code> sends the camera's MJPEG response until the viewer disconnects; build it with <code>-Djuno.Xmx=59k</code>.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/AiThinkerEsp32CamStream.java"><code>AiThinkerEsp32CamStream</code></a></td>
 </tr>
 <tr>
@@ -416,7 +416,7 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 <tr>
 <td>OV2640 camera</td>
 <td align="center">✓</td>
-<td><code>MCU.getCamera()</code> captures JPEG frames into a caller-owned buffer; the native driver owns the camera frame buffer.</td>
+<td><code>MCU.getCamera()</code> captures JPEG frames into a caller-owned buffer; the native driver owns the camera frame buffer. <code>setFrameSize(FrameSize)</code> switches between 160×120 and 800×600 at run time; the GPIO4 flash LED is a plain <code>D4</code> output.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/camera/AiThinkerEsp32CamCapture.java"><code>AiThinkerEsp32CamCapture</code></a></td>
 </tr>
 <tr>
@@ -462,6 +462,53 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 <p><strong>Remove the microSD card before every upload.</strong> The card holds GPIO2 high, which keeps the ESP32 out of download
 mode, so <code>juno:flash</code> cannot connect while it is inserted. Upload with the card out, put it back, then reset the
 board; opening <code>juno:monitor</code> resets it too, through the adapter's DTR/RTS lines.</p>
+<h2 id="camera">Camera</h2>
+<p><code>Camera.begin()</code> starts the OV2640 at <code>FrameSize.QQVGA</code> (160×120), small enough to stream from a few kilobytes of
+buffer. <code>Camera.setFrameSize(FrameSize)</code> switches it at run time to <code>QQVGA</code> (160×120), <code>QVGA</code> (320×240), <code>VGA</code>
+(640×480) or <code>SVGA</code> (800×600), and drops the frames already taken at the old size, so the next <code>capture</code> is at the new
+one; each <code>FrameSize</code> also gives its <code>width()</code> and <code>height()</code>. A larger frame needs a larger buffer: a 640×480 JPEG
+takes tens of kilobytes, and <code>capture</code> returns <code>-1</code> for a frame that does not fit rather than truncating it.</p>
+<pre><code class="language-java">Camera camera = MCU.getCamera();
+byte[] jpeg = new byte[49152];
+if (camera.begin() &amp;&amp; camera.setFrameSize(FrameSize.VGA)) {
+    int length = camera.capture(jpeg);
+}
+</code></pre>
+<h3 id="flash-led">Flash LED</h3>
+<p>The bright white LED next to the lens is the flash. It is not part of <code>Camera</code>: it sits on GPIO4, which the board
+numbers as <code>D4</code>, so it is an ordinary digital output. Light it before the capture and turn it off right after:</p>
+<pre><code class="language-java">Gpio gpio = MCU.getGpio();
+int flash = gpio.digitalPin(&quot;D4&quot;);
+gpio.pinMode(flash, gpio.getOutput());
+
+gpio.digitalWrite(flash, true);
+camera.setFrameSize(FrameSize.VGA);    // drops the frames queued before the light came on
+int length = camera.capture(jpeg);
+gpio.digitalWrite(flash, false);
+</code></pre>
+<p>The camera keeps up to two frames queued, so a frame taken right after the LED goes on may still have been exposed
+without it: switching the frame size drops the queued frames, or capture and discard one frame first. Keep the LED on
+only for the photo: it is bright and gets hot when left lit.</p>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/AiThinkerEsp32CamStream.java"><code>AiThinkerEsp32CamStream</code></a>
+serves four paths: <code>GET /</code> is a page with the live view, <code>GET /stream</code> is a 160×120 MJPEG stream, <code>GET /capture</code>
+takes one fresh 640×480 photo on every request, and <code>GET /capture/flash</code> takes it with the flash lit. It reads
+<code>wifi.ssid</code> and <code>wifi.password</code> from the board's secret store (provision them once with <code>juno:secret</code>), and its 48 KB
+frame buffer needs a larger arena:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash -Djuno.board=ai-thinker-esp32-cam -Djuno.port=&lt;PORT&gt; \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.net.http.AiThinkerEsp32CamStream -Djuno.Xmx=59k
+</code></pre>
+<p><code>-Djuno.Xmx=60k</code> does not link: the arena would overflow the ESP32's static DRAM segment by a few hundred bytes. The
+server answers one connection at a time, so a second viewer waits until the first one leaves.</p>
+<h3 id="when-the-camera-does-not-start">When the camera does not start</h3>
+<ul>
+<li><code>Camera probe failed</code>, <code>sccb-ng … fail</code>, or <code>assert failed: xQueueGenericSendFromISR … (pxQueue)</code> at boot mean the
+OV2640 is not answering. That is the ribbon cable or the module's seating, not the program: reseat the ribbon with
+the power off, then unplug the board for a few seconds before powering it again, since a reset alone does not power
+the sensor down. Juno clocks the sensor at 10 MHz rather than 20, which marginal modules probe more reliably.</li>
+<li>The stream example retries a camera start that fails and carries <code>@Watchdog</code>, so a start that hangs inside the
+driver reboots the board instead of leaving it silent.</li>
+<li>If uploads still fail with the card out, hold IO0 low through the whole upload.</li>
+</ul>
     </div>
   </section>
 </article>

@@ -81,8 +81,13 @@ the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../../BoardMod
 board the program was compiled for) and <a href="../../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.internal">io.github.jabrena.juno.hardware.internal</a></div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.camera">io.github.jabrena.juno.hardware.device.camera</a></div>
 <div class="col-last odd-row-color">
+<div class="block">Still-image camera: <a href="Camera.html" title="interface in io.github.jabrena.juno.hardware.device.camera"><code>Camera</code></a> delivers each JPEG frame into a buffer
+the program owns.</div>
+</div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.internal">io.github.jabrena.juno.hardware.internal</a></div>
+<div class="col-last even-row-color">
 <div class="block">The board's native implementations: the classes whose methods are compiler intrinsics.</div>
 </div>
 </div>
@@ -102,6 +107,19 @@ the program's flash usage).</div>
 </section>
 </li>
 <li>
+<section class="detail" id="io.github.jabrena.juno.hardware.device.camera">
+<div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.hardware.device.camera</a> used by <a href="package-summary.html">io.github.jabrena.juno.hardware.device.camera</a></span></div>
+<div class="summary-table two-column-summary">
+<div class="table-header col-first">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="class-use/FrameSize.html#io.github.jabrena.juno.hardware.device.camera">FrameSize</a></div>
+<div class="col-last even-row-color">
+<div class="block">The frame sizes <a href="Camera.html#setFrameSize(io.github.jabrena.juno.hardware.device.camera.FrameSize)"><code>Camera.setFrameSize(FrameSize)</code></a> switches the sensor between, smallest first.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
 <section class="detail" id="io.github.jabrena.juno.hardware.internal">
 <div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.hardware.device.camera</a> used by <a href="../../internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></span></div>
 <div class="summary-table two-column-summary">
@@ -110,6 +128,10 @@ the program's flash usage).</div>
 <div class="col-first even-row-color"><a href="class-use/Camera.html#io.github.jabrena.juno.hardware.internal">Camera</a></div>
 <div class="col-last even-row-color">
 <div class="block">A still-image camera that delivers each frame as JPEG bytes into a buffer the program owns.</div>
+</div>
+<div class="col-first odd-row-color"><a href="class-use/FrameSize.html#io.github.jabrena.juno.hardware.internal">FrameSize</a></div>
+<div class="col-last odd-row-color">
+<div class="block">The frame sizes <a href="Camera.html#setFrameSize(io.github.jabrena.juno.hardware.device.camera.FrameSize)"><code>Camera.setFrameSize(FrameSize)</code></a> switches the sensor between, smallest first.</div>
 </div>
 </div>
 </section>
