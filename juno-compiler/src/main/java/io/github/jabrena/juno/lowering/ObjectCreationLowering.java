@@ -7,6 +7,7 @@ import io.github.jabrena.juno.classfile.MethodRef;
 import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.intrinsic.IntrinsicRegistry;
 import io.github.jabrena.juno.intrinsic.RandomAccessFileMethods;
+import io.github.jabrena.juno.intrinsic.SocketMethods;
 import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.Value;
 import io.github.jabrena.juno.linker.AtomicSupport;
@@ -94,7 +95,9 @@ final class ObjectCreationLowering implements InstructionLowering {
 
     /** Lowers a constructor {@link #buildsHandle} accepts. */
     void construct(Instruction instruction, MethodRef called) {
-        if (bigNumberSupport.isConstruction(called) || uuidSupport.isConstruction(called)
+        if (called.equals(SocketMethods.OUTPUT_STREAM_CONSTRUCTOR)) {
+            stack.pop();
+        } else if (bigNumberSupport.isConstruction(called) || uuidSupport.isConstruction(called)
                 || datagramSupport.isConstruction(called) || socketSupport.isConstruction(called)
                 || atomicSupport.isConstruction(called) || concurrencySupport.isConstruction(called)
                 || called.equals(LockSupport.POLICY_CONSTRUCTOR)) {

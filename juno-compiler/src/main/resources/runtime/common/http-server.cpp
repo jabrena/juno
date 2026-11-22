@@ -200,3 +200,68 @@ extern "C" void juno_http_server_respond_builder(int32_t status, const char* con
   juno_http_server_respond_bytes(status, contentType, reinterpret_cast<const char*>(buffer), length);
 }
 
+static constexpr int32_t JUNO_HTTP_SERVER_RESPONSE_CAPACITY = 512;
+static uint8_t juno_http_server_response_buffer[JUNO_HTTP_SERVER_RESPONSE_CAPACITY];
+static int32_t juno_http_server_response_length = 0;
+static int32_t juno_http_server_response_status = 200;
+static int32_t juno_http_server_response_content_type = 0;
+static bool juno_http_server_response_overflowed = false;
+
+static const char* juno_http_server_response_content_type_text(int32_t contentType) {
+  switch (contentType) {
+    case 1: return "application/json";
+    case 2: return "application/problem+json";
+    default: return "text/plain";
+  }
+}
+
+extern "C" void juno_socket_register_output_stream(
+    int32_t handle, void (*writeHook)(int32_t, const uint8_t*, int32_t, int32_t),
+    void (*byteHook)(int32_t, int32_t), void (*closeHook)(int32_t));
+
+static void juno_http_server_response_stream_write(int32_t, const uint8_t* payload, int32_t offset, int32_t length) {
+  if (payload == nullptr || offset < 0 || length < 0
+      || length > JUNO_HTTP_SERVER_RESPONSE_CAPACITY - juno_http_server_response_length) {
+    juno_http_server_response_overflowed = true;
+    return;
+  }
+  for (int32_t index = 0; index < length; index++) {
+    juno_http_server_response_buffer[juno_http_server_response_length++] = payload[offset + index];
+  }
+}
+
+static void juno_http_server_response_stream_write_byte(int32_t, int32_t value) {
+  if (juno_http_server_response_length >= JUNO_HTTP_SERVER_RESPONSE_CAPACITY) {
+    juno_http_server_response_overflowed = true;
+    return;
+  }
+  juno_http_server_response_buffer[juno_http_server_response_length++] = static_cast<uint8_t>(value);
+}
+
+static void juno_http_server_response_stream_close(int32_t) {
+  if (juno_http_server_response_overflowed) {
+    static const char overflow[] = "response body exceeds the 512-byte board buffer";
+    juno_http_server_respond_bytes(500, "text/plain", overflow, static_cast<int32_t>(sizeof(overflow) - 1));
+    return;
+  }
+  juno_http_server_respond_bytes(juno_http_server_response_status,
+      juno_http_server_response_content_type_text(juno_http_server_response_content_type),
+      reinterpret_cast<const char*>(juno_http_server_response_buffer), juno_http_server_response_length);
+}
+
+extern "C" void juno_http_server_response_stream(int32_t handle) {
+  juno_socket_register_output_stream(handle, juno_http_server_response_stream_write,
+      juno_http_server_response_stream_write_byte, juno_http_server_response_stream_close);
+}
+
+extern "C" void juno_http_server_response_begin(int32_t status, int32_t contentType) {
+  juno_http_server_response_status = status;
+  juno_http_server_response_content_type = contentType;
+  juno_http_server_response_length = 0;
+  juno_http_server_response_overflowed = false;
+}
+
+extern "C" void juno_http_server_response_write_byte(int32_t value) {
+  juno_http_server_response_stream_write_byte(0, value);
+}
+

@@ -267,6 +267,12 @@ public final class IntrinsicLowering {
         shim(Intrinsic.SOCKET_CLOSE, "juno_socket_close", Result.NONE, List.of(RECEIVER), runtime);
         shim(Intrinsic.SOCKET_OUTPUT_STREAM_WRITE, "juno_socket_output_stream_write", Result.NONE,
                 List.of(RECEIVER, arg(0), arg(1), arg(2)), runtime);
+        shim(Intrinsic.SOCKET_OUTPUT_STREAM_INIT, "juno_socket_output_stream_init", Result.NONE,
+                List.of(RECEIVER), runtime);
+        shim(Intrinsic.SOCKET_OUTPUT_STREAM_WRITE_BYTE, "juno_socket_output_stream_write_byte", Result.NONE,
+                List.of(RECEIVER, arg(0)), runtime);
+        shim(Intrinsic.SOCKET_OUTPUT_STREAM_CLOSE, "juno_socket_output_stream_close", Result.NONE,
+                List.of(RECEIVER), runtime);
     }
 
     private void registerUuid() {
@@ -972,6 +978,13 @@ public final class IntrinsicLowering {
                 List.of(arg(0), literal(0), arg(1)), server);
         shim(Intrinsic.HTTP_SERVER_RESPOND_BUILDER, "juno_http_server_respond_builder", Result.NONE,
                 List.of(arg(0), literal(0), arg(1)), server);
+        shim(Intrinsic.HTTP_SERVER_RESPONSE_STREAM, "juno_http_server_response_stream", Result.NONE,
+                List.of(arg(0)), ShimFeature.HTTP_SERVER, ShimFeature.RUNTIME_STRINGS,
+                ShimFeature.STRING_BUILDER, ShimFeature.SOCKET);
+        shim(Intrinsic.HTTP_SERVER_RESPONSE_BEGIN, "juno_http_server_response_begin", Result.NONE,
+                List.of(arg(0), arg(1)), server);
+        shim(Intrinsic.HTTP_SERVER_RESPONSE_WRITE_BYTE, "juno_http_server_response_write_byte", Result.NONE,
+                List.of(arg(0)), server);
         shim(Intrinsic.HTTP_SERVER_BEGIN_TLS, "juno_http_server_begin_tls", Result.WORD,
                 List.of(arg(0), arg(1), arg(2), arg(3), arg(4)), ShimFeature.HTTP_SERVER, ShimFeature.HTTPS_SERVER,
                 ShimFeature.RUNTIME_STRINGS, ShimFeature.STRING_BUILDER);
