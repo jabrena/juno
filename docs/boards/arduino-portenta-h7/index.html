@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-M6FYOHIC.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-AOEEMNED.css" />
 
 </head>
 <body>
@@ -429,7 +429,7 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
 <tr>
 <td>HTTP and HTTPS client/server</td>
 <td align="center">✓</td>
-<td>Plain HTTP uses the Mbed Wi-Fi sockets; HTTPS clients use <code>WiFiSSLClient</code>, and the HTTPS server uses the core's bundled mbedTLS. Confirmed on hardware: the HTTP and HTTPS clients, a plain HTTP server on port 80 (<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PortentaHttpServer.java"><code>PortentaHttpServer</code></a>), and an HTTPS server on port 443 whose certificate and key are sent over USB at boot (<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PortentaHttpsServer.java"><code>PortentaHttpsServer</code></a>).</td>
+<td>Plain HTTP uses the Mbed Wi-Fi sockets; HTTPS clients use <code>WiFiSSLClient</code>, and the HTTPS server uses the core's bundled mbedTLS. Confirmed on hardware: the HTTP and HTTPS clients, a plain HTTP server on port 80 through the JDK <code>com.sun.net.httpserver</code> API, with Wi-Fi credentials from the SE050C2 secret store and the Hat Carrier's MHS-3.5 TFT as its LED (<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PortentaHttpServer.java"><code>PortentaHttpServer</code></a>). The <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox/server/Mailbox.java"><code>Mailbox</code></a> serves HTTPS through the JDK <code>HttpsServer</code>, with its certificate and key on the Hat Carrier's microSD card.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpsMethods.java"><code>HttpsMethods</code></a></td>
 </tr>
 <tr>
@@ -528,6 +528,15 @@ while (true) {
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-portenta-h7 \
   -Djuno.port=/dev/cu.usbmodem11201
+</code></pre>
+<p>The Portenta uploads with <code>dfu-util</code>, which stops with &quot;More than one DFU capable USB device found&quot; when another DFU
+board is connected, a Nano ESP32 among them, since it offers DFU whenever it is plugged in. Name the Portenta by its USB
+serial number to upload with both connected:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
+  -Djuno.board=arduino-portenta-h7 \
+  -Djuno.port=/dev/cu.usbmodem11201 \
+  -Djuno.dfuSerial=&lt;Portenta USB serial&gt;
 </code></pre>
 <p>The Portenta H7 Blink path has been uploaded successfully to the M7 core. <code>Blink</code> does not print serial output; use
 <code>juno:monitor</code> after upload when testing an example that calls <code>Serial.begin(...)</code>.</p>

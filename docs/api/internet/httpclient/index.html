@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-M6FYOHIC.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-AOEEMNED.css" />
 
 </head>
 <body>
@@ -531,11 +531,12 @@ json.reset().beginObject()
         .name(&quot;temperature&quot;).value(21.4)
         .name(&quot;ok&quot;).value(true)
         .endObject();
-HttpServer.respond(HttpStatus.OK, &quot;application/json&quot;, json.toString());
+HttpRequest request = HttpRequest.newBuilder(uri)
+        .POST(HttpRequest.BodyPublishers.ofString(json.toString())).build();
 </code></pre>
 <p><code>value</code> takes a <code>String</code>, a <code>char[]</code> with a length, an <code>int</code>, a <code>long</code>, a <code>double</code> (up to 15 significant digits, laid
 out as <code>Double.toString</code> does) or a <code>boolean</code>; <code>nullValue()</code> writes <code>null</code>. <code>toString()</code> copies the body into a
-<code>String</code> for <code>HttpServer.respond</code> or <code>HttpRequest.BodyPublishers.ofString</code>; <code>length()</code> gives its size in the buffer.</p>
+<code>String</code> for a server's response or <code>HttpRequest.BodyPublishers.ofString</code>; <code>length()</code> gives its size in the buffer.</p>
 <p>Output that does not fit the buffer is dropped, and <code>overflowed()</code> turns <code>true</code>. It also turns <code>true</code> for a name
 outside an object, an unbalanced <code>end...</code> call, or a NaN or infinite <code>double</code>, which JSON cannot write.</p>
 <h2 id="interacting-with-https-endpoints">Interacting with HTTPS endpoints</h2>

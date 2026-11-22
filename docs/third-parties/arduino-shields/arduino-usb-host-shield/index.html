@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="Arduino USB Host Shield">
   <meta property="og:site_name" content="Juno: Java for Arduino">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="Arduino USB Host Shield: a MAX3421E USB host controller that enumerates one device, driven by UsbHostShield.">
-  <meta property="og:description" content="Arduino USB Host Shield: a MAX3421E USB host controller that enumerates one device, driven by UsbHostShield." />
-  <meta name="twitter:description" content="Arduino USB Host Shield: a MAX3421E USB host controller that enumerates one device, driven by UsbHostShield.">
+  <meta name="description" content="Arduino USB Host Shield: a MAX3421E USB host controller that enumerates one device, driven by UsbHostShield, with drivers for a CP210x bridge, an RPLIDAR A2 and a TI-84 Plus CE.">
+  <meta property="og:description" content="Arduino USB Host Shield: a MAX3421E USB host controller that enumerates one device, driven by UsbHostShield, with drivers for a CP210x bridge, an RPLIDAR A2 and a TI-84 Plus CE." />
+  <meta name="twitter:description" content="Arduino USB Host Shield: a MAX3421E USB host controller that enumerates one device, driven by UsbHostShield, with drivers for a CP210x bridge, an RPLIDAR A2 and a TI-84 Plus CE.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/third-parties/arduino-shields/arduino-usb-host-shield/" />
@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-M6FYOHIC.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-AOEEMNED.css" />
 
 </head>
 <body>
@@ -308,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </header>
     <div class="content-prose">
 <p>A Maxim MAX3421E USB host controller with a USB-A socket. <code>UsbHostShield</code> drives it over SPI as plain Java, with no Arduino library: it enumerates one full- or low-speed device plugged straight into the socket (no hubs) and offers control and bulk transfers. The shield takes SPI from the ICSP header and selects the chip with D10; D9, its interrupt line, stays free because the driver polls.</p>
-<p>Two drivers build on it. <code>Cp210xSerial</code> opens a Silicon Labs CP210x USB-to-UART bridge (baud rate, 8N1, DTR and RTS), and <code>RplidarA2</code> reads a Slamtec RPLIDAR A2 (A2M8) through that bridge, one revolution at a time into a 360-entry array of distances in millimetres.</p>
+<p>Three drivers build on it. <code>Cp210xSerial</code> opens a Silicon Labs CP210x USB-to-UART bridge (baud rate, 8N1, DTR and RTS), and <code>RplidarA2</code> reads a Slamtec RPLIDAR A2 (A2M8) through that bridge, one revolution at a time into a 360-entry array of distances in millimetres. <code>TiLink</code> sends lists to a TI-84 Plus CE graphing calculator over TI's USB link protocol, the way TI Connect does.</p>
 <img src="../../../images/shields/shield-usb-host.png" alt="Arduino USB Host Shield" width="280">
 <h2 id="api">API</h2>
 <table>
@@ -375,6 +375,38 @@ public final class LidarExample {
 }
 </code></pre>
 <p><code>startMotor()</code> sends the A2's <code>SET_MOTOR_PWM</code> command: without it the head stands still, and a scan delivers no measurements. Call <code>poll</code> continuously while scanning, since the bridge buffers only half a second of data. <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lidar/UsbHostRplidarA2Scan.java"><code>UsbHostRplidarA2Scan</code></a> prints a summary every ten revolutions and reconnects when the lidar is unplugged.</p>
+<h2 id="ti-84-plus-ce-calculator">TI-84 Plus CE calculator</h2>
+<p><code>TiLink</code> (<code>io.github.jabrena.juno.hardware.device.ti</code>) puts sensor readings straight into a TI-84 Plus CE's lists. The calculator plugs into the shield with its ordinary computer cable, so it is the USB device and the board plays the part of TI Connect: it enumerates the calculator (<code>0451:E008</code>), agrees on a packet size, and sends variables over TI's USB link protocol (DUSB).</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connect()</code></td>
+<td>Enumerates the calculator, checks it is a TI-84 Plus family model and puts it in normal mode.</td>
+</tr>
+<tr>
+<td><code>sendList(list, values, count, decimals)</code></td>
+<td>Replaces <code>L1</code> to <code>L6</code> with <code>count</code> values, each <code>values[i] / 10^decimals</code>; an <code>int[]</code> or a <code>long[]</code> (up to fourteen digits). At most 100 values.</td>
+</tr>
+<tr>
+<td><code>isConnected()</code>, <code>lastError()</code></td>
+<td>Whether the link is up, and which <code>ERROR_*</code> step failed; <code>lastCalculatorError()</code> holds the calculator's own code when it refuses a variable.</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-java">TiLink calculator = new TiLink();
+int[] celsius = {23, 24, 24};
+if (calculator.connect() &amp;&amp; calculator.sendList(2, celsius, celsius.length, 0)) {
+    // L2 is now {23 24 24}
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/ti/GroveDht11TiLists.java"><code>GroveDht11TiLists</code></a> logs a Grove DHT11 every five seconds: <code>L1</code> holds the UTC date and time as <code>YYYYMMDDHHMMSS</code>, <code>L2</code> the temperature and <code>L3</code> the humidity. On the calculator, <code>[stat]</code> → <strong>Edit…</strong> shows them as a table, and a STAT PLOT of <code>L1</code> against <code>L2</code> graphs them.</p>
+<p>The calculator takes variables at the home screen and in most menus; an app such as EasyData can keep it busy until it is closed. EasyData and the Hub app cannot read the board this way: they talk only to devices plugged into the calculator as USB host, through a mini-A plug.</p>
     </div>
   </section>
 </article>

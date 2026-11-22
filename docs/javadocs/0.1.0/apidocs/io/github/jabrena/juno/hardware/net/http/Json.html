@@ -109,7 +109,7 @@ initTheme();
 document once and returns its root <a href="JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonValue</code></a>, navigated with <code>get(String)</code> and <code>get(int)</code> and read
 with <code>asInt()</code>, <code>asDouble()</code>, <code>asString()</code> and similar methods; <a href="JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonWriter</code></a> produces JSON.
 The document is read where it is, from a <code>java.net.http</code> response body held in a <code>String</code> or from a
-<code>byte[]</code> buffer such as an <a href="HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> request body; there is no parsed tree.
+<code>byte[]</code> buffer such as a server's request body; there is no parsed tree.
 
 <p>Unlike JEP 540 nothing throws: a missing member, a type mismatch or an invalid document gives a value whose
 <a href="JsonValue.html#type()"><code>JsonValue.type()</code></a> says so, and its conversions return zero values or <code>null</code>. The scanner validates

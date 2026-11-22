@@ -16,6 +16,7 @@ io.github.jabrena.juno.hardware.device.motor
 io.github.jabrena.juno.hardware.device.sd
 io.github.jabrena.juno.hardware.device.servo
 io.github.jabrena.juno.hardware.device.tft
+io.github.jabrena.juno.hardware.device.ti
 io.github.jabrena.juno.hardware.device.usb
 io.github.jabrena.juno.hardware.display
 io.github.jabrena.juno.hardware.fonts
@@ -37,8 +38,10 @@ io.github.jabrena.juno.hardware.touch
 io.github.jabrena.juno.javax.net.ssl
 io.github.jabrena.juno.jdk.net
 io.github.jabrena.juno.jdk.net.http
+io.github.jabrena.juno.jdk.net.httpserver
 io.github.jabrena.juno.jdk.security
 io.github.jabrena.juno.jdk.security.cert
+io.github.jabrena.juno.jdk.security.spec
 io.github.jabrena.juno.jdk.util
 io.github.jabrena.juno.remote.lego.pf
 io.github.jabrena.juno.remote.lego.poweredup
