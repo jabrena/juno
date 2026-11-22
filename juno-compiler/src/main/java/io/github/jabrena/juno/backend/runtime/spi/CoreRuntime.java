@@ -154,7 +154,7 @@ public interface CoreRuntime {
     String wifiHelpers();
 
     /**
-     * The core's half of {@link io.github.jabrena.juno.hardware.net.http.HttpServer}: defines
+     * The core's half of the board's HTTP server ({@code NativeHttpServer}): defines
      * {@code juno_http_server_begin}, {@code JunoHttpClient}, the {@code juno_http_server_client} the
      * shared request parser reads from, {@code juno_http_server_next_client()} (true once a client is
      * waiting and stored in {@code juno_http_server_client}) and {@code juno_http_server_release()}
@@ -163,7 +163,7 @@ public interface CoreRuntime {
     String httpServerTransport();
 
     /**
-     * {@link #httpServerTransport()} for a program that calls {@code HttpServer.beginTls}: the same contract, plus
+     * {@link #httpServerTransport()} for a program that calls {@code NativeHttpServer.beginTls}: the same contract, plus
      * {@code juno_http_server_begin_tls}, with each accepted connection wrapped in a TLS server session. Only cores
      * whose boards declare the {@code HTTPS_SERVER} capability provide it; the linker rejects the call elsewhere first.
      */
@@ -380,11 +380,6 @@ public interface CoreRuntime {
     /** The BLE central names the LEGO runtime uses on this core. */
     default BleNames bleNames() {
         return BleNames.ARDUINO_BLE;
-    }
-
-    /** Core-specific streamed-response helpers, emitted after the HTTP server transport; only the ESP32-CAM provides them. */
-    default String httpStreamHelpers() {
-        throw new IllegalStateException("This core cannot stream HTTP responses; the linker should have rejected beginStream");
     }
 
     /** Core-specific headers of the camera driver; only a core whose board declares {@code CAMERA} provides them. */

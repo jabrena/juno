@@ -326,6 +326,7 @@ public final class RuntimeShim {
                 new ShimFeatureBlock(ShimFeature.SOCKET, () -> socketRuntime.helpers(
                         throwableClasses.indexOf("java/io/IOException"),
                         throwableClasses.indexOf("java/lang/IllegalArgumentException"))),
+                new ShimFeatureBlock(ShimFeature.INPUT_STREAMS, shimLibraries::inputStreamHelpers),
                 new ShimFeatureBlock(ShimFeature.STRING_FROM_BYTES, shimLibraries::stringFromBytesHelpers)));
         if (usesAny(ShimFeature.HTTPS, ShimFeature.HTTPS_TRUSTED_CERTIFICATE, ShimFeature.SMTP, ShimFeature.SMTP_TLS,
                 ShimFeature.POP3)) {
@@ -345,10 +346,8 @@ public final class RuntimeShim {
         if (uses(ShimFeature.HTTP_SERVER)) {
             shim.append(networkShimLibraries.httpServerHelpers(
                     uses(ShimFeature.HTTPS_SERVER) ? core.httpsServerTransport() : core.httpServerTransport(),
-                    uses(ShimFeature.HTTP_SERVER_HEADERS)));
-        }
-        if (uses(ShimFeature.HTTP_STREAM)) {
-            shim.append(core.httpStreamHelpers());
+                    uses(ShimFeature.HTTP_SERVER_HEADERS), uses(ShimFeature.HTTP_SERVER_RESPONSE),
+                    uses(ShimFeature.HTTP_SERVER_REQUEST_BODY)));
         }
         if (usesAny(ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3)) {
             shim.append(networkShimLibraries.emailHelpers(features, core.httpsClientDeclaration(),

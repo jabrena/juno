@@ -101,9 +101,10 @@ initTheme();
 <dd>
 <div class="block">An acceleration sensor.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#accept(byte%5B%5D,int)" class="member-name-link">accept(byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html#accept(byte%5B%5D,int)" class="member-name-link">accept(byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpServer</a></dt>
 <dd>
-<div class="block">Returns immediately with <code>-1</code> when no client is currently waiting.</div>
+<div class="block">Returns <code>-1</code> when no client is waiting; otherwise reads the next request's body into <code>bodyBuffer</code>,
+truncated to <code>bodyBufferLength</code>, and returns how many body bytes it wrote.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveLightV12.html#ADC_10_BIT" class="member-name-link">ADC_10_BIT</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveLightV12.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveLightV12</a></dt>
 <dd>
@@ -405,6 +406,14 @@ sends it, so a shut-down client has none left.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#BAD_REQUEST" class="member-name-link">BAD_REQUEST</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/jdk/util/Base64.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.util">Base64</a> - Class in <a href="io/github/jabrena/juno/jdk/util/package-summary.html">io.github.jabrena.juno.jdk.util</a></dt>
+<dd>
+<div class="block">Bounded board implementation of the JDK MIME Base64 decoder used for a PEM private key.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/util/Base64.Decoder.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.util">Base64.Decoder</a> - Class in <a href="io/github/jabrena/juno/jdk/util/package-summary.html">io.github.jabrena.juno.jdk.util</a></dt>
+<dd>
+<div class="block">The decoder <a href="io/github/jabrena/juno/jdk/util/Base64.html#getMimeDecoder()"><code>Base64.getMimeDecoder()</code></a> returns; it decodes into a fixed 2 KiB buffer.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/BaseMotor.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics">BaseMotor</a> - Interface in <a href="io/github/jabrena/juno/robotics/package-summary.html">io.github.jabrena.juno.robotics</a></dt>
 <dd>
 <div class="block">A motor that runs forward or backward until it is stopped.</div>
@@ -522,12 +531,12 @@ reported it.</div>
 <div class="block">Enumerates the device on the shield, checks it is a CP210x, selects its configuration, and opens its UART at
 <code>baudRate</code>, 8N1, with DTR and RTS low.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html#begin(int)" class="member-name-link">begin(int)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpServer</a></dt>
+<dd>
+<div class="block">Starts listening for plain HTTP on <code>port</code>, once Wi-Fi is connected or an access point is up.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html#begin(int)" class="member-name-link">begin(int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeSdCard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeSdCard</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#begin(int)" class="member-name-link">begin(int)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
-<dd>
-<div class="block">Starts listening on <code>port</code>.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#begin(int)" class="member-name-link">begin(int)</a> - Method in class io.github.jabrena.juno.hardware.net.udp.<a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html" title="class in io.github.jabrena.juno.hardware.net.udp">Syslog</a></dt>
 <dd>
 <div class="block">Starts a new frame at <code>severity</code>, discarding any unsent one; continue with <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#text(java.lang.String)"><code>Syslog.text(String)</code></a> and <a href="io/github/jabrena/juno/hardware/net/udp/Syslog.html#number(int)"><code>Syslog.number(int)</code></a>.</div>
@@ -555,7 +564,7 @@ reported it.</div>
 <dt><a href="io/github/jabrena/juno/hardware/net/Wifi.html#beginAP(java.lang.String,java.lang.String)" class="member-name-link">beginAP(String, String)</a> - Method in interface io.github.jabrena.juno.hardware.net.<a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></dt>
 <dd>
 <div class="block">Starts the board as a Wi-Fi access point named <code>ssid</code>, so a phone or laptop can join it
-directly (typically to serve a provisioning page through <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a>).</div>
+directly (typically to serve a provisioning page, as <a href="io/github/jabrena/juno/hardware/net/WifiProvisioner.html" title="class in io.github.jabrena.juno.hardware.net"><code>WifiProvisioner</code></a> does).</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#beginArray()" class="member-name-link">beginArray()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
 <dd>
@@ -585,16 +594,10 @@ differ, in one pass with no flicker.</div>
 streaming pixels with <a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#pushPixel(int)"><code>TftTouchShield.pushPixel(int)</code></a>, row by row from the top-left — the fast way to draw
 a small custom bitmap.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#beginStream(int,java.lang.String)" class="member-name-link">beginStream(int, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html#beginTls(int,byte%5B%5D,int,byte%5B%5D,int)" class="member-name-link">beginTls(int, byte[], int, byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpServer</a></dt>
 <dd>
-<div class="block">Starts a response that has no fixed length and keeps the client connected until <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#endStream()"><code>HttpServer.endStream()</code></a>, for
-example <code>multipart/x-mixed-replace</code> video.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#beginTls(int,byte%5B%5D,int,byte%5B%5D,int)" class="member-name-link">beginTls(int, byte[], int, byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
-<dd>
-<div class="block">Starts listening for HTTPS on <code>port</code> (usually 443), presenting <code>certificate</code> and proving it with
-<code>privateKey</code>: both PEM text, typically a self-signed pair read from the SD card, so clients must trust the
-certificate themselves (e.g.</div>
+<div class="block">Starts listening for HTTPS on <code>port</code>, presenting <code>certificate</code> (PEM) and proving it with
+<code>privateKey</code> (PEM, or PKCS#8 or SEC1 DER).</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/serial/BaudRate.html#bitsPerSecond()" class="member-name-link">bitsPerSecond()</a> - Method in enum class io.github.jabrena.juno.hardware.serial.<a href="io/github/jabrena/juno/hardware/serial/BaudRate.html" title="enum class in io.github.jabrena.juno.hardware.serial">BaudRate</a></dt>
 <dd>
@@ -725,6 +728,10 @@ on the sensor, so a reader that comes late still gets every sample since its pre
 <dt><a href="io/github/jabrena/juno/robotics/BufferedGyroscope.html#bufferedSamples()" class="member-name-link">bufferedSamples()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/BufferedGyroscope.html" title="interface in io.github.jabrena.juno.robotics">BufferedGyroscope</a></dt>
 <dd>
 <div class="block">How many samples the last <a href="io/github/jabrena/juno/robotics/BufferedGyroscope.html#readBufferedRotation()"><code>BufferedGyroscope.readBufferedRotation()</code></a> read; each covers <a href="io/github/jabrena/juno/robotics/BufferedGyroscope.html#samplePeriodMillis()"><code>BufferedGyroscope.samplePeriodMillis()</code></a>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#bufferSize()" class="member-name-link">bufferSize()</a> - Method in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>
+<div class="block">The raw packet size the calculator granted in <a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#connect()"><code>TiLink.connect()</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpClient.Builder.html#build()" class="member-name-link">build()</a> - Method in interface io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpClient.Builder.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpClient.Builder</a></dt>
 <dd>
@@ -1052,6 +1059,11 @@ reply.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#CONFLICT" class="member-name-link">CONFLICT</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#connect()" class="member-name-link">connect()</a> - Method in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>
+<div class="block">Starts the shield, enumerates the calculator, checks it is a TI-84 Plus family model, selects its configuration,
+agrees on the raw packet size and puts it in normal mode.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#connect(int)" class="member-name-link">connect(int)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Scans for the first advertising Powered Up hub and connects to it, returning whether a hub is
@@ -1074,10 +1086,9 @@ connected afterwards.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#CONTENT_TOO_LARGE" class="member-name-link">CONTENT_TOO_LARGE</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#contentLength()" class="member-name-link">contentLength()</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html#contentLength()" class="member-name-link">contentLength()</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpServer</a></dt>
 <dd>
-<div class="block">The <code>Content-Length</code> header of the request from the most recent <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#accept(byte%5B%5D,int)"><code>HttpServer.accept(byte[], int)</code></a>, or <code>-1</code> when it
-had none.</div>
+<div class="block">The request's declared <code>Content-Length</code>, or <code>-1</code> when it had none.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.BodyPublisher.html#contentLength()" class="member-name-link">contentLength()</a> - Method in interface io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.BodyPublisher.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpRequest.BodyPublisher</a></dt>
 <dd>
@@ -1126,9 +1137,22 @@ RoboPeak RPLIDAR adapter and on many ESP32 and sensor boards.</div>
 <dd>
 <div class="block">A bridge reached through <code>usb</code>, which must be started (<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#begin()"><code>UsbHostShield.begin()</code></a>) before use.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html#create(io.github.jabrena.juno.jdk.net.InetSocketAddress,int)" class="member-name-link">create(InetSocketAddress, int)</a> - Static method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpServer</a></dt>
+<dd>
+<div class="block">JDK-shaped listener factory; this board implementation binds the selected board's Wi-Fi interface.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsServer.html#create(io.github.jabrena.juno.jdk.net.InetSocketAddress,int)" class="member-name-link">create(InetSocketAddress, int)</a> - Static method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsServer.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpsServer</a></dt>
+<dd>
+<div class="block">An HTTPS server for <code>address</code>'s port; the board serves one connection at a time, so <code>backlog</code> is
+ignored.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/URI.html#create(java.lang.String)" class="member-name-link">create(String)</a> - Static method in class io.github.jabrena.juno.jdk.net.<a href="io/github/jabrena/juno/jdk/net/URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></dt>
 <dd>
 <div class="block">Parses <code>text</code> as a URI; see the class description.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html#createContext(java.lang.String,io.github.jabrena.juno.jdk.net.httpserver.HttpHandler)" class="member-name-link">createContext(String, HttpHandler)</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpServer</a></dt>
+<dd>
+<div class="block">Registers a path-prefix handler before <a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html#start()"><code>HttpServer.start()</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#CREATED" class="member-name-link">CREATED</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
@@ -1191,6 +1215,14 @@ other program keeps the board's own trust, and links no code to change it.</div>
 <dd>
 <div class="block">Debug-level message.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/util/Base64.Decoder.html#decode(java.lang.String)" class="member-name-link">decode(String)</a> - Method in class io.github.jabrena.juno.jdk.util.<a href="io/github/jabrena/juno/jdk/util/Base64.Decoder.html" title="class in io.github.jabrena.juno.jdk.util">Base64.Decoder</a></dt>
+<dd>
+<div class="block">Decodes <code>source</code> into a 2 KiB array, of which the first <a href="io/github/jabrena/juno/jdk/util/Base64.Decoder.html#decodedLength()"><code>Base64.Decoder.decodedLength()</code></a> bytes are the result.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/util/Base64.Decoder.html#decodedLength()" class="member-name-link">decodedLength()</a> - Method in class io.github.jabrena.juno.jdk.util.<a href="io/github/jabrena/juno/jdk/util/Base64.Decoder.html" title="class in io.github.jabrena.juno.jdk.util">Base64.Decoder</a></dt>
+<dd>
+<div class="block">The number of bytes the last <a href="io/github/jabrena/juno/jdk/util/Base64.Decoder.html#decode(java.lang.String)"><code>Base64.Decoder.decode(String)</code></a> wrote.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/Wifi.html#DEFAULT_ACCESS_POINT_PASSWORD" class="member-name-link">DEFAULT_ACCESS_POINT_PASSWORD</a> - Static variable in interface io.github.jabrena.juno.hardware.net.<a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></dt>
 <dd>
 <div class="block">An empty passphrase deliberately makes <a href="io/github/jabrena/juno/hardware/net/Wifi.html#DEFAULT_ACCESS_POINT_SSID"><code>Wifi.DEFAULT_ACCESS_POINT_SSID</code></a> an open network.</div>
@@ -1204,10 +1236,6 @@ other program keeps the board's own trust, and links no code to change it.</div>
 <dt><a href="io/github/jabrena/juno/hardware/net/email/Pop3Client.html#DEFAULT_BODY_BUFFER_SIZE" class="member-name-link">DEFAULT_BODY_BUFFER_SIZE</a> - Static variable in class io.github.jabrena.juno.hardware.net.email.<a href="io/github/jabrena/juno/hardware/net/email/Pop3Client.html" title="class in io.github.jabrena.juno.hardware.net.email">Pop3Client</a></dt>
 <dd>
 <div class="block">A reasonable default size for a caller's body buffer, in bytes.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#DEFAULT_BODY_BUFFER_SIZE" class="member-name-link">DEFAULT_BODY_BUFFER_SIZE</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
-<dd>
-<div class="block">A reasonable default size for a caller's request-body buffer, in bytes.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#DEFAULT_BRAKE_LEAD" class="member-name-link">DEFAULT_BRAKE_LEAD</a> - Static variable in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
 <dd>
@@ -1587,6 +1615,14 @@ module, which hears the board's own IR LED.</div>
 <div class="block">Asks the hub to report every change of <code>mode</code> of the motor or sensor on <code>port</code>,
 for <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#readSensor(io.github.jabrena.juno.remote.lego.poweredup.PoweredUpPort)"><code>RemotePoweredUpHub.readSensor(PoweredUpPort)</code></a> to return.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/spec/PKCS8EncodedKeySpec.html#encodedLength()" class="member-name-link">encodedLength()</a> - Method in class io.github.jabrena.juno.jdk.security.spec.<a href="io/github/jabrena/juno/jdk/security/spec/PKCS8EncodedKeySpec.html" title="class in io.github.jabrena.juno.jdk.security.spec">PKCS8EncodedKeySpec</a></dt>
+<dd>
+<div class="block">The length of the DER encoding, read from its outer length field.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/KeyFactory.html#encodedLength(io.github.jabrena.juno.jdk.security.PrivateKey)" class="member-name-link">encodedLength(PrivateKey)</a> - Static method in class io.github.jabrena.juno.jdk.security.<a href="io/github/jabrena/juno/jdk/security/KeyFactory.html" title="class in io.github.jabrena.juno.jdk.security">KeyFactory</a></dt>
+<dd>
+<div class="block">The length of <code>key</code>'s DER encoding, which may be shorter than its encoded array.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/robotics/Encoder.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics">Encoder</a> - Interface in <a href="io/github/jabrena/juno/robotics/package-summary.html">io.github.jabrena.juno.robotics</a></dt>
 <dd>
 <div class="block">Tachometer feedback for a motor or wheel.</div>
@@ -1603,10 +1639,6 @@ for <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.htm
 <dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#endObject()" class="member-name-link">endObject()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
 <dd>
 <div class="block">Closes the innermost object with a closing brace.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#endStream()" class="member-name-link">endStream()</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
-<dd>
-<div class="block">Ends the open stream and closes the client connection.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/util/mvc/View.html#enter()" class="member-name-link">enter()</a> - Method in interface io.github.jabrena.juno.util.mvc.<a href="io/github/jabrena/juno/util/mvc/View.html" title="interface in io.github.jabrena.juno.util.mvc">View</a></dt>
 <dd>
@@ -1627,6 +1659,8 @@ exactly.</div>
 <dd>
 <div class="block">Error condition.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#ERROR_ARGUMENT" class="member-name-link">ERROR_ARGUMENT</a> - Static variable in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/Psram.html#ERROR_EXHAUSTED" class="member-name-link">ERROR_EXHAUSTED</a> - Static variable in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Psram.html" title="class in io.github.jabrena.juno.hardware">Psram</a></dt>
 <dd>
 <div class="block">The request cannot fit in the current largest PSRAM block.</div>
@@ -1651,10 +1685,18 @@ exactly.</div>
 <dd>
 <div class="block">An IN transfer completed without data in the receive FIFO.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#ERROR_NO_DEVICE" class="member-name-link">ERROR_NO_DEVICE</a> - Static variable in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#ERROR_NO_RESPONSE" class="member-name-link">ERROR_NO_RESPONSE</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
 <dd>
 <div class="block">The controller never reported the transfer as done: no device, or the SPI link is broken.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#ERROR_NO_SHIELD" class="member-name-link">ERROR_NO_SHIELD</a> - Static variable in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#ERROR_NONE" class="member-name-link">ERROR_NONE</a> - Static variable in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#ERROR_NOT_A_TI84" class="member-name-link">ERROR_NOT_A_TI84</a> - Static variable in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#ERROR_NOT_ATTACHED" class="member-name-link">ERROR_NOT_ATTACHED</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
 <dd>
 <div class="block">No device is attached and enumerated: call <a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#attach()"><code>UsbHostShield.attach()</code></a> first.</div>
@@ -1663,10 +1705,20 @@ exactly.</div>
 <dd>
 <div class="block">The requested PSRAM range does not fit the buffer.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#ERROR_PROTOCOL" class="member-name-link">ERROR_PROTOCOL</a> - Static variable in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>
+<div class="block">The calculator answered with a packet this driver did not expect: see <a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#lastPacketType()"><code>TiLink.lastPacketType()</code></a>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#ERROR_REJECTED" class="member-name-link">ERROR_REJECTED</a> - Static variable in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>
+<div class="block">The calculator refused the variable: see <a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#lastCalculatorError()"><code>TiLink.lastCalculatorError()</code></a>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#ERROR_STALL" class="member-name-link">ERROR_STALL</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
 <dd>
 <div class="block">The peripheral answered STALL: it does not support the request or the endpoint is halted.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#ERROR_TIMEOUT" class="member-name-link">ERROR_TIMEOUT</a> - Static variable in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#ERROR_TIMEOUT" class="member-name-link">ERROR_TIMEOUT</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
 <dd>
 <div class="block">The peripheral did not answer at all, three times in a row.</div>
@@ -1675,6 +1727,8 @@ exactly.</div>
 <dd>
 <div class="block">No usable PSRAM was detected by the runtime.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#ERROR_USB" class="member-name-link">ERROR_USB</a> - Static variable in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/Esp32Nvs.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.security">Esp32Nvs</a> - Class in <a href="io/github/jabrena/juno/hardware/security/package-summary.html">io.github.jabrena.juno.hardware.security</a></dt>
 <dd>
 <div class="block">Named-secret storage in the non-volatile storage (NVS) of an ESP32, for the boards that carry no secure element at
@@ -1977,6 +2031,10 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dd>
 <div class="block">Reads <code>stream</code> to its end as a PEM certificate.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/KeyFactory.html#generatePrivate(io.github.jabrena.juno.jdk.security.spec.KeySpec)" class="member-name-link">generatePrivate(KeySpec)</a> - Method in class io.github.jabrena.juno.jdk.security.<a href="io/github/jabrena/juno/jdk/security/KeyFactory.html" title="class in io.github.jabrena.juno.jdk.security">KeyFactory</a></dt>
+<dd>
+<div class="block">A private key from a <a href="io/github/jabrena/juno/jdk/security/spec/PKCS8EncodedKeySpec.html" title="class in io.github.jabrena.juno.jdk.security.spec"><code>PKCS8EncodedKeySpec</code></a>; the board's TLS stack also accepts SEC1 DER in it.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/jdk/util/Optional.html#get()" class="member-name-link">get()</a> - Method in class io.github.jabrena.juno.jdk.util.<a href="io/github/jabrena/juno/jdk/util/Optional.html" title="class in io.github.jabrena.juno.jdk.util">Optional</a></dt>
 <dd>
 <div class="block">The value.</div>
@@ -2190,6 +2248,10 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dd>
 <div class="block">The context that trusts the board's own roots.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/KeyManagerFactory.html#getDefaultAlgorithm()" class="member-name-link">getDefaultAlgorithm()</a> - Static method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/KeyManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl">KeyManagerFactory</a></dt>
+<dd>
+<div class="block"><code>"SunX509"</code>, the JDK's default name; the board accepts any.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html#getDefaultAlgorithm()" class="member-name-link">getDefaultAlgorithm()</a> - Static method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl">TrustManagerFactory</a></dt>
 <dd>
 <div class="block"><code>"PKIX"</code>, as in the JDK.</div>
@@ -2211,13 +2273,30 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <div class="block">The selected board's display: the Cardputer's panel, or the LED matrix on the UNO R4 WiFi as a
 monochrome 12x8 <a href="io/github/jabrena/juno/hardware/display/Display.html" title="interface in io.github.jabrena.juno.hardware.display"><code>Display</code></a>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/Key.html#getEncoded()" class="member-name-link">getEncoded()</a> - Method in interface io.github.jabrena.juno.jdk.security.<a href="io/github/jabrena/juno/jdk/security/Key.html" title="interface in io.github.jabrena.juno.jdk.security">Key</a></dt>
+<dd>
+<div class="block">The key in its DER encoding.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/spec/PKCS8EncodedKeySpec.html#getEncoded()" class="member-name-link">getEncoded()</a> - Method in class io.github.jabrena.juno.jdk.security.spec.<a href="io/github/jabrena/juno/jdk/security/spec/PKCS8EncodedKeySpec.html" title="class in io.github.jabrena.juno.jdk.security.spec">PKCS8EncodedKeySpec</a></dt>
+<dd>
+<div class="block">The DER bytes.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getFirmware()" class="member-name-link">getFirmware()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
 <dd>
 <div class="block">The firmware loader, which the brick's boot ROM answers even with no firmware installed.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/Headers.html#getFirst(java.lang.String)" class="member-name-link">getFirst(String)</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/Headers.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">Headers</a></dt>
+<dd>
+<div class="block">The value of the request header called <code>name</code>, matched case-insensitively and truncated to 128 bytes, or
+<code>null</code> when the request has none.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/URI.html#getFragment()" class="member-name-link">getFragment()</a> - Method in class io.github.jabrena.juno.jdk.net.<a href="io/github/jabrena/juno/jdk/net/URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></dt>
 <dd>
 <div class="block">The decoded fragment, after <code>#</code>, or <code>null</code> when there is none.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/carrier/PortentaHatCarrier.html#getGpio()" class="member-name-link">getGpio()</a> - Method in class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/PortentaHatCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">PortentaHatCarrier</a></dt>
+<dd>
+<div class="block">The GPIO context the carrier's header pins belong to; a HAT on the header drives its control lines through it.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/MCU.html#getGpio()" class="member-name-link">getGpio()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/MCU.html" title="class in io.github.jabrena.juno.hardware">MCU</a></dt>
 <dd>
@@ -2262,6 +2341,10 @@ monochrome 12x8 <a href="io/github/jabrena/juno/hardware/display/Display.html" t
 <dt><a href="io/github/jabrena/juno/jdk/net/URI.html#getHost()" class="member-name-link">getHost()</a> - Method in class io.github.jabrena.juno.jdk.net.<a href="io/github/jabrena/juno/jdk/net/URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></dt>
 <dd>
 <div class="block">The host, without the user info or port, or <code>null</code> when there is none.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsServer.html#getHttpsConfigurator()" class="member-name-link">getHttpsConfigurator()</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsServer.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpsServer</a></dt>
+<dd>
+<div class="block">The configurator set with <a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsServer.html#setHttpsConfigurator(io.github.jabrena.juno.jdk.net.httpserver.HttpsConfigurator)"><code>HttpsServer.setHttpsConfigurator(HttpsConfigurator)</code></a>, or <code>null</code> before that.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html#getI2c()" class="member-name-link">getI2c()</a> - Method in class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">NanoConnectorCarrier</a></dt>
 <dd>
@@ -2326,6 +2409,10 @@ SDA on A4 and SCL on A5.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html#getInputPullup()" class="member-name-link">getInputPullup()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/KeyManagerFactory.html#getInstance(java.lang.String)" class="member-name-link">getInstance(String)</a> - Static method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/KeyManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl">KeyManagerFactory</a></dt>
+<dd>
+<div class="block">A factory for the board's single server-identity key manager.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#getInstance(java.lang.String)" class="member-name-link">getInstance(String)</a> - Static method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></dt>
 <dd>
 <div class="block">An uninitialised context for <code>protocol</code>, such as <code>"TLS"</code>.</div>
@@ -2338,6 +2425,10 @@ SDA on A4 and SCL on A5.</div>
 <dd>
 <div class="block">A factory for <code>type</code>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/KeyFactory.html#getInstance(java.lang.String)" class="member-name-link">getInstance(String)</a> - Static method in class io.github.jabrena.juno.jdk.security.<a href="io/github/jabrena/juno/jdk/security/KeyFactory.html" title="class in io.github.jabrena.juno.jdk.security">KeyFactory</a></dt>
+<dd>
+<div class="block">A factory for <code>"EC"</code> keys, the only algorithm the board supports.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/jdk/security/KeyStore.html#getInstance(java.lang.String)" class="member-name-link">getInstance(String)</a> - Static method in class io.github.jabrena.juno.jdk.security.<a href="io/github/jabrena/juno/jdk/security/KeyStore.html" title="class in io.github.jabrena.juno.jdk.security">KeyStore</a></dt>
 <dd>
 <div class="block">An empty store of any <code>type</code>; call <code>load(null, null)</code> before adding to it.</div>
@@ -2345,6 +2436,10 @@ SDA on A4 and SCL on A5.</div>
 <dt><a href="io/github/jabrena/juno/hardware/MCU.html#getKeyboard()" class="member-name-link">getKeyboard()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/MCU.html" title="class in io.github.jabrena.juno.hardware">MCU</a></dt>
 <dd>
 <div class="block">The selected board's onboard keyboard.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/KeyManagerFactory.html#getKeyManagers()" class="member-name-link">getKeyManagers()</a> - Method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/KeyManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl">KeyManagerFactory</a></dt>
+<dd>
+<div class="block">The key manager holding the identity from <a href="io/github/jabrena/juno/javax/net/ssl/KeyManagerFactory.html#init(io.github.jabrena.juno.jdk.security.KeyStore,char%5B%5D)"><code>KeyManagerFactory.init(KeyStore, char[])</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#getLcd()" class="member-name-link">getLcd()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
 <dd>
@@ -2377,6 +2472,10 @@ SDA on A4 and SCL on A5.</div>
 <dt><a href="io/github/jabrena/juno/robotics/LightDetector.html#getLow()" class="member-name-link">getLow()</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/LightDetector.html" title="interface in io.github.jabrena.juno.robotics">LightDetector</a></dt>
 <dd>
 <div class="block">Returns the lowest raw value the sensor reports, in complete darkness.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/util/Base64.html#getMimeDecoder()" class="member-name-link">getMimeDecoder()</a> - Static method in class io.github.jabrena.juno.jdk.util.<a href="io/github/jabrena/juno/jdk/util/Base64.html" title="class in io.github.jabrena.juno.jdk.util">Base64</a></dt>
+<dd>
+<div class="block">A decoder that, like the JDK's MIME decoder, skips line breaks and any other non-Base64 character.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/SensorModes.html#getMode(int)" class="member-name-link">getMode(int)</a> - Method in interface io.github.jabrena.juno.robotics.<a href="io/github/jabrena/juno/robotics/SensorModes.html" title="interface in io.github.jabrena.juno.robotics">SensorModes</a></dt>
 <dd>
@@ -2448,6 +2547,10 @@ high values are bright.</div>
 <dd>
 <div class="block">The decoded path: empty when a hierarchical URI has none, <code>null</code> for an opaque one.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/InetSocketAddress.html#getPort()" class="member-name-link">getPort()</a> - Method in class io.github.jabrena.juno.jdk.net.<a href="io/github/jabrena/juno/jdk/net/InetSocketAddress.html" title="class in io.github.jabrena.juno.jdk.net">InetSocketAddress</a></dt>
+<dd>
+<div class="block">The port.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/URI.html#getPort()" class="member-name-link">getPort()</a> - Method in class io.github.jabrena.juno.jdk.net.<a href="io/github/jabrena/juno/jdk/net/URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></dt>
 <dd>
 <div class="block">The port written in the URI, or <code>-1</code> when it names none.</div>
@@ -2513,6 +2616,30 @@ high values are bright.</div>
 <dt><a href="io/github/jabrena/juno/jdk/net/URI.html#getRawUserInfo()" class="member-name-link">getRawUserInfo()</a> - Method in class io.github.jabrena.juno.jdk.net.<a href="io/github/jabrena/juno/jdk/net/URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></dt>
 <dd>
 <div class="block">The user info as written, or <code>null</code> when there is none.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html#getRequestBody()" class="member-name-link">getRequestBody()</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpExchange</a></dt>
+<dd>
+<div class="block">The request body.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html#getRequestHeaders()" class="member-name-link">getRequestHeaders()</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpExchange</a></dt>
+<dd>
+<div class="block">The request headers, read by name with <a href="io/github/jabrena/juno/jdk/net/httpserver/Headers.html#getFirst(java.lang.String)"><code>Headers.getFirst(String)</code></a>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html#getRequestMethod()" class="member-name-link">getRequestMethod()</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpExchange</a></dt>
+<dd>
+<div class="block">The request method, valid only while the handler is running.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html#getRequestURI()" class="member-name-link">getRequestURI()</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpExchange</a></dt>
+<dd>
+<div class="block">The bounded request target/path, valid only while the handler is running.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html#getResponseBody()" class="member-name-link">getResponseBody()</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpExchange</a></dt>
+<dd>
+<div class="block">The response body; its bytes go to the client as they are written, and closing it ends the response.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html#getResponseHeaders()" class="member-name-link">getResponseHeaders()</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpExchange</a></dt>
+<dd>
+<div class="block">The response headers, to set before <a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html#sendResponseHeaders(int,long)"><code>HttpExchange.sendResponseHeaders(int, long)</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/URI.html#getScheme()" class="member-name-link">getScheme()</a> - Method in class io.github.jabrena.juno.jdk.net.<a href="io/github/jabrena/juno/jdk/net/URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></dt>
 <dd>
@@ -2582,6 +2709,11 @@ Pico 2 W's slots behind Juno's TrustZone secure firmware, or the UNO R3's on-chi
 <dd>
 <div class="block">Sensor input 3.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/carrier/PortentaHatCarrier.html#getSpi()" class="member-name-link">getSpi()</a> - Method in class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/PortentaHatCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">PortentaHatCarrier</a></dt>
+<dd>
+<div class="block">The SPI bus on the header's pins 19, 21 and 23, which a HAT display and touch controller share: the board's
+primary bus (<a href="io/github/jabrena/juno/hardware/MCU.html#getSpi()"><code>MCU.getSpi()</code></a>) unless the carrier was given another.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/MCU.html#getSpi()" class="member-name-link">getSpi()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/MCU.html" title="class in io.github.jabrena.juno.hardware">MCU</a></dt>
 <dd>
 <div class="block">The selected board's primary SPI bus.</div>
@@ -2613,6 +2745,10 @@ Pico 2 W's slots behind Juno's TrustZone secure firmware, or the UNO R3's on-chi
 <dt><a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html#getSpiSck()" class="member-name-link">getSpiSck()</a> - Method in class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">NanoConnectorCarrier</a></dt>
 <dd>
 <div class="block">The microSD slot's SPI clock, D13, which is also the Nano's built-in LED.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsConfigurator.html#getSSLContext()" class="member-name-link">getSSLContext()</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsConfigurator.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpsConfigurator</a></dt>
+<dd>
+<div class="block">The SSL context whose key manager holds the server certificate and key.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/security/AvrEeprom.html#getString(java.lang.String)" class="member-name-link">getString(String)</a> - Method in class io.github.jabrena.juno.hardware.security.<a href="io/github/jabrena/juno/hardware/security/AvrEeprom.html" title="class in io.github.jabrena.juno.hardware.security">AvrEeprom</a></dt>
 <dd>&nbsp;</dd>
@@ -2844,6 +2980,12 @@ Grove Temperature &amp; Humidity Sensor (DHT11)</a>.</div>
 <dd>
 <div class="block">A sensor on the board's own pins and timer.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.html#%3Cinit%3E(int)" class="member-name-link">GroveDht11(int)</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveDht11</a></dt>
+<dd>
+<div class="block">A sensor on digital pin <code>signalPin</code> of the board, such as a Grove Base Shield socket's
+<code>getD4()</code>: the board-side form that works as a <a href="io/github/jabrena/juno/robotics/Thermometer.html" title="interface in io.github.jabrena.juno.robotics"><code>Thermometer</code></a> and a
+<a href="io/github/jabrena/juno/robotics/SampleProvider.html" title="interface in io.github.jabrena.juno.robotics"><code>SampleProvider</code></a>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">GroveDht11(Gpio, Clock)</a> - Constructor for class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveDht11</a></dt>
 <dd>
 <div class="block">A sensor on <code>gpio</code> and <code>clock</code>: mocked or simulated ones in a unit test.</div>
@@ -3041,6 +3183,10 @@ else, such as an infrared round trip to an RCX.</div>
 </dl>
 <h2 class="title" id="I:H">H</h2>
 <dl class="index">
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpHandler.html#handle(io.github.jabrena.juno.jdk.net.httpserver.HttpExchange)" class="member-name-link">handle(HttpExchange)</a> - Method in interface io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpHandler.html" title="interface in io.github.jabrena.juno.jdk.net.httpserver">HttpHandler</a></dt>
+<dd>
+<div class="block">Answers one request; called on the server's dispatch thread.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#hardwareVersion()" class="member-name-link">hardwareVersion()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">The hub's hardware version in the same packed form as <a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#firmwareVersion()"><code>RemotePoweredUpHub.firmwareVersion()</code></a>, or <code>-1</code> if unknown.</div>
@@ -3055,11 +3201,10 @@ else, such as an infrared round trip to an RCX.</div>
 <dd>
 <div class="block">Makes the request a <code>HEAD</code>, with no body: the response has a status and headers but no body.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#header(java.lang.String,byte%5B%5D,int)" class="member-name-link">header(String, byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html#header(java.lang.String,byte%5B%5D,int)" class="member-name-link">header(String, byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpServer</a></dt>
 <dd>
-<div class="block">Copies the value of request header <code>name</code> from the most recent <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#accept(byte%5B%5D,int)"><code>HttpServer.accept(byte[], int)</code></a> into <code>buffer</code>,
-truncated to <code>bufferLength</code>, and returns the number of bytes copied, or <code>-1</code> when the request has no
-such header.</div>
+<div class="block">Copies the value of request header <code>name</code>, matched case-insensitively with spaces around the value
+trimmed, into <code>buffer</code> and returns its length, or <code>-1</code> when the request has no such header.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.Builder.html#header(java.lang.String,java.lang.String)" class="member-name-link">header(String, String)</a> - Method in interface io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.Builder.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpRequest.Builder</a></dt>
 <dd>
@@ -3072,6 +3217,10 @@ such header.</div>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.Builder.html#headers(java.lang.String...)" class="member-name-link">headers(String...)</a> - Method in interface io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.Builder.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpRequest.Builder</a></dt>
 <dd>
 <div class="block">Adds each name and value pair, as <a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.Builder.html#header(java.lang.String,java.lang.String)"><code>HttpRequest.Builder.header(String, String)</code></a> does.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/Headers.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.net.httpserver">Headers</a> - Class in <a href="io/github/jabrena/juno/jdk/net/httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a></dt>
+<dd>
+<div class="block">Request or response headers in Juno's bounded HTTP server subset.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.html#HEADERS_CAPACITY" class="member-name-link">HEADERS_CAPACITY</a> - Static variable in class io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.html" title="class in io.github.jabrena.juno.jdk.net.http">HttpRequest</a></dt>
 <dd>
@@ -3198,13 +3347,25 @@ such header.</div>
 <dd>
 <div class="block">The HTTP version a client asks for; the board always speaks HTTP/1.1.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpContext.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpContext</a> - Class in <a href="io/github/jabrena/juno/jdk/net/httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a></dt>
+<dd>
+<div class="block">A registered path prefix and its request handler.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpExchange</a> - Class in <a href="io/github/jabrena/juno/jdk/net/httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a></dt>
+<dd>
+<div class="block">The bounded request view for the request currently dispatched by <a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html" title="class in io.github.jabrena.juno.jdk.net.httpserver"><code>HttpServer</code></a>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpHandler.html" class="type-name-link" title="interface in io.github.jabrena.juno.jdk.net.httpserver">HttpHandler</a> - Interface in <a href="io/github/jabrena/juno/jdk/net/httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a></dt>
+<dd>
+<div class="block">A JDK-shaped handler for one board-side HTTP request.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpHeaders.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.net.http">HttpHeaders</a> - Class in <a href="io/github/jabrena/juno/jdk/net/http/package-summary.html">io.github.jabrena.juno.jdk.net.http</a></dt>
 <dd>
 <div class="block">The board-side <code>java.net.http.HttpHeaders</code>: a response's headers, read from the client's header buffer.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a> - Class in <a href="io/github/jabrena/juno/hardware/net/http/package-summary.html">io.github.jabrena.juno.hardware.net.http</a></dt>
 <dd>
-<div class="block">Named HTTP methods for matching against <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#method()"><code>HttpServer.method()</code></a>.</div>
+<div class="block">Named HTTP methods for matching against <code>HttpExchange.getRequestMethod()</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.net.http">HttpRequest</a> - Class in <a href="io/github/jabrena/juno/jdk/net/http/package-summary.html">io.github.jabrena.juno.jdk.net.http</a></dt>
 <dd>
@@ -3239,16 +3400,30 @@ often as needed.</div>
 <dd>
 <div class="block">Whether the program may send a request to an <code>https</code> URI.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a> - Class in <a href="io/github/jabrena/juno/hardware/net/http/package-summary.html">io.github.jabrena.juno.hardware.net.http</a></dt>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsConfigurator.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpsConfigurator</a> - Class in <a href="io/github/jabrena/juno/jdk/net/httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a></dt>
 <dd>
-<div class="block">A minimal, non-blocking HTTP/1.1 server recognized as compiler intrinsics by Juno, backed by
-the Arduino <code>WiFiS3</code> library's <code>WiFiServer</code> on UNO R4 WiFi and by each core's
-own Wi-Fi server elsewhere.</div>
+<div class="block">The TLS context used by a board HTTPS listener.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsConfigurator.html#%3Cinit%3E(io.github.jabrena.juno.javax.net.ssl.SSLContext)" class="member-name-link">HttpsConfigurator(SSLContext)</a> - Constructor for class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsConfigurator.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpsConfigurator</a></dt>
+<dd>
+<div class="block">A configurator for the server identity installed in <code>context</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpServer</a> - Class in <a href="io/github/jabrena/juno/jdk/net/httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a></dt>
+<dd>
+<div class="block">A bounded, single-connection subset of the JDK <code>HttpServer</code>, dispatched cooperatively by <code>HttpServer.handleNext()</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html#%3Cinit%3E(int,int)" class="member-name-link">HttpServer(int, int)</a> - Constructor for class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpServer</a></dt>
+<dd>
+<div class="block">A server for <code>port</code> whose request bodies are read into <code>bodyCapacity</code> bytes.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsServer.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpsServer</a> - Class in <a href="io/github/jabrena/juno/jdk/net/httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a></dt>
+<dd>
+<div class="block">HTTPS server counterpart.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a> - Class in <a href="io/github/jabrena/juno/hardware/net/http/package-summary.html">io.github.jabrena.juno.hardware.net.http</a></dt>
 <dd>
-<div class="block">Named HTTP status codes for <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#respond(int,java.lang.String,java.lang.String)"><code>HttpServer.respond(int, String, String)</code></a>'s <code>status</code> parameter, which stays
-a plain <code>int</code> — these are ordinary compile-time-constant <code>int</code> fields, not a new
+<div class="block">Named HTTP status codes, for <code>HttpExchange.sendResponseHeaders</code> and <code>HttpResponse.statusCode()</code>, which
+stay a plain <code>int</code> — these are ordinary compile-time-constant <code>int</code> fields, not a new
 intrinsic or type, exactly like <a href="io/github/jabrena/juno/hardware/gpio/Gpio.html#getOutput()"><code>Gpio.getOutput()</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpTimeoutException.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.net.http">HttpTimeoutException</a> - Exception Class in <a href="io/github/jabrena/juno/jdk/net/http/package-summary.html">io.github.jabrena.juno.jdk.net.http</a></dt>
@@ -3373,6 +3548,14 @@ the hub has not reported its name.</div>
 <dd>
 <div class="block">Where the RCX firmware image starts in the brick's memory.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/InetSocketAddress.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.net">InetSocketAddress</a> - Class in <a href="io/github/jabrena/juno/jdk/net/package-summary.html">io.github.jabrena.juno.jdk.net</a></dt>
+<dd>
+<div class="block">Board-side port-only form of <code>java.net.InetSocketAddress</code> used when binding a server listener.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/InetSocketAddress.html#%3Cinit%3E(int)" class="member-name-link">InetSocketAddress(int)</a> - Constructor for class io.github.jabrena.juno.jdk.net.<a href="io/github/jabrena/juno/jdk/net/InetSocketAddress.html" title="class in io.github.jabrena.juno.jdk.net">InetSocketAddress</a></dt>
+<dd>
+<div class="block">A listener address on <code>port</code>, on the board's Wi-Fi interface.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#info(int%5B%5D)" class="member-name-link">info(int[])</a> - Method in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
 <dd>
 <div class="block">Fills <code>info</code> with the model, firmware major and minor version, and hardware revision.</div>
@@ -3422,6 +3605,10 @@ is none.</div>
 <dt><a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html#init(io.github.jabrena.juno.jdk.security.KeyStore)" class="member-name-link">init(KeyStore)</a> - Method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/TrustManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl">TrustManagerFactory</a></dt>
 <dd>
 <div class="block">Trusts the certificates in <code>store</code>, or the board's own roots when it is <code>null</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/KeyManagerFactory.html#init(io.github.jabrena.juno.jdk.security.KeyStore,char%5B%5D)" class="member-name-link">init(KeyStore, char[])</a> - Method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/KeyManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl">KeyManagerFactory</a></dt>
+<dd>
+<div class="block">Takes the server key and certificate from <code>keyStore</code>; the in-memory store needs no password.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxSensorPort.html#INPUT_1" class="member-name-link">INPUT_1</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxSensorPort.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxSensorPort</a></dt>
 <dd>
@@ -3601,6 +3788,10 @@ them from a PCA9685 servo shield over I2C.</div>
 on an 8-bit parallel bus, with a resistive touch panel and a microSD socket (its card is
 <a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#getSdCard()"><code>TftTouchShield.getSdCard()</code></a>).</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/package-summary.html">io.github.jabrena.juno.hardware.device.ti</a> - package io.github.jabrena.juno.hardware.device.ti</dt>
+<dd>
+<div class="block">TI graphing calculators on the USB Host Shield: the board sends variables over TI's USB link protocol.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/usb/package-summary.html">io.github.jabrena.juno.hardware.device.usb</a> - package io.github.jabrena.juno.hardware.device.usb</dt>
 <dd>
 <div class="block">USB host support: the MAX3421E USB Host Shield and the device drivers built on it.</div>
@@ -3656,12 +3847,11 @@ plain-text body into caller-owned buffers.</div>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/package-summary.html">io.github.jabrena.juno.hardware.net.http</a> - package io.github.jabrena.juno.hardware.net.http</dt>
 <dd>
 <div class="block">HTTP support built on <a href="io/github/jabrena/juno/hardware/net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a>'s connection, next to the JDK's
-<code>java.net.http</code> client that programs send requests with: <a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>Json</code></a>
-and <a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonValue</code></a> to read values directly out of a response body or a
-request buffer without building a parsed document, <a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonWriter</code></a> to
-write JSON into a buffer, and
-<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> to serve requests, with
-<a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpMethod</code></a>/<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpStatus</code></a> as named constants for both directions.</div>
+<code>java.net.http</code> client that programs send requests with and the JDK's <code>com.sun.net.httpserver</code> that they
+serve requests with: <a href="io/github/jabrena/juno/hardware/net/http/Json.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>Json</code></a> and
+<a href="io/github/jabrena/juno/hardware/net/http/JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonValue</code></a> to read values directly out of a response or request body
+without building a parsed document, <a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonWriter</code></a> to write JSON into a
+buffer, and <a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpMethod</code></a>/<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpStatus</code></a> as named constants for both directions.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/udp/package-summary.html">io.github.jabrena.juno.hardware.net.udp</a> - package io.github.jabrena.juno.hardware.net.udp</dt>
 <dd>
@@ -3709,6 +3899,11 @@ its coordinates in the same frame as the <a href="io/github/jabrena/juno/hardwar
 <dd>
 <div class="block">Board-side implementations of <code>java.net.http</code>: the JDK's HTTP client syntax on the board.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a> - package io.github.jabrena.juno.jdk.net.httpserver</dt>
+<dd>
+<div class="block">Board-side implementations of the JDK's <code>com.sun.net.httpserver</code> API: <code>HttpServer</code>, <code>HttpsServer</code>
+and the exchange a handler answers.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/jdk/security/package-summary.html">io.github.jabrena.juno.jdk.security</a> - package io.github.jabrena.juno.jdk.security</dt>
 <dd>
 <div class="block">Board-side implementations of <code>java.security</code>: the <code>KeyStore</code> that holds a <code>java.net.http</code>
@@ -3718,6 +3913,11 @@ client's trusted certificates, and the exceptions its API declares.</div>
 <dd>
 <div class="block">Board-side implementations of <code>java.security.cert</code>: enough to read a PEM certificate for a
 <code>java.net.http</code> client's <code>SSLContext</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/spec/package-summary.html">io.github.jabrena.juno.jdk.security.spec</a> - package io.github.jabrena.juno.jdk.security.spec</dt>
+<dd>
+<div class="block">Board-side implementations of <code>java.security.spec</code>: the <code>PKCS8EncodedKeySpec</code> a <code>KeyFactory</code> turns
+into a server's private key.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/util/package-summary.html">io.github.jabrena.juno.jdk.util</a> - package io.github.jabrena.juno.jdk.util</dt>
 <dd>
@@ -3803,6 +4003,10 @@ reads every name as missing and refuses every write.</div>
 <dd>
 <div class="block">Whether the adapter is still open: <code>false</code> once it was unplugged or stopped answering, after which
 <a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#begin()"><code>RplidarA2.begin()</code></a> enumerates it again.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#isConnected()" class="member-name-link">isConnected()</a> - Method in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>
+<div class="block">Whether <a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#connect()"><code>TiLink.connect()</code></a> succeeded and no transfer has failed since.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html#isConnected()" class="member-name-link">isConnected()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBluetoothLe</a></dt>
 <dd>&nbsp;</dd>
@@ -4042,6 +4246,10 @@ need no hand-written quotes.</div>
 <dd>
 <div class="block">Handles one key currently pressed during a keyboard transition.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/Key.html" class="type-name-link" title="interface in io.github.jabrena.juno.jdk.security">Key</a> - Interface in <a href="io/github/jabrena/juno/jdk/security/package-summary.html">io.github.jabrena.juno.jdk.security</a></dt>
+<dd>
+<div class="block">Encoded board key.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html#keyAt(int)" class="member-name-link">keyAt(int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeKeyboard</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html#keyAt(int)" class="member-name-link">keyAt(int)</a> - Method in interface io.github.jabrena.juno.hardware.keyboard.<a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html" title="interface in io.github.jabrena.juno.hardware.keyboard">Keyboard</a></dt>
@@ -4078,6 +4286,10 @@ need no hand-written quotes.</div>
 <dd>
 <div class="block">Number of printable or control keys available through <a href="io/github/jabrena/juno/hardware/keyboard/Keyboard.html#keyAt(int)"><code>Keyboard.keyAt(int)</code></a>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/KeyFactory.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.security">KeyFactory</a> - Class in <a href="io/github/jabrena/juno/jdk/security/package-summary.html">io.github.jabrena.juno.jdk.security</a></dt>
+<dd>
+<div class="block">The EC PKCS#8 subset of the JDK key factory.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/jdk/security/KeyManagementException.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.security">KeyManagementException</a> - Exception Class in <a href="io/github/jabrena/juno/jdk/security/package-summary.html">io.github.jabrena.juno.jdk.security</a></dt>
 <dd>
 <div class="block">The board-side <code>java.security.KeyManagementException</code>.</div>
@@ -4090,6 +4302,14 @@ need no hand-written quotes.</div>
 <dd>
 <div class="block">The board-side <code>javax.net.ssl.KeyManager</code>, only as the type of <a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#init(io.github.jabrena.juno.javax.net.ssl.KeyManager%5B%5D,io.github.jabrena.juno.javax.net.ssl.TrustManager%5B%5D,io.github.jabrena.juno.jdk.security.SecureRandom)"><code>SSLContext.init(KeyManager[], TrustManager[], SecureRandom)</code></a>'s first parameter:
 client certificates are not supported, so a program passes <code>null</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/KeyManagerFactory.html" class="type-name-link" title="class in io.github.jabrena.juno.javax.net.ssl">KeyManagerFactory</a> - Class in <a href="io/github/jabrena/juno/javax/net/ssl/package-summary.html">io.github.jabrena.juno.javax.net.ssl</a></dt>
+<dd>
+<div class="block">Server identity subset of the JDK key manager factory.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/spec/KeySpec.html" class="type-name-link" title="interface in io.github.jabrena.juno.jdk.security.spec">KeySpec</a> - Interface in <a href="io/github/jabrena/juno/jdk/security/spec/package-summary.html">io.github.jabrena.juno.jdk.security.spec</a></dt>
+<dd>
+<div class="block">Board counterpart of the JDK key specification marker.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/security/KeyStore.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.security">KeyStore</a> - Class in <a href="io/github/jabrena/juno/jdk/security/package-summary.html">io.github.jabrena.juno.jdk.security</a></dt>
 <dd>
@@ -4139,6 +4359,14 @@ client certificates are not supported, so a program passes <code>null</code>.</d
 <dd>
 <div class="block">The acknowledgement code of the last command the brick refused, as <code>RcxRegulatedProtocol</code> numbers them.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#lastCalculatorError()" class="member-name-link">lastCalculatorError()</a> - Method in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>
+<div class="block">The code of the calculator's last error packet, 0 when it sent none.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#lastError()" class="member-name-link">lastError()</a> - Method in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>
+<div class="block">What the last failed call ran into: one of the <code>ERROR_*</code> codes, or <a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#ERROR_NONE"><code>TiLink.ERROR_NONE</code></a>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#lastError()" class="member-name-link">lastError()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
 <dd>
 <div class="block">The last negative <a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb"><code>UsbHostShield</code></a> code a call failed with, or 0.</div>
@@ -4162,6 +4390,10 @@ outside the waypoint's tolerance after its last leg.</div>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#lastOutcome()" class="member-name-link">lastOutcome()</a> - Method in interface io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/Pilot.html" title="interface in io.github.jabrena.juno.robotics.navigation">Pilot</a></dt>
 <dd>
 <div class="block">Why the last <a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#travel(int)"><code>Pilot.travel(int)</code></a> or <a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#rotate(int)"><code>Pilot.rotate(int)</code></a> ended.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#lastPacketType()" class="member-name-link">lastPacketType()</a> - Method in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>
+<div class="block">The type of the last virtual packet the calculator sent, or of the raw packet it sent in its place.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html#lastTravelPose()" class="member-name-link">lastTravelPose()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroDifferentialPilot.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroDifferentialPilot</a></dt>
 <dd>
@@ -4339,6 +4571,10 @@ list.</div>
 <div class="block">The highest power level an RCX output accepts: the Output Power command takes a level from <code>0</code> (weakest) to
 <code>7</code> (full power), so the brick has eight levels, not a percentage.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#MAX_LIST_LENGTH" class="member-name-link">MAX_LIST_LENGTH</a> - Static variable in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>
+<div class="block">The most values <a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#sendList(int,int%5B%5D,int,int)"><code>TiLink.sendList(int, int[], int, int)</code></a> sends, so a whole list fits one raw packet.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/Psram.html#MAX_LIVE_HANDLES" class="member-name-link">MAX_LIVE_HANDLES</a> - Static variable in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Psram.html" title="class in io.github.jabrena.juno.hardware">Psram</a></dt>
 <dd>
 <div class="block">Maximum number of simultaneously live generic PSRAM handles.</div>
@@ -4426,9 +4662,9 @@ since the last call.</div>
 failing step: connect (<code>-1</code>), greeting (<code>-2</code>), <code>USER</code> (<code>-3</code>),
 <code>PASS</code> (<code>-4</code>), or <code>STAT</code> (<code>-5</code>).</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#method()" class="member-name-link">method()</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html#method()" class="member-name-link">method()</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpServer</a></dt>
 <dd>
-<div class="block">The HTTP method (<code>"GET"</code>, <code>"POST"</code>, ...) of the request from the most recent <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#accept(byte%5B%5D,int)"><code>HttpServer.accept(byte[], int)</code></a>.</div>
+<div class="block">The method (<code>"GET"</code>, <code>"POST"</code>, ...) of the request from the last <a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html#accept(byte%5B%5D,int)"><code>NativeHttpServer.accept(byte[], int)</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.html#method()" class="member-name-link">method()</a> - Method in class io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.html" title="class in io.github.jabrena.juno.jdk.net.http">HttpRequest</a></dt>
 <dd>
@@ -4447,7 +4683,8 @@ controller and a resistive XPT2046 touch panel.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/Mhs35TftDisplay.html#%3Cinit%3E(io.github.jabrena.juno.hardware.device.carrier.PortentaHatCarrier)" class="member-name-link">Mhs35TftDisplay(PortentaHatCarrier)</a> - Constructor for class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/Mhs35TftDisplay.html" title="class in io.github.jabrena.juno.hardware.device.tft">Mhs35TftDisplay</a></dt>
 <dd>
-<div class="block">A display on the board's own pins, on the Portenta Hat Carrier.</div>
+<div class="block">A display plugged into the Portenta Hat Carrier's header, driven through the carrier's own GPIO context and SPI
+bus.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/tft/Mhs35TftDisplay.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.spi.Spi,io.github.jabrena.juno.hardware.device.carrier.PortentaHatCarrier)" class="member-name-link">Mhs35TftDisplay(Gpio, Spi, PortentaHatCarrier)</a> - Constructor for class io.github.jabrena.juno.hardware.device.tft.<a href="io/github/jabrena/juno/hardware/device/tft/Mhs35TftDisplay.html" title="class in io.github.jabrena.juno.hardware.device.tft">Mhs35TftDisplay</a></dt>
 <dd>
@@ -4666,6 +4903,10 @@ Java body and cannot run, or be mocked, on a desktop JVM.</div>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpSchemes.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpSchemes</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
 <dd>
 <div class="block">Which URI schemes a program sends HTTP requests to, answered when the program is linked.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpServer</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
+<dd>
+<div class="block">The board's single-connection HTTP and HTTPS listener behind the board-side <code>com.sun.net.httpserver</code> API.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeI2c.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeI2c</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
 <dd>
@@ -5000,9 +5241,9 @@ strobe pulsed low then high.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html#PATCH" class="member-name-link">PATCH</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#path()" class="member-name-link">path()</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html#path()" class="member-name-link">path()</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpServer</a></dt>
 <dd>
-<div class="block">The request path (e.g.</div>
+<div class="block">The request target (e.g.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html#pathComplete(io.github.jabrena.juno.robotics.navigation.Waypoint,io.github.jabrena.juno.robotics.navigation.Pose,int)" class="member-name-link">pathComplete(Waypoint, Pose, int)</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/DetourPlanner.html" title="class in io.github.jabrena.juno.robotics.navigation">DetourPlanner</a></dt>
 <dd>&nbsp;</dd>
@@ -5114,6 +5355,14 @@ and this program, which runs in the non-secure world, reaches them only through 
 <code>immediateReturn</code> is set: the outer wheel, the right one for a counter-clockwise pivot, moves forward along
 an arc of the whole track width while the other stays.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/spec/PKCS8EncodedKeySpec.html" class="type-name-link" title="class in io.github.jabrena.juno.jdk.security.spec">PKCS8EncodedKeySpec</a> - Class in <a href="io/github/jabrena/juno/jdk/security/spec/package-summary.html">io.github.jabrena.juno.jdk.security.spec</a></dt>
+<dd>
+<div class="block">An EC private key in PKCS#8 DER form.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/spec/PKCS8EncodedKeySpec.html#%3Cinit%3E(byte%5B%5D)" class="member-name-link">PKCS8EncodedKeySpec(byte[])</a> - Constructor for class io.github.jabrena.juno.jdk.security.spec.<a href="io/github/jabrena/juno/jdk/security/spec/PKCS8EncodedKeySpec.html" title="class in io.github.jabrena.juno.jdk.security.spec">PKCS8EncodedKeySpec</a></dt>
+<dd>
+<div class="block">A key specification for the DER bytes in <code>encodedKey</code>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxAudio.html#playSound(int)" class="member-name-link">playSound(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxAudio.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxAudio</a></dt>
 <dd>
 <div class="block">Plays one of the six built-in sounds, <code>SOUND_*</code>.</div>
@@ -5162,6 +5411,10 @@ movement started with <code>immediateReturn</code> runs, to watch something else
 <div class="block">A minimal POP3S client recognized as a compiler intrinsic by Juno, backed by the same
 board-specific implicit-TLS transport as the board's HTTPS requests.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html#port" class="member-name-link">port</a> - Variable in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpServer</a></dt>
+<dd>
+<div class="block">The port the server listens on.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLight.html#port()" class="member-name-link">port()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxLight.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLight</a></dt>
 <dd>
 <div class="block">Returns the motor output (port) used as the tone indicator.</div>
@@ -5208,7 +5461,11 @@ board-specific implicit-TLS transport as the board's HTTPS requests.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/carrier/PortentaHatCarrier.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">PortentaHatCarrier(Gpio)</a> - Constructor for class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/PortentaHatCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">PortentaHatCarrier</a></dt>
 <dd>
-<div class="block">Creates the carrier handle for a board GPIO context.</div>
+<div class="block">Creates the carrier handle for a board GPIO context, its header's SPI bus being the board's (<a href="io/github/jabrena/juno/hardware/MCU.html#getSpi()"><code>MCU.getSpi()</code></a>).</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/carrier/PortentaHatCarrier.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.spi.Spi)" class="member-name-link">PortentaHatCarrier(Gpio, Spi)</a> - Constructor for class io.github.jabrena.juno.hardware.device.carrier.<a href="io/github/jabrena/juno/hardware/device/carrier/PortentaHatCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier">PortentaHatCarrier</a></dt>
+<dd>
+<div class="block">Creates the carrier handle for <code>gpio</code> and the header's <code>spi</code> bus: mocked ones in a unit test.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/gpio/PortNoise.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.gpio">PortNoise</a> - Class in <a href="io/github/jabrena/juno/hardware/gpio/package-summary.html">io.github.jabrena.juno.hardware.gpio</a></dt>
 <dd>
@@ -5416,6 +5673,14 @@ cursor.</div>
 <dt><a href="io/github/jabrena/juno/hardware/serial/Serial.html#println(java.lang.String)" class="member-name-link">println(String)</a> - Static method in class io.github.jabrena.juno.hardware.serial.<a href="io/github/jabrena/juno/hardware/serial/Serial.html" title="class in io.github.jabrena.juno.hardware.serial">Serial</a></dt>
 <dd>
 <div class="block">Prints a compile-time string literal followed by a line ending.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/PrivateKey.html" class="type-name-link" title="interface in io.github.jabrena.juno.jdk.security">PrivateKey</a> - Interface in <a href="io/github/jabrena/juno/jdk/security/package-summary.html">io.github.jabrena.juno.jdk.security</a></dt>
+<dd>
+<div class="block">A PKCS#8 private key passed to the board TLS listener.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#PRODUCT_ID_TI84_PLUS" class="member-name-link">PRODUCT_ID_TI84_PLUS</a> - Static variable in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>
+<div class="block">The TI-84 Plus family on DUSB: the TI-84 Plus, Silver Edition, C Silver Edition and CE.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#productId()" class="member-name-link">productId()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
 <dd>
@@ -6186,13 +6451,9 @@ authority, and its path is merged with this URI's and has its <code>.</code> and
 <dd>
 <div class="block">Parses <code>reference</code> and resolves it against this URI; see <a href="io/github/jabrena/juno/jdk/net/URI.html#resolve(io.github.jabrena.juno.jdk.net.URI)"><code>URI.resolve(URI)</code></a>.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#respond(int,java.lang.String,java.lang.String)" class="member-name-link">respond(int, String, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html#respond(int,java.lang.String,java.lang.String)" class="member-name-link">respond(int, String, String)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpServer</a></dt>
 <dd>
-<div class="block">Replies with <code>body</code> (a literal or a runtime <code>String</code>), then closes the connection.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#respond(int,java.lang.String,java.lang.StringBuilder)" class="member-name-link">respond(int, String, StringBuilder)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
-<dd>
-<div class="block">Replies with <code>body</code>'s current contents (built at runtime), then closes the connection.</div>
+<div class="block">Replies with <code>body</code>, then closes the connection; <code>contentType</code> must be a string literal.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpResponse.BodyHandler.html#respond(io.github.jabrena.juno.jdk.net.http.HttpClient,int,int,io.github.jabrena.juno.jdk.net.URI)" class="member-name-link">respond(HttpClient, int, int, URI)</a> - Method in interface io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpResponse.BodyHandler.html" title="interface in io.github.jabrena.juno.jdk.net.http">HttpResponse.BodyHandler</a></dt>
 <dd>
@@ -6470,6 +6731,16 @@ which a program passes <code>null</code>: the board's TLS client brings its own 
 <dd>
 <div class="block">Transmits a tone to one channel of Juno's channelized RCX firmware.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#sendList(int,int%5B%5D,int,int)" class="member-name-link">sendList(int, int[], int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>
+<div class="block">Sends <code>count</code> values as the real list <code>L&lt;list&gt;</code> (1 to 6), replacing it: value <code>i</code> is
+<code>values[i] / 10^decimals</code>, so <code>decimals</code> 1 sends 235 as 23.5.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#sendList(int,long%5B%5D,int,int)" class="member-name-link">sendList(int, long[], int, int)</a> - Method in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>
+<div class="block"><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#sendList(int,int%5B%5D,int,int)"><code>TiLink.sendList(int, int[], int, int)</code></a> for values past an <code>int</code>, up to the calculator's fourteen digits:
+a <code>YYYYMMDDHHMMSS</code> time stamp such as <code>20261121163005L</code> arrives exactly.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html#sendMessage(int)" class="member-name-link">sendMessage(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxLink.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxLink</a></dt>
 <dd>
 <div class="block">Transmits an RCX <code>message</code> command carrying the low 8 bits of <code>value</code>.</div>
@@ -6477,6 +6748,10 @@ which a program passes <code>null</code>: the board's TLS client brings its own 
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html#sendMessage(int)" class="member-name-link">sendMessage(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RemoteRcx.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RemoteRcx</a></dt>
 <dd>
 <div class="block">Transmits an RCX <code>message</code> command carrying the low 8 bits of <code>value</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html#sendResponseHeaders(int,long)" class="member-name-link">sendResponseHeaders(int, long)</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpExchange.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpExchange</a></dt>
+<dd>
+<div class="block">Sends the status line and headers.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/email/Smtp.html#sendTls(java.lang.String,int,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String)" class="member-name-link">sendTls(String, int, String, String, String, String, String, String)</a> - Static method in class io.github.jabrena.juno.hardware.net.email.<a href="io/github/jabrena/juno/hardware/net/email/Smtp.html" title="class in io.github.jabrena.juno.hardware.net.email">Smtp</a></dt>
 <dd>
@@ -6530,12 +6805,40 @@ counting repeats of an unchanged value, so a program can measure how often the h
 <dd>
 <div class="block">USB serial output recognized as compiler intrinsics by Juno.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#serverCertificate()" class="member-name-link">serverCertificate()</a> - Method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></dt>
+<dd>
+<div class="block">Board-side access to the server certificate installed by a key manager.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/KeyStore.html#serverCertificate()" class="member-name-link">serverCertificate()</a> - Method in class io.github.jabrena.juno.jdk.security.<a href="io/github/jabrena/juno/jdk/security/KeyStore.html" title="class in io.github.jabrena.juno.jdk.security">KeyStore</a></dt>
+<dd>
+<div class="block">Board transport access to the X.509 certificate PEM.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#serverPrivateKey()" class="member-name-link">serverPrivateKey()</a> - Method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></dt>
+<dd>
+<div class="block">Board-side access to the PKCS#8 server key installed by a key manager.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/KeyStore.html#serverPrivateKey()" class="member-name-link">serverPrivateKey()</a> - Method in class io.github.jabrena.juno.jdk.security.<a href="io/github/jabrena/juno/jdk/security/KeyStore.html" title="class in io.github.jabrena.juno.jdk.security">KeyStore</a></dt>
+<dd>
+<div class="block">Board transport access to the key encoded in PKCS#8 DER.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#serverPrivateKeyLength()" class="member-name-link">serverPrivateKeyLength()</a> - Method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></dt>
+<dd>
+<div class="block">The length of the key's DER encoding within <a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#serverPrivateKey()"><code>SSLContext.serverPrivateKey()</code></a>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/KeyStore.html#serverPrivateKeyLength()" class="member-name-link">serverPrivateKeyLength()</a> - Method in class io.github.jabrena.juno.jdk.security.<a href="io/github/jabrena/juno/jdk/security/KeyStore.html" title="class in io.github.jabrena.juno.jdk.security">KeyStore</a></dt>
+<dd>
+<div class="block">The length of the key's DER encoding within <a href="io/github/jabrena/juno/jdk/security/KeyStore.html#serverPrivateKey()"><code>KeyStore.serverPrivateKey()</code></a>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html#SERVICE_UNAVAILABLE" class="member-name-link">SERVICE_UNAVAILABLE</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/servo/Servo.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.servo">Servo</a> - Class in <a href="io/github/jabrena/juno/hardware/device/servo/package-summary.html">io.github.jabrena.juno.hardware.device.servo</a></dt>
 <dd>
 <div class="block">A zero-cost servo motor handle for a standard 3-wire hobby servo (signal, power, ground),
 backed by the Arduino <code>Servo</code> library.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/Headers.html#set(java.lang.String,java.lang.String)" class="member-name-link">set(String, String)</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/Headers.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">Headers</a></dt>
+<dd>
+<div class="block">Sets a response header; the board sends only <code>Content-Type</code>, with any value.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html#setAcceleration(int)" class="member-name-link">setAcceleration(int)</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedMotor.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedMotor</a></dt>
 <dd>
@@ -6667,6 +6970,10 @@ whole-program emulator in a test, never on the board.</div>
 <dd>
 <div class="block">Sets the heading, in millidegrees counter-clockwise; any value, normalised to a turn.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsServer.html#setHttpsConfigurator(io.github.jabrena.juno.jdk.net.httpserver.HttpsConfigurator)" class="member-name-link">setHttpsConfigurator(HttpsConfigurator)</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsServer.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpsServer</a></dt>
+<dd>
+<div class="block">Sets the server identity; required before <a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsServer.html#start()"><code>HttpsServer.start()</code></a>.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeI2c.html#setI2c(io.github.jabrena.juno.hardware.i2c.I2c)" class="member-name-link">setI2c(I2c)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeI2c.html" title="class in io.github.jabrena.juno.hardware.internal">NativeI2c</a></dt>
 <dd>
 <div class="block">Makes <a href="io/github/jabrena/juno/hardware/MCU.html#getI2c()"><code>MCU.getI2c()</code></a> hand out <code>replacement</code>: for a
@@ -6675,6 +6982,10 @@ whole-program emulator in a test, never on the board.</div>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html#setKeyboard(io.github.jabrena.juno.hardware.keyboard.Keyboard)" class="member-name-link">setKeyboard(Keyboard)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeKeyboard.html" title="class in io.github.jabrena.juno.hardware.internal">NativeKeyboard</a></dt>
 <dd>
 <div class="block">Makes MCU hand out <code>replacement</code>: for a whole-program emulator in a test, never on the board.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/security/KeyStore.html#setKeyEntry(java.lang.String,io.github.jabrena.juno.jdk.security.Key,char%5B%5D,io.github.jabrena.juno.jdk.security.cert.Certificate%5B%5D)" class="member-name-link">setKeyEntry(String, Key, char[], Certificate[])</a> - Method in class io.github.jabrena.juno.jdk.security.<a href="io/github/jabrena/juno/jdk/security/KeyStore.html" title="class in io.github.jabrena.juno.jdk.security">KeyStore</a></dt>
+<dd>
+<div class="block">Records one server identity in the in-memory store.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#setLedColor(io.github.jabrena.juno.remote.lego.poweredup.HubColor)" class="member-name-link">setLedColor(HubColor)</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
@@ -7155,6 +7466,14 @@ given with <code>HttpClient.newBuilder().sslContext(context)</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#STALLED" class="member-name-link">STALLED</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html#start()" class="member-name-link">start()</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpServer</a></dt>
+<dd>
+<div class="block">Starts the plain HTTP listener on the board's Wi-Fi interface.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsServer.html#start()" class="member-name-link">start()</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpsServer.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpsServer</a></dt>
+<dd>
+<div class="block">Starts handler dispatch after the board TLS listener has been configured with PEM credentials.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRemoteControl.html#start()" class="member-name-link">start()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRemoteControl.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRemoteControl</a></dt>
 <dd>
 <div class="block">Starts a virtual receiver thread that decodes frames and queues button transitions.</div>
@@ -7191,6 +7510,14 @@ up to <code>checksum</code> (modulo 65536).</div>
 <dt><a href="io/github/jabrena/juno/robotics/navigation/GyroHeading.html#startCalibration()" class="member-name-link">startCalibration()</a> - Method in class io.github.jabrena.juno.robotics.navigation.<a href="io/github/jabrena/juno/robotics/navigation/GyroHeading.html" title="class in io.github.jabrena.juno.robotics.navigation">GyroHeading</a></dt>
 <dd>
 <div class="block">Starts averaging the gyroscope's rate as its bias, instead of integrating it; the robot must stand still.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html#startDispatchLoop()" class="member-name-link">startDispatchLoop()</a> - Method in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpServer</a></dt>
+<dd>
+<div class="block">Starts the virtual thread that accepts requests and calls the matching handler.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html#started" class="member-name-link">started</a> - Variable in class io.github.jabrena.juno.jdk.net.httpserver.<a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html" title="class in io.github.jabrena.juno.jdk.net.httpserver">HttpServer</a></dt>
+<dd>
+<div class="block">Whether <a href="io/github/jabrena/juno/jdk/net/httpserver/HttpServer.html#start()"><code>HttpServer.start()</code></a> has run.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#startMotor()" class="member-name-link">startMotor()</a> - Method in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
 <dd>
@@ -7350,14 +7677,6 @@ listeners; the navigator follows it on its own thread.</div>
 <dd>
 <div class="block"><a href="io/github/jabrena/juno/robotics/navigation/Pilot.html#stop()"><code>Pilot.stop()</code></a> ended it.</div>
 </dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#streamBytes(byte%5B%5D,int)" class="member-name-link">streamBytes(byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
-<dd>
-<div class="block">Writes the first <code>length</code> bytes of <code>data</code> to the open stream.</div>
-</dd>
-<dt><a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html#streamText(java.lang.String)" class="member-name-link">streamText(String)</a> - Static method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></dt>
-<dd>
-<div class="block">Writes <code>text</code> to the open stream.</div>
-</dd>
 <dt><a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.BodyPublishers.html#STRING_CAPACITY" class="member-name-link">STRING_CAPACITY</a> - Static variable in class io.github.jabrena.juno.jdk.net.http.<a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.BodyPublishers.html" title="class in io.github.jabrena.juno.jdk.net.http">HttpRequest.BodyPublishers</a></dt>
 <dd>
 <div class="block">The longest body <a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.BodyPublishers.html#ofString(java.lang.String)"><code>HttpRequest.BodyPublishers.ofString(String)</code></a> accepts, in bytes.</div>
@@ -7482,6 +7801,20 @@ socket, wired for the shield's standard UNO pinout as used by ELEGOO's <code>Ele
 <dt><a href="io/github/jabrena/juno/robotics/Thermometer.html" class="type-name-link" title="interface in io.github.jabrena.juno.robotics">Thermometer</a> - Interface in <a href="io/github/jabrena/juno/robotics/package-summary.html">io.github.jabrena.juno.robotics</a></dt>
 <dd>
 <div class="block">A device that measures temperature, in degrees Celsius.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a> - Class in <a href="io/github/jabrena/juno/hardware/device/ti/package-summary.html">io.github.jabrena.juno.hardware.device.ti</a></dt>
+<dd>
+<div class="block">A TI-84 Plus family calculator on the USB Host Shield, reached with its ordinary computer cable: the board plays the
+part of TI Connect and sends variables to the calculator over TI's USB link protocol ("DUSB"), so a program can put
+sensor readings into the lists <code>L1</code> to <code>L6</code> for a STAT PLOT.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#%3Cinit%3E()" class="member-name-link">TiLink()</a> - Constructor for class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>
+<div class="block">A calculator on the board's USB Host Shield, timed by the board's clock.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#%3Cinit%3E(io.github.jabrena.juno.hardware.device.usb.UsbHostShield,io.github.jabrena.juno.hardware.time.Clock)" class="member-name-link">TiLink(UsbHostShield, Clock)</a> - Constructor for class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>
+<div class="block">A calculator on <code>usb</code>, timed by <code>clock</code>: fakes in a unit test.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html#TIMED_OUT" class="member-name-link">TIMED_OUT</a> - Enum constant in enum class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedState.html" title="enum class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedState</a></dt>
 <dd>&nbsp;</dd>
@@ -8016,6 +8349,8 @@ the order they are declared.</div>
 <div class="block">Returns an array containing the constants of this enum class, in
 the order they are declared.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html#VENDOR_ID" class="member-name-link">VENDOR_ID</a> - Static variable in class io.github.jabrena.juno.hardware.device.ti.<a href="io/github/jabrena/juno/hardware/device/ti/TiLink.html" title="class in io.github.jabrena.juno.hardware.device.ti">TiLink</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html#VENDOR_ID" class="member-name-link">VENDOR_ID</a> - Static variable in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/Cp210xSerial.html" title="class in io.github.jabrena.juno.hardware.device.usb">Cp210xSerial</a></dt>
 <dd>
 <div class="block">Silicon Labs' USB vendor ID, shared by every CP210x.</div>
@@ -8191,7 +8526,7 @@ face there, as leJOS's <code>Waypoint</code>.</div>
 <dt><a href="io/github/jabrena/juno/hardware/net/WifiProvisioner.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.net">WifiProvisioner</a> - Class in <a href="io/github/jabrena/juno/hardware/net/package-summary.html">io.github.jabrena.juno.hardware.net</a></dt>
 <dd>
 <div class="block">Wi-Fi provisioning without baking credentials into the firmware, written in plain Java on top of
-<a href="io/github/jabrena/juno/hardware/MCU.html#getWifi()"><code>MCU.getWifi()</code></a> and <a href="io/github/jabrena/juno/hardware/net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> (it adds no intrinsics, and costs nothing in a program that
+<a href="io/github/jabrena/juno/hardware/MCU.html#getWifi()"><code>MCU.getWifi()</code></a> and the board's native HTTP listener, without a server thread (it adds no intrinsics, and costs nothing in a program that
 does not call it).</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html#write(byte%5B%5D,int)" class="member-name-link">write(byte[], int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeBluetoothLe.html" title="class in io.github.jabrena.juno.hardware.internal">NativeBluetoothLe</a></dt>

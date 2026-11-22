@@ -16,8 +16,8 @@ final class MailboxRestoreTask implements Runnable {
 
     @Override
     public void run() {
-        // Let the parent task enter HttpServer.accept() before the SD scan starts. A newly started task may otherwise
-        // win the next scheduler slice and keep the Linux-side listener queued without an MCU-side TLS accept.
+        // Let the HTTPS server's dispatch thread enter its first accept() before the SD scan starts. A newly started
+        // task may otherwise win the next scheduler slice and keep the listener queued without an MCU-side TLS accept.
         Thread.yield();
         Delay.millis(100);
         Serial.println("Mailbox message restore");

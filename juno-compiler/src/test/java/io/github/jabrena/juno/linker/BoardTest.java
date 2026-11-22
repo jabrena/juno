@@ -122,9 +122,7 @@ class BoardTest {
                 arguments(Board.AI_THINKER_ESP32_CAM, Capability.BLUETOOTH_LE, true),
                 arguments(Board.AI_THINKER_ESP32_CAM, Capability.CAMERA, true),
                 arguments(Board.AI_THINKER_ESP32_CAM, Capability.PSRAM, true),
-                arguments(Board.AI_THINKER_ESP32_CAM, Capability.HTTP_STREAM, true),
                 arguments(Board.AI_THINKER_ESP32_CAM, Capability.HTTP_SERVER, true),
-                arguments(Board.NANO_ESP32, Capability.HTTP_STREAM, false),
                 arguments(Board.NANO_ESP32, Capability.CAMERA, false),
                 arguments(Board.M5_CARDPUTER, Capability.BIG_NUMBERS, true),
                 arguments(Board.M5_CARDPUTER, Capability.PSRAM, false),
@@ -388,12 +386,12 @@ class BoardTest {
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.annotations.RaspberryPico2WifiBoard;
                 import io.github.jabrena.juno.hardware.MCU;
-                import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                import io.github.jabrena.juno.hardware.internal.NativeHttpServer;
                 @Board(RaspberryPico2WifiBoard.class)
                 public final class PicoHttpServer {
                     public static void main(String[] args) {
                         MCU.getWifi();
-                        HttpServer.begin(80);
+                        NativeHttpServer.begin(80);
                     }
                 }
                 """;
@@ -899,7 +897,7 @@ class BoardTest {
                         && capability != Capability.M5_KEYBOARD && capability != Capability.M5_AUDIO
                         && capability != Capability.M5_BATTERY && capability != Capability.HTTPS_SERVER
                         && capability != Capability.CAMERA
-                        && capability != Capability.HTTP_STREAM && capability != Capability.PSRAM
+                        && capability != Capability.PSRAM
                         && capability != Capability.ONBOARD_SD_CARD)
                 .allMatch(Board.UNO_R4_WIFI::supports);
     }

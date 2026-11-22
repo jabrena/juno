@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.jdk.net.httpserver;
 
+import io.github.jabrena.juno.hardware.internal.NativeHttpServer;
 import io.github.jabrena.juno.javax.net.ssl.SSLContext;
 import io.github.jabrena.juno.jdk.net.InetSocketAddress;
 import org.jspecify.annotations.Nullable;
@@ -46,7 +47,7 @@ public final class HttpsServer extends HttpServer {
         for (int index = 0; index < certificate.length(); index++) {
             certificateBytes[index] = (byte) certificate.charAt(index);
         }
-        if (!io.github.jabrena.juno.hardware.net.http.HttpServer.beginTls(
+        if (!NativeHttpServer.beginTls(
                 port, certificateBytes, certificate.length(), key, context.serverPrivateKeyLength())) {
             throw new IllegalStateException("Certificate or private key did not parse");
         }

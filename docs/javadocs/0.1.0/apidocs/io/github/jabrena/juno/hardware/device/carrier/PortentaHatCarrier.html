@@ -76,11 +76,14 @@ initTheme();
 <ol class="toc-list">
 <li><a href="#%3Cinit%3E()" tabindex="0">PortentaHatCarrier()</a></li>
 <li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" tabindex="0">PortentaHatCarrier(Gpio)</a></li>
+<li><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.spi.Spi)" tabindex="0">PortentaHatCarrier(Gpio, Spi)</a></li>
 </ol>
 </li>
 <li><a href="#method-detail" tabindex="0">Method Details</a>
 <ol class="toc-list">
 <li><a href="#getSdCard()" tabindex="0">getSdCard()</a></li>
+<li><a href="#getGpio()" tabindex="0">getGpio()</a></li>
+<li><a href="#getSpi()" tabindex="0">getSpi()</a></li>
 <li><a href="#getLcdChipSelect()" tabindex="0">getLcdChipSelect()</a></li>
 <li><a href="#getLcdDataCommand()" tabindex="0">getLcdDataCommand()</a></li>
 <li><a href="#getLcdReset()" tabindex="0">getLcdReset()</a></li>
@@ -145,7 +148,12 @@ reaches a HAT's SPI device with no extra wiring. Pins here are the Juno names th
 </div>
 <div class="col-constructor-name odd-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">PortentaHatCarrier</a><wbr>(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
 <div class="col-last odd-row-color">
-<div class="block">Creates the carrier handle for a board GPIO context.</div>
+<div class="block">Creates the carrier handle for a board GPIO context, its header's SPI bus being the board's (<a href="../../MCU.html#getSpi()"><code>MCU.getSpi()</code></a>).</div>
+</div>
+<div class="col-constructor-name even-row-color"><code><a href="#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.spi.Spi)" class="member-name-link">PortentaHatCarrier</a><wbr>(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ @Nullable <a href="../../spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a>&nbsp;spi)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Creates the carrier handle for <code>gpio</code> and the header's <code>spi</code> bus: mocked ones in a unit test.</div>
 </div>
 </div>
 </section>
@@ -161,26 +169,37 @@ reaches a HAT's SPI device with no extra wiring. Pins here are the Juno names th
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getLcdChipSelect()" class="member-name-link">getLcdChipSelect</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getGpio()" class="member-name-link">getGpio</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The chip select of a display on the header's SPI bus, pin 24 (D7).</div>
+<div class="block">The GPIO context the carrier's header pins belong to; a HAT on the header drives its control lines through it.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getLcdDataCommand()" class="member-name-link">getLcdDataCommand</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getLcdChipSelect()" class="member-name-link">getLcdChipSelect</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">The data/command line of a display on the header, pin 18 (PI7, raw index 161).</div>
+<div class="block">The chip select of a display on the header's SPI bus, pin 24 (D7).</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getLcdReset()" class="member-name-link">getLcdReset</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getLcdDataCommand()" class="member-name-link">getLcdDataCommand</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The data/command line of a display on the header, pin 18 (PI7, raw index 161).</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getLcdReset()" class="member-name-link">getLcdReset</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The reset line of a display on the header, pin 22 (D5).</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSdCard()" class="member-name-link">getSdCard</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSdCard()" class="member-name-link">getSdCard</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The card in the carrier's own microSD slot (J7), not the H7's: the slot is on the SDMMC2 bus, so it has no chip
 select and does not share the header's SPI bus with a HAT display.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../../spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSpi()" class="member-name-link">getSpi</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The SPI bus on the header's pins 19, 21 and 23, which a HAT display and touch controller share: the board's
+primary bus (<a href="../../MCU.html#getSpi()"><code>MCU.getSpi()</code></a>) unless the carrier was given another.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTouchChipSelect()" class="member-name-link">getTouchChipSelect</a>()</code></div>
@@ -218,7 +237,18 @@ select and does not share the header's SPI bus with a HAT display.</div>
 <h3>PortentaHatCarrier</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">PortentaHatCarrier</span><wbr><span class="parameters">(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</span></div>
-<div class="block">Creates the carrier handle for a board GPIO context. Create it once, at startup, and reuse it.</div>
+<div class="block">Creates the carrier handle for a board GPIO context, its header's SPI bus being the board's (<a href="../../MCU.html#getSpi()"><code>MCU.getSpi()</code></a>).
+Create it once, at startup, and reuse it.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="&lt;init&gt;(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.spi.Spi)">
+<h3>PortentaHatCarrier</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="element-name">PortentaHatCarrier</span><wbr><span class="parameters">(<a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ @Nullable <a href="../../spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a>&nbsp;spi)</span></div>
+<div class="block">Creates the carrier handle for <code>gpio</code> and the header's <code>spi</code> bus: mocked ones in a unit test.</div>
 </div>
 </section>
 </li>
@@ -238,6 +268,25 @@ select and does not share the header's SPI bus with a HAT display.</div>
 <div class="block">The card in the carrier's own microSD slot (J7), not the H7's: the slot is on the SDMMC2 bus, so it has no chip
 select and does not share the header's SPI bus with a HAT display. The same instance every call; its
 <a href="../sd/SdCard.html#begin()"><code>SdCard.begin()</code></a> mounts the card, and <code>java.io.RandomAccessFile</code> reads files from it.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getGpio()">
+<h3>getGpio</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../../gpio/Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></span>&nbsp;<span class="element-name">getGpio</span>()</div>
+<div class="block">The GPIO context the carrier's header pins belong to; a HAT on the header drives its control lines through it.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getSpi()">
+<h3>getSpi</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../../spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a></span>&nbsp;<span class="element-name">getSpi</span>()</div>
+<div class="block">The SPI bus on the header's pins 19, 21 and 23, which a HAT display and touch controller share: the board's
+primary bus (<a href="../../MCU.html#getSpi()"><code>MCU.getSpi()</code></a>) unless the carrier was given another. Allocates nothing.</div>
 </div>
 </section>
 </li>

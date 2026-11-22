@@ -22,8 +22,6 @@ public enum ShimFeature {
     SERVO,
     /** {@code NativeBluetoothLe}: the board's BLE central (scan, connect, one characteristic) over the core's BLE library. */
     BLUETOOTH_LE,
-    /** {@code HttpServer.beginStream}: an open response the program keeps writing parts to, on the ESP32 transport. */
-    HTTP_STREAM,
     /** {@code MCU.getCamera()}: the AI Thinker ESP32-CAM's OV2640 through the core's {@code esp_camera} driver. */
     CAMERA,
     /** Explicit external PSRAM byte buffers on the Nano ESP32 and AI Thinker ESP32-CAM. */
@@ -57,6 +55,8 @@ public enum ShimFeature {
     DATAGRAM,
     /** {@code java.net.Socket} and its {@code OutputStream}/{@code InputStream} over one caller-owned TCP connection. */
     SOCKET,
+    /** Board-side {@code InputStream}s, such as an HTTP server's request body: {@code common/streams.cpp}. */
+    INPUT_STREAMS,
     SD,
     /** {@code java.io.RandomAccessFile} over the SD open-file table; raises JDK exceptions, so it needs {@link #EXCEPTIONS}. */
     RANDOM_ACCESS_FILE,
@@ -73,6 +73,10 @@ public enum ShimFeature {
     HTTPS_TRUSTED_CERTIFICATE,
     HTTP_SERVER,
     HTTP_SERVER_HEADERS,
+    /** {@code HttpExchange.getRequestBody()}: {@code common/http-server-request-body.cpp} over the streams table. */
+    HTTP_SERVER_REQUEST_BODY,
+    /** {@code HttpExchange}'s response: {@code common/http-server-response.cpp}, written straight to the client. */
+    HTTP_SERVER_RESPONSE,
     SMTP,
     SMTP_TLS,
     POP3,

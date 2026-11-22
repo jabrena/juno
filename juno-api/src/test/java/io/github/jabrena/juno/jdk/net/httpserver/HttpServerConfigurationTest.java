@@ -9,23 +9,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** The parts of the board HTTP server subset that run without the board transport. */
 class HttpServerConfigurationTest {
     @Test
-    void contentTypeMapsTheTwoJsonTypesAndFallsBackToPlainText() {
-        Headers headers = new Headers();
-        assertThat(headers.contentType()).isZero();
+    void responseContentTypeDefaultsToPlainTextAndKeepsAnyValue() {
+        Headers headers = Headers.response();
+        assertThat(headers.contentType()).isEqualTo("text/plain");
         headers.set("Content-Type", "application/json");
-        assertThat(headers.contentType()).isEqualTo(1);
-        headers.set("Content-Type", "application/problem+json");
-        assertThat(headers.contentType()).isEqualTo(2);
-        headers.set("Content-Type", "text/html");
-        assertThat(headers.contentType()).isZero();
+        assertThat(headers.contentType()).isEqualTo("application/json");
+        headers.set("Content-Type", "image/jpeg");
+        assertThat(headers.contentType()).isEqualTo("image/jpeg");
     }
 
     @Test
-    void headersOtherThanContentTypeAreIgnored() {
-        Headers headers = new Headers();
+    void responseHeadersOtherThanContentTypeAreIgnored() {
+        Headers headers = Headers.response();
         headers.set("Content-Type", "application/json");
         headers.set("Cache-Control", "no-store");
-        assertThat(headers.contentType()).isEqualTo(1);
+        assertThat(headers.contentType()).isEqualTo("application/json");
+    }
+
+    @Test
+    void responseHeadersHaveNoRequestValuesAndIgnoreNoSet() {
+        Headers response = Headers.response();
+        assertThat(response.getFirst("Content-Type")).isNull();
+        Headers request = Headers.request();
+        request.set("Content-Type", "application/json");
+        assertThat(request.contentType()).isEqualTo("text/plain");
     }
 
     @Test

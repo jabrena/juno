@@ -121,10 +121,15 @@ client's trusted certificates, and the exceptions its API declares.</div>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><code>void</code></div>
-<div class="col-second even-row-color"><span class="type-name-label">KeyStore.</span><code><a href="../KeyStore.html#load(java.io.InputStream,char%5B%5D)" class="member-name-link">load</a><wbr>(@Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/io/InputStream.html" title="class in java.io" class="external-link">InputStream</a>&nbsp;stream,
- char @Nullable []&nbsp;password)</code></div>
+<div class="col-first even-row-color"><code>static <a href="../KeyFactory.html" title="class in io.github.jabrena.juno.jdk.security">KeyFactory</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">KeyFactory.</span><code><a href="../KeyFactory.html#getInstance(java.lang.String)" class="member-name-link">getInstance</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;algorithm)</code></div>
 <div class="col-last even-row-color">
+<div class="block">A factory for <code>"EC"</code> keys, the only algorithm the board supports.</div>
+</div>
+<div class="col-first odd-row-color"><code>void</code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">KeyStore.</span><code><a href="../KeyStore.html#load(java.io.InputStream,char%5B%5D)" class="member-name-link">load</a><wbr>(@Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/io/InputStream.html" title="class in java.io" class="external-link">InputStream</a>&nbsp;stream,
+ char @Nullable []&nbsp;password)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">Starts the store empty when <code>stream</code> is <code>null</code>.</div>
 </div>
 </div>

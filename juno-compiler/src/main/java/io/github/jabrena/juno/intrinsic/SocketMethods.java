@@ -18,6 +18,7 @@ public final class SocketMethods {
     public static final String OUTPUT_STREAM = "java/io/OutputStream";
     public static final String INPUT_STREAM = "java/io/InputStream";
     public static final MethodRef OUTPUT_STREAM_CONSTRUCTOR = new MethodRef(OUTPUT_STREAM, "<init>", "()V");
+    public static final MethodRef INPUT_STREAM_CONSTRUCTOR = new MethodRef(INPUT_STREAM, "<init>", "()V");
 
     /** Every exception a socket call can raise, so a program that uses one has their class ids. */
     public static final List<String> EXCEPTIONS = List.of("java/io/IOException", "java/lang/IllegalArgumentException");
@@ -31,6 +32,7 @@ public final class SocketMethods {
             Map.entry(new MethodRef(SOCKET, "setSoTimeout", "(I)V"), Intrinsic.SOCKET_SET_SO_TIMEOUT),
             Map.entry(new MethodRef(SOCKET, "close", "()V"), Intrinsic.SOCKET_CLOSE),
             Map.entry(OUTPUT_STREAM_CONSTRUCTOR, Intrinsic.SOCKET_OUTPUT_STREAM_INIT),
+            Map.entry(INPUT_STREAM_CONSTRUCTOR, Intrinsic.INPUT_STREAM_INIT),
             Map.entry(new MethodRef(OUTPUT_STREAM, "write", "([BII)V"), Intrinsic.SOCKET_OUTPUT_STREAM_WRITE),
             Map.entry(new MethodRef(OUTPUT_STREAM, "write", "(I)V"), Intrinsic.SOCKET_OUTPUT_STREAM_WRITE_BYTE),
             Map.entry(new MethodRef(OUTPUT_STREAM, "close", "()V"), Intrinsic.SOCKET_OUTPUT_STREAM_CLOSE));

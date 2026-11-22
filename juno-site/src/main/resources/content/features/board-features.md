@@ -25,7 +25,6 @@ language itself, see the [Java subset](../java-subset) page.
 | HTTPS client | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | HTTP server | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | HTTPS server | ✓ | ✓ | ✓ | — | ✓ | — | — |
-| HTTP response streaming (`HttpServer.beginStream`) | — | — | — | ✓ | — | — | — |
 | Onboard microSD (`MCU.getSdCard()`) | — | — | ✓ | ✓ | — | — | — |
 | Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | ✓ | ✓ | — | ✓ | ✓ | — |
 | Email over STARTTLS (`Smtp.send`) | ✓ | ✓ | — | — | — | ✓ | — |

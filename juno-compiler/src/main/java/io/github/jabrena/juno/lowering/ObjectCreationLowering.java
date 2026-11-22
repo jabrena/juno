@@ -95,7 +95,8 @@ final class ObjectCreationLowering implements InstructionLowering {
 
     /** Lowers a constructor {@link #buildsHandle} accepts. */
     void construct(Instruction instruction, MethodRef called) {
-        if (called.equals(SocketMethods.OUTPUT_STREAM_CONSTRUCTOR)) {
+        if (called.equals(SocketMethods.OUTPUT_STREAM_CONSTRUCTOR)
+                || called.equals(SocketMethods.INPUT_STREAM_CONSTRUCTOR)) {
             stack.pop();
         } else if (bigNumberSupport.isConstruction(called) || uuidSupport.isConstruction(called)
                 || datagramSupport.isConstruction(called) || socketSupport.isConstruction(called)

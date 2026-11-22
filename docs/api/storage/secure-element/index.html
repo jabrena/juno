@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-M6FYOHIC.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-AOEEMNED.css" />
 
 </head>
 <body>
@@ -361,9 +361,9 @@ fences off, and starts the program in the non-secure world, which reaches the sl
 <code>juno:flash</code> installs it with any program that uses the store; nothing has to be flashed first. Code on the board,
 libraries included, cannot read the sector directly — the read faults — but no fuse is written and debug stays on,
 so anyone with the board and a USB cable can still read or replace the whole flash, and the values are not encrypted.
-Such a program runs on one carrier, as the second core cannot be started from the non-secure world; its flash writes
-(BTstack's bonds, the EEPROM library) go through the firmware, so Wi-Fi and Bluetooth LE keep working. A crash
-reboots the board into BOOTSEL.</p>
+Such a program still runs its virtual threads on both cores: the firmware starts the second core into a small relay
+that fences it the same way and hands it to the program non-secure. Its flash writes (BTstack's bonds, the EEPROM
+library) go through the firmware, so Wi-Fi and Bluetooth LE keep working. A crash reboots the board into BOOTSEL.</p>
 <p><strong>Status:</strong> the SE050C2 path is confirmed on a Portenta H7 — writes, updates, per-name clears, a rewrite after a clear
 and a 63-byte value round-trip, plus a reboot that joins Wi-Fi from the stored credentials. The ESP32 NVS path is
 confirmed on a Nano ESP32, and its UNO R4 WiFi variant on an R4 with coprocessor firmware 0.4.1
@@ -379,16 +379,19 @@ limit: a program on the board can read any name.</li>
 <li>A secret that is missing, unreadable or fails its checksum is reported as missing. No copy is kept in plaintext anywhere.</li>
 </ul>
 <h2 id="provisioning">Provisioning</h2>
-<p>Upload the provisioning program with <code>juno:secret</code>. It asks for the value at a hidden prompt, sends it to the board over USB
-serial as hex, and never puts it on the command line or in the log:</p>
+<p>Provision with <code>juno:secret</code>. The goal uploads the plugin's own provisioning program (<code>SecretProvisioner</code>, shipped in
+<code>juno-maven-plugin</code>), so it works from any project without a program of its own; <code>-Djuno.main</code> can still name another
+program that speaks the same protocol. It asks for the value at a hidden prompt, sends it to the board over USB serial
+as hex, and never puts it on the command line or in the log:</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:secret \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.security.SecretProvisioner \
   -Djuno.board=arduino-portenta-h7 \
   -Djuno.port=/dev/cu.usbmodemXXXX \
   -Djuno.secret.key=wifi.ssid
 </code></pre>
+<p>Every name is yours: the program knows no names of its own.</p>
 <ul>
-<li><code>-Djuno.secret.list=true</code> prints <code>STATE &lt;name&gt; written|missing</code> for every name, without values.</li>
+<li><code>-Djuno.secret.list=wifi.ssid,wifi.password</code> prints <code>STATE &lt;name&gt; written|missing</code> for each name given, without
+values. The store cannot enumerate what it holds, so the names to check are always named.</li>
 <li><code>-Djuno.secret.clear=true</code> asks you to type <code>CLEAR</code> before uploading anything, then empties <strong>every data slot on the
 store</strong> — see <a href="#clearing">Clearing</a> below.</li>
 <li>Only one of <code>-Djuno.secret.key</code>, <code>-Djuno.secret.list</code> and <code>-Djuno.secret.clear</code> may be used at a time.</li>

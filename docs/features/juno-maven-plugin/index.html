@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-M6FYOHIC.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-AOEEMNED.css" />
 
 </head>
 <body>
@@ -423,6 +423,12 @@ many programs, so every <code>compile</code>, <code>verify</code> or <code>flash
 <td><code>flash</code>, <code>monitor</code></td>
 <td>auto-detected</td>
 <td>Serial port, when more than one matching board is connected.</td>
+</tr>
+<tr>
+<td><code>juno.dfuSerial</code></td>
+<td><code>flash</code>, <code>secret</code></td>
+<td><em>(unset)</em></td>
+<td>USB serial number of the board to upload to, for boards that upload with <code>dfu-util</code> (Portenta H7, Nano ESP32). <code>dfu-util</code> stops when more than one DFU device is connected (a Nano ESP32 offers DFU whenever it is plugged in); this narrows it to one. <code>system_profiler SPUSBDataType</code> (macOS) or <code>lsusb -v</code> (Linux) shows the serial.</td>
 </tr>
 <tr>
 <td><code>juno.baudRate</code></td>

@@ -79,6 +79,9 @@ initTheme();
 <li><a href="#getProtocol()" tabindex="0">getProtocol()</a></li>
 <li><a href="#init(io.github.jabrena.juno.javax.net.ssl.KeyManager%5B%5D,io.github.jabrena.juno.javax.net.ssl.TrustManager%5B%5D,io.github.jabrena.juno.jdk.security.SecureRandom)" tabindex="0">init(KeyManager[], TrustManager[], SecureRandom)</a></li>
 <li><a href="#trustedCertificates()" tabindex="0">trustedCertificates()</a></li>
+<li><a href="#serverCertificate()" tabindex="0">serverCertificate()</a></li>
+<li><a href="#serverPrivateKey()" tabindex="0">serverPrivateKey()</a></li>
+<li><a href="#serverPrivateKeyLength()" tabindex="0">serverPrivateKeyLength()</a></li>
 </ol>
 </li>
 </ol>
@@ -146,8 +149,23 @@ Raspberry Pi Pico 2 W; elsewhere a request through a client with an <code>SSLCon
 is none.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#trustedCertificates()" class="member-name-link">trustedCertificates</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#serverCertificate()" class="member-name-link">serverCertificate</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Board-side access to the server certificate installed by a key manager.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>byte @Nullable []</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#serverPrivateKey()" class="member-name-link">serverPrivateKey</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Board-side access to the PKCS#8 server key installed by a key manager.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#serverPrivateKeyLength()" class="member-name-link">serverPrivateKeyLength</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">The length of the key's DER encoding within <a href="#serverPrivateKey()"><code>serverPrivateKey()</code></a>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>@Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#trustedCertificates()" class="member-name-link">trustedCertificates</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">The trusted certificates as one PEM chain, or <code>null</code> for the board's own roots.</div>
 </div>
 </div>
@@ -240,6 +258,33 @@ is none. <code>random</code> is not used.</div>
 <dt>Throws:</dt>
 <dd><code><a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/IllegalStateException.html" title="class in java.lang" class="external-link">IllegalStateException</a></code> - when the context was not initialised</dd>
 </dl>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="serverCertificate()">
+<h3>serverCertificate</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">@Nullable <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">serverCertificate</span>()</div>
+<div class="block">Board-side access to the server certificate installed by a key manager.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="serverPrivateKey()">
+<h3>serverPrivateKey</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">byte @Nullable []</span>&nbsp;<span class="element-name">serverPrivateKey</span>()</div>
+<div class="block">Board-side access to the PKCS#8 server key installed by a key manager.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="serverPrivateKeyLength()">
+<h3>serverPrivateKeyLength</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">serverPrivateKeyLength</span>()</div>
+<div class="block">The length of the key's DER encoding within <a href="#serverPrivateKey()"><code>serverPrivateKey()</code></a>.</div>
 </div>
 </section>
 </li>

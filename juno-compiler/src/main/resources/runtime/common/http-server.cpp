@@ -17,6 +17,9 @@ struct JunoHttpServerAcceptJob {
 };
 
 static int32_t juno_http_server_accept_request(uint8_t* bodyBuffer, int32_t bodyBufferLength);
+// Set once a JDK HttpExchange registers its request body, which then learns each accepted body's length and how many
+// of its bytes accept() left unread: a body larger than the buffer is read on from the client as the program reads it.
+static void (*juno_http_server_request_received)(const uint8_t* bodyBuffer, int32_t length, int32_t unread) = nullptr;
 
 static void juno_http_server_accept_job(void* argument) {
   auto* job = static_cast<JunoHttpServerAcceptJob*>(argument);
@@ -125,6 +128,11 @@ ${JUNO_HTTP_SERVER_HEADER_CAPTURE}      recent[0] = recent[1];
       complete = true;
       break;
     }
+    if (written == bodyBufferLength && juno_http_server_request_received != nullptr) {
+      // The rest stays with the client, for the program's request body stream to read.
+      complete = true;
+      break;
+    }
   }
   if (!complete) {
     // A request cut off before its headers (or declared body) ended must not reach the program: its partial path
@@ -138,7 +146,12 @@ ${JUNO_HTTP_SERVER_HEADER_CAPTURE}      recent[0] = recent[1];
   juno_http_server_method_buf[methodLength] = '\0';
   juno_http_server_path_buf[pathLength] = '\0';
   if (hasContentLength) juno_http_server_content_length_value = contentLength;
-  return written < bodyBufferLength ? written : bodyBufferLength;
+  int32_t received = written < bodyBufferLength ? written : bodyBufferLength;
+  if (juno_http_server_request_received != nullptr) {
+    int32_t unread = hasContentLength && contentLength > written ? contentLength - written : 0;
+    juno_http_server_request_received(bodyBuffer, received, unread);
+  }
+  return received;
 }
 
 ${JUNO_HTTP_SERVER_HEADER_LOOKUP}extern "C" int32_t juno_http_server_content_length() {
@@ -191,77 +204,3 @@ static void juno_http_server_respond_bytes(int32_t status, const char* contentTy
 extern "C" void juno_http_server_respond(int32_t status, const char* contentType, const char* body) {
   juno_http_server_respond_bytes(status, contentType, body, static_cast<int32_t>(strlen(body)));
 }
-
-extern "C" void juno_http_server_respond_builder(int32_t status, const char* contentType,
-                                                   int32_t bodyHandle) {
-  auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(bodyHandle));
-  int32_t length = header[0];
-  const uint8_t* buffer = juno_string_builder_buffer(bodyHandle);
-  juno_http_server_respond_bytes(status, contentType, reinterpret_cast<const char*>(buffer), length);
-}
-
-static constexpr int32_t JUNO_HTTP_SERVER_RESPONSE_CAPACITY = 512;
-static uint8_t juno_http_server_response_buffer[JUNO_HTTP_SERVER_RESPONSE_CAPACITY];
-static int32_t juno_http_server_response_length = 0;
-static int32_t juno_http_server_response_status = 200;
-static int32_t juno_http_server_response_content_type = 0;
-static bool juno_http_server_response_overflowed = false;
-
-static const char* juno_http_server_response_content_type_text(int32_t contentType) {
-  switch (contentType) {
-    case 1: return "application/json";
-    case 2: return "application/problem+json";
-    default: return "text/plain";
-  }
-}
-
-extern "C" void juno_socket_register_output_stream(
-    int32_t handle, void (*writeHook)(int32_t, const uint8_t*, int32_t, int32_t),
-    void (*byteHook)(int32_t, int32_t), void (*closeHook)(int32_t));
-
-static void juno_http_server_response_stream_write(int32_t, const uint8_t* payload, int32_t offset, int32_t length) {
-  if (payload == nullptr || offset < 0 || length < 0
-      || length > JUNO_HTTP_SERVER_RESPONSE_CAPACITY - juno_http_server_response_length) {
-    juno_http_server_response_overflowed = true;
-    return;
-  }
-  for (int32_t index = 0; index < length; index++) {
-    juno_http_server_response_buffer[juno_http_server_response_length++] = payload[offset + index];
-  }
-}
-
-static void juno_http_server_response_stream_write_byte(int32_t, int32_t value) {
-  if (juno_http_server_response_length >= JUNO_HTTP_SERVER_RESPONSE_CAPACITY) {
-    juno_http_server_response_overflowed = true;
-    return;
-  }
-  juno_http_server_response_buffer[juno_http_server_response_length++] = static_cast<uint8_t>(value);
-}
-
-static void juno_http_server_response_stream_close(int32_t) {
-  if (juno_http_server_response_overflowed) {
-    static const char overflow[] = "response body exceeds the 512-byte board buffer";
-    juno_http_server_respond_bytes(500, "text/plain", overflow, static_cast<int32_t>(sizeof(overflow) - 1));
-    return;
-  }
-  juno_http_server_respond_bytes(juno_http_server_response_status,
-      juno_http_server_response_content_type_text(juno_http_server_response_content_type),
-      reinterpret_cast<const char*>(juno_http_server_response_buffer), juno_http_server_response_length);
-}
-
-extern "C" void juno_http_server_response_stream(int32_t handle) {
-  juno_socket_register_output_stream(handle, juno_http_server_response_stream_write,
-      juno_http_server_response_stream_write_byte, juno_http_server_response_stream_close);
-}
-
-extern "C" void juno_http_server_response_begin(int32_t status, int32_t contentType) {
-  juno_http_server_response_status = status;
-  juno_http_server_response_content_type = contentType;
-  juno_http_server_response_length = 0;
-  juno_http_server_response_overflowed = false;
-}
-
-extern "C" void juno_http_server_response_write_byte(int32_t value) {
-  juno_http_server_response_stream_write_byte(0, value);
-}
-

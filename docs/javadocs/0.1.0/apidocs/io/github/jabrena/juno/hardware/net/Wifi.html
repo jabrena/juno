@@ -176,7 +176,7 @@ compiler lowers to the Arduino board networking stack (<code>WiFiS3</code> on UN
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;password)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Starts the board as a Wi-Fi access point named <code>ssid</code>, so a phone or laptop can join it
-directly (typically to serve a provisioning page through <a href="http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a>).</div>
+directly (typically to serve a provisioning page, as <a href="WifiProvisioner.html" title="class in io.github.jabrena.juno.hardware.net"><code>WifiProvisioner</code></a> does).</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#gatewayIP(int%5B%5D)" class="member-name-link">gatewayIP</a><wbr>(int[]&nbsp;octets)</code></div>
@@ -325,7 +325,7 @@ list.</div>
 <div class="member-signature"><span class="return-type">void</span>&nbsp;<span class="element-name">beginAP</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;ssid,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;password)</span></div>
 <div class="block">Starts the board as a Wi-Fi access point named <code>ssid</code>, so a phone or laptop can join it
-directly (typically to serve a provisioning page through <a href="http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a>). On UNO R4 WiFi and ESP32 boards, <code>password</code> is a WPA2
+directly (typically to serve a provisioning page, as <a href="WifiProvisioner.html" title="class in io.github.jabrena.juno.hardware.net"><code>WifiProvisioner</code></a> does). On UNO R4 WiFi and ESP32 boards, <code>password</code> is a WPA2
 passphrase of at least 8 characters, or empty for an open network; call <a href="#localIP(int%5B%5D)"><code>localIP(int[])</code></a> after
 <a href="#status()"><code>status()</code></a> reports <a href="#STATUS_AP_LISTENING"><code>STATUS_AP_LISTENING</code></a> to obtain the access point's address.</div>
 </div>

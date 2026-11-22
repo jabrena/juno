@@ -83,8 +83,9 @@ initTheme();
 </span>package <span class="element-name">io.github.jabrena.juno.jdk.net</span></div>
 <section class="package-description" id="package-description">
 <div class="block">Board-side implementations of <code>java.net</code> classes. The compiler reads every class here under <code>java.net</code>
-instead of <code>io.github.jabrena.juno.jdk.net</code>, so a program written against the JDK's <code>java.net.URI</code> runs
-this code on the board. Each class covers a documented subset of its JDK counterpart.</div>
+instead of <code>io.github.jabrena.juno.jdk.net</code>, so a program written against the JDK's <code>java.net.URI</code> or
+<code>java.net.InetSocketAddress</code> runs this code on the board. Each class covers a documented subset of its JDK
+counterpart.</div>
 </section>
 </div>
 <section class="summary">
@@ -99,6 +100,11 @@ this code on the board. Each class covers a documented subset of its JDK counter
 <div class="col-last even-row-color">
 <div class="block">Board-side implementations of <code>java.net.http</code>: the JDK's HTTP client syntax on the board.</div>
 </div>
+<div class="col-first odd-row-color"><a href="httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a></div>
+<div class="col-last odd-row-color">
+<div class="block">Board-side implementations of the JDK's <code>com.sun.net.httpserver</code> API: <code>HttpServer</code>, <code>HttpsServer</code>
+and the exchange a handler answers.</div>
+</div>
 </div>
 </div>
 </li>
@@ -108,8 +114,12 @@ this code on the board. Each class covers a documented subset of its JDK counter
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="InetSocketAddress.html" title="class in io.github.jabrena.juno.jdk.net">InetSocketAddress</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Board-side port-only form of <code>java.net.InetSocketAddress</code> used when binding a server listener.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">The board-side <code>java.net.URI</code>: the compiler reads this class as <code>java.net.URI</code>, so a program that calls
 <code>URI.create(...)</code> or <code>new URI(...)</code> against the JDK runs this code on the board.</div>
 </div>
