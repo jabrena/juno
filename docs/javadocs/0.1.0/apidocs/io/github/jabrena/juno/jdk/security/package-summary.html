@@ -100,12 +100,17 @@ client's trusted certificates, and the exceptions its API declares. The compiler
 <div class="block">Board-side implementations of <code>java.security.cert</code>: enough to read a PEM certificate for a
 <code>java.net.http</code> client's <code>SSLContext</code>.</div>
 </div>
+<div class="col-first odd-row-color"><a href="spec/package-summary.html">io.github.jabrena.juno.jdk.security.spec</a></div>
+<div class="col-last odd-row-color">
+<div class="block">Board-side implementations of <code>java.security.spec</code>: the <code>PKCS8EncodedKeySpec</code> a <code>KeyFactory</code> turns
+into a server's private key.</div>
+</div>
 </div>
 </div>
 </li>
 <li>
 <div id="class-summary">
-<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="class-summary-tab0" role="tab" aria-selected="true" aria-controls="class-summary.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary', 2)" class="active-table-tab">All Classes and Interfaces</button><button id="class-summary-tab2" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab2', 2)" class="table-tab">Classes</button><button id="class-summary-tab5" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab5', 2)" class="table-tab">Exception Classes</button></div>
+<div class="table-tabs" role="tablist" aria-orientation="horizontal"><button id="class-summary-tab0" role="tab" aria-selected="true" aria-controls="class-summary.tabpanel" tabindex="0" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary', 2)" class="active-table-tab">All Classes and Interfaces</button><button id="class-summary-tab1" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab1', 2)" class="table-tab">Interfaces</button><button id="class-summary-tab2" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab2', 2)" class="table-tab">Classes</button><button id="class-summary-tab5" role="tab" aria-selected="false" aria-controls="class-summary.tabpanel" tabindex="-1" onkeydown="switchTab(event)" onclick="show('class-summary', 'class-summary-tab5', 2)" class="table-tab">Exception Classes</button></div>
 <div id="class-summary.tabpanel" role="tabpanel" aria-labelledby="class-summary-tab0">
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
@@ -113,6 +118,14 @@ client's trusted certificates, and the exceptions its API declares. The compiler
 <div class="col-first even-row-color class-summary class-summary-tab5"><a href="GeneralSecurityException.html" title="class in io.github.jabrena.juno.jdk.security">GeneralSecurityException</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab5">
 <div class="block">The board-side <code>java.security.GeneralSecurityException</code>.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="Key.html" title="interface in io.github.jabrena.juno.jdk.security">Key</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="block">Encoded board key.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="KeyFactory.html" title="class in io.github.jabrena.juno.jdk.security">KeyFactory</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">The EC PKCS#8 subset of the JDK key factory.</div>
 </div>
 <div class="col-first odd-row-color class-summary class-summary-tab5"><a href="KeyManagementException.html" title="class in io.github.jabrena.juno.jdk.security">KeyManagementException</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab5">
@@ -131,8 +144,12 @@ client's trusted certificates, and the exceptions its API declares. The compiler
 <div class="col-last even-row-color class-summary class-summary-tab5">
 <div class="block">The board-side <code>java.security.NoSuchAlgorithmException</code>.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="SecureRandom.html" title="class in io.github.jabrena.juno.jdk.security">SecureRandom</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="PrivateKey.html" title="interface in io.github.jabrena.juno.jdk.security">PrivateKey</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
+<div class="block">A PKCS#8 private key passed to the board TLS listener.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="SecureRandom.html" title="class in io.github.jabrena.juno.jdk.security">SecureRandom</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">The board-side <code>java.security.SecureRandom</code>, only as the type of <code>SSLContext.init</code>'s last parameter,
 which a program passes <code>null</code>: the board's TLS client brings its own randomness.</div>
 </div>

@@ -82,6 +82,11 @@ initTheme();
 <div class="col-last odd-row-color">
 <div class="block">Board-side implementations of <code>java.net.http</code>: the JDK's HTTP client syntax on the board.</div>
 </div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.jdk.net.httpserver">io.github.jabrena.juno.jdk.net.httpserver</a></div>
+<div class="col-last even-row-color">
+<div class="block">Board-side implementations of the JDK's <code>com.sun.net.httpserver</code> API: <code>HttpServer</code>, <code>HttpsServer</code>
+and the exchange a handler answers.</div>
+</div>
 </div>
 <section class="class-uses">
 <ul class="block-list">
@@ -168,6 +173,22 @@ authority, and its path is merged with this URI's and has its <code>.</code> and
 <div class="col-second even-row-color"><span class="type-name-label">HttpRequest.Builder.</span><code><a href="../http/HttpRequest.Builder.html#uri(io.github.jabrena.juno.jdk.net.URI)" class="member-name-link">uri</a><wbr>(<a href="../URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a>&nbsp;uri)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Sets the URI the request is sent to.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.jdk.net.httpserver">
+<h2>Uses of <a href="../URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a> in <a href="../httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a></h2>
+<div class="caption"><span>Methods in <a href="../httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a> that return <a href="../URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Method</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code><a href="../URI.html" title="class in io.github.jabrena.juno.jdk.net">URI</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">HttpExchange.</span><code><a href="../httpserver/HttpExchange.html#getRequestURI()" class="member-name-link">getRequestURI</a>()</code></div>
+<div class="col-last even-row-color">
+<div class="block">The bounded request target/path, valid only while the handler is running.</div>
 </div>
 </div>
 </section>

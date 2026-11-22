@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-M6FYOHIC.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-AOEEMNED.css" />
 
 </head>
 <body>
@@ -431,10 +431,10 @@ point for its peripherals.</p>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox/client/MailboxCardputer.java"><code>MailboxCardputer</code></a></td>
 </tr>
 <tr>
-<td><code>HttpServer</code> (HTTP and HTTPS)</td>
+<td><code>HttpServer</code> / <code>HttpsServer</code> (HTTP and HTTPS)</td>
 <td align="center">✓</td>
-<td><code>HttpServer.beginTls</code> serves HTTPS on the station address.</td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/CardputerHttpsServerSD.java"><code>CardputerHttpsServerSD</code></a></td>
+<td>The JDK <code>com.sun.net.httpserver</code> API on the station address; HTTPS loads <code>server.crt</code> and <code>server.key</code> from the microSD card through an <code>SSLContext</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/CardputerHttpServerSD.java"><code>CardputerHttpServerSD</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/CardputerHttpsServerSD.java"><code>CardputerHttpsServerSD</code></a></td>
 </tr>
 <tr>
 <td>Email over TLS</td>

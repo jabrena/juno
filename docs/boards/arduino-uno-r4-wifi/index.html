@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-M6FYOHIC.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-AOEEMNED.css" />
 
 </head>
 <body>
@@ -483,10 +483,16 @@ peripherals. The UNO R4 Minima is not a Juno target.</p>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/weather/WeatherTFT.java"><code>WeatherTFT</code></a></td>
 </tr>
 <tr>
-<td><code>HttpServer</code></td>
+<td><code>HttpServer</code> (HTTP)</td>
 <td align="center">✓</td>
+<td>Juno's own or the JDK <code>com.sun.net.httpserver</code> API; the JDK one dispatches on a virtual thread, so build it with <code>-Djuno.Xss=5120 -Djuno.Xmx=4096</code>.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/UnoR4HttpServerSD.java"><code>UnoR4HttpServerSD</code></a>, <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerBacklight.java"><code>HttpServerBacklight</code></a></td>
+</tr>
+<tr>
+<td>HTTPS server</td>
+<td align="center">—</td>
+<td>The ESP32-S3 coprocessor's firmware offers TLS only to clients, and the RA4M1's 32 KB of RAM cannot hold a software TLS server's 16.7 KB record buffer. Serve HTTP, or put a TLS proxy in front of the board.</td>
 <td></td>
-<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerBacklight.java"><code>HttpServerBacklight</code></a></td>
 </tr>
 <tr>
 <td><code>Smtp</code>, <code>Pop3Client</code></td>
@@ -649,7 +655,9 @@ if (sd.begin()) {
 }
 </code></pre>
 <p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSD.java"><code>WifiStatusSD</code></a> joins the network this way and prints its status;
-<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java"><code>SdFileOperations</code></a> exercises every <code>SdCard</code> file operation.</p>
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java"><code>SdFileOperations</code></a> exercises every <code>SdCard</code> file operation.
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/UnoR4HttpServerSD.java"><code>UnoR4HttpServerSD</code></a> joins the network the same way and serves HTTP on port 80;
+the built-in LED shares D13 with the shield's SPI clock, so it uses the LED matrix as its LED.</p>
 <h2 id="build-and-run">Build and run</h2>
 <p>Run <code>juno:install-deps</code> once to install the Renesas UNO core and the optional libraries the examples need (<code>Mouse</code>,
 <code>ArduinoBLE</code>, <code>ESP_SSLClient</code>, <code>Servo</code>, <code>SdFat</code>). Then compile and upload an example, for instance the virtual-threads
