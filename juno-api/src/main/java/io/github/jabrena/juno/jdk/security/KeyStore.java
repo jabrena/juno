@@ -15,6 +15,9 @@ import java.io.InputStream;
  */
 public final class KeyStore {
     private @Nullable String pem;
+    private @Nullable Key privateKey;
+    private int privateKeyLength;
+    private @Nullable Certificate identityCertificate;
     private int size;
     private boolean loaded;
 
@@ -42,6 +45,9 @@ public final class KeyStore {
             throw new IOException("A key store file cannot be read on the board: load(null, null), then add certificates");
         }
         pem = null;
+        privateKey = null;
+        privateKeyLength = 0;
+        identityCertificate = null;
         size = 0;
         loaded = true;
     }
@@ -66,6 +72,33 @@ public final class KeyStore {
     public int size() throws KeyStoreException {
         requireLoaded();
         return size;
+    }
+
+    /** Records one server identity in the in-memory store. */
+    public void setKeyEntry(String alias, Key key, char[] password, Certificate[] chain) throws KeyStoreException {
+        requireLoaded();
+        if (chain.length == 0) throw new KeyStoreException("A certificate chain is required");
+        PrivateKey privateKeyValue = (PrivateKey) key;
+        privateKey = privateKeyValue;
+        privateKeyLength = KeyFactory.encodedLength(privateKeyValue);
+        identityCertificate = chain[0];
+        size++;
+    }
+
+    /** Board transport access to the key encoded in PKCS#8 DER. */
+    public byte @Nullable [] serverPrivateKey() {
+        Key key = privateKey;
+        return key == null ? null : key.getEncoded();
+    }
+
+    public int serverPrivateKeyLength() {
+        return privateKeyLength;
+    }
+
+    /** Board transport access to the X.509 certificate PEM. */
+    public @Nullable String serverCertificate() {
+        Certificate certificate = identityCertificate;
+        return certificate == null ? null : certificate.pem();
     }
 
     /** Every certificate in the store, as one PEM chain, or {@code null} when it holds none. Board-side only. */
