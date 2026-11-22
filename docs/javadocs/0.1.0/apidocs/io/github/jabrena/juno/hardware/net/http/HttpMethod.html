@@ -99,7 +99,7 @@ initTheme();
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public final class </span><span class="element-name type-name-label">HttpMethod</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Object.html" title="class in java.lang" class="external-link">Object</a></span></div>
-<div class="block">Named HTTP methods for matching against <a href="HttpServer.html#method()"><code>HttpServer.method()</code></a>. Like <a href="HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpStatus</code></a>,
+<div class="block">Named HTTP methods for matching against <code>HttpExchange.getRequestMethod()</code>. Like <a href="HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpStatus</code></a>,
 these are ordinary compile-time-constant fields, not a new intrinsic or type: a <code>static
 final String</code> initialized from a literal is itself a Java compile-time constant, so <code>
 javac</code> inlines it at every use site — <code>method.equals(HttpMethod.GET)</code> compiles to exactly

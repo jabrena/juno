@@ -601,11 +601,11 @@ class XtensaAsmBackendTest {
         // When
         CompilationResult result = compile("demo.NanoServer", """
                         byte[] body = new byte[64];
-                        HttpServer.begin(80);
-                        if (HttpServer.accept(body, body.length) >= 0) {
-                            HttpServer.respond(200, "text/plain", "online");
+                        NativeHttpServer.begin(80);
+                        if (NativeHttpServer.accept(body, body.length) >= 0) {
+                            NativeHttpServer.respond(200, "text/plain", "online");
                         }
-                """, "import io.github.jabrena.juno.hardware.net.http.HttpServer;");
+                """, "import io.github.jabrena.juno.hardware.internal.NativeHttpServer;");
 
         // Then
         assertThat(result.runtimeShim()).contains("juno_http_server_begin(", "WiFiServer(static_cast<uint16_t>(port))",
@@ -614,19 +614,19 @@ class XtensaAsmBackendTest {
     }
 
     @Test
-    @DisplayName("Lowers HttpServer.beginTls to an mbedTLS server session over the WiFiServer")
+    @DisplayName("Lowers NativeHttpServer.beginTls to an mbedTLS server session over the WiFiServer")
     void shouldLowerHttpServerBeginTlsToAnMbedTlsServerSession() throws Exception {
         // When
         CompilationResult result = compile("demo.NanoHttpsServer", """
                         byte[] certificate = new byte[1024];
                         byte[] key = new byte[512];
                         byte[] body = new byte[64];
-                        if (HttpServer.beginTls(443, certificate, 900, key, 240)) {
-                            if (HttpServer.accept(body, body.length) >= 0) {
-                                HttpServer.respond(200, "text/plain", "secure");
+                        if (NativeHttpServer.beginTls(443, certificate, 900, key, 240)) {
+                            if (NativeHttpServer.accept(body, body.length) >= 0) {
+                                NativeHttpServer.respond(200, "text/plain", "secure");
                             }
                         }
-                """, "import io.github.jabrena.juno.hardware.net.http.HttpServer;");
+                """, "import io.github.jabrena.juno.hardware.internal.NativeHttpServer;");
 
         // Then
         assertThat(result.assembly()).contains("juno_http_server_begin_tls", "juno_http_server_accept");
@@ -709,7 +709,7 @@ class XtensaAsmBackendTest {
                 import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.email.Pop3Client;
                 import io.github.jabrena.juno.hardware.net.email.Smtp;
-                import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                import io.github.jabrena.juno.hardware.internal.NativeHttpServer;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 @Board(AiThinkerEsp32CamBoard.class)
                 @Watchdog(timeoutMillis = 3001)
@@ -719,8 +719,8 @@ class XtensaAsmBackendTest {
                         byte[] certificate = new byte[1024];
                         byte[] key = new byte[512];
                         byte[] body = new byte[64];
-                        if (HttpServer.beginTls(443, certificate, certificate.length, key, key.length)) {
-                            HttpServer.accept(body, body.length);
+                        if (NativeHttpServer.beginTls(443, certificate, certificate.length, key, key.length)) {
+                            NativeHttpServer.accept(body, body.length);
                         }
                         int starttls = Smtp.send("smtp.example.com", 587, "user", "secret", "from@example.com",
                                 "to@example.com", "subject", "body");

@@ -1,4 +1,12 @@
 
+#ifndef JUNO_HTTP_TRACE
+#ifdef ARDUINO
+#define JUNO_HTTP_TRACE(...) do { __VA_ARGS__; } while (0)
+#else
+#define JUNO_HTTP_TRACE(...) do { } while (0)
+#endif
+#endif
+
 #include <mbedtls/version.h>
 #include <mbedtls/ssl.h>
 #include <mbedtls/x509_crt.h>
@@ -81,6 +89,7 @@ public:
     lookahead = -1;
     recordUsed = 0;
     if (!juno_https_configured) return true;
+    JUNO_HTTP_TRACE(Serial.println("[Juno HTTPS] TLS handshake started"));
     mbedtls_ssl_free(&session);
     mbedtls_ssl_init(&session);
     if (mbedtls_ssl_setup(&session, &juno_https_config) != 0) {
@@ -92,6 +101,7 @@ public:
     int result;
     while ((result = mbedtls_ssl_handshake(&session)) != 0) {
       if ((result != MBEDTLS_ERR_SSL_WANT_READ && result != MBEDTLS_ERR_SSL_WANT_WRITE) || millis() >= deadline) {
+        JUNO_HTTP_TRACE(Serial.print("[Juno HTTPS] TLS handshake failed: "); Serial.println(result));
         mbedtls_ssl_free(&session);
         mbedtls_ssl_init(&session);
         socket.stop();
@@ -100,6 +110,7 @@ public:
       juno_io_wait(1);
     }
     secure = true;
+    JUNO_HTTP_TRACE(Serial.println("[Juno HTTPS] TLS handshake complete"));
     return true;
   }
 
@@ -170,23 +181,30 @@ static bool juno_https_parse(const uint8_t* text, int32_t length, bool key) {
   if (copy == nullptr) return false;
   memcpy(copy, text, static_cast<size_t>(length));
   copy[length] = '\0';
+  // mbedTLS counts a PEM terminator, while PKCS#8 DER is binary and uses its exact length.
+  size_t parseLength = text[0] == '-' ? static_cast<size_t>(length) + 1 : static_cast<size_t>(length);
   int result;
   if (key) {
 #if MBEDTLS_VERSION_MAJOR >= 3
-    result = mbedtls_pk_parse_key(&juno_https_key, copy, static_cast<size_t>(length) + 1, nullptr, 0,
+    result = mbedtls_pk_parse_key(&juno_https_key, copy, parseLength, nullptr, 0,
                                   mbedtls_ctr_drbg_random, &juno_https_random);
 #else
-    result = mbedtls_pk_parse_key(&juno_https_key, copy, static_cast<size_t>(length) + 1, nullptr, 0);
+    result = mbedtls_pk_parse_key(&juno_https_key, copy, parseLength, nullptr, 0);
 #endif
   } else {
     result = mbedtls_x509_crt_parse(&juno_https_certificate, copy, static_cast<size_t>(length) + 1);
   }
   free(copy);
+  if (result != 0) {
+    JUNO_HTTP_TRACE(Serial.print(key ? "[Juno HTTPS] private key parse failed: " : "[Juno HTTPS] certificate parse failed: ");
+                    Serial.print(result); Serial.print(" length="); Serial.println(length));
+  }
   return result == 0;
 }
 
 extern "C" int32_t juno_http_server_begin_tls(int32_t port, const uint8_t* certificate, int32_t certificateLength,
                                                 const uint8_t* privateKey, int32_t privateKeyLength) {
+  JUNO_HTTP_TRACE(Serial.println("[Juno HTTPS] initializing certificate and private key"));
   static const char personalization[] = "juno-https-server";
   mbedtls_ssl_config_init(&juno_https_config);
   mbedtls_x509_crt_init(&juno_https_certificate);
@@ -201,9 +219,13 @@ extern "C" int32_t juno_http_server_begin_tls(int32_t port, const uint8_t* certi
       && mbedtls_ssl_config_defaults(&juno_https_config, MBEDTLS_SSL_IS_SERVER, MBEDTLS_SSL_TRANSPORT_STREAM,
                                      MBEDTLS_SSL_PRESET_DEFAULT) == 0
       && mbedtls_ssl_conf_own_cert(&juno_https_config, &juno_https_certificate, &juno_https_key) == 0;
-  if (!ready) return 0;
+  if (!ready) {
+    JUNO_HTTP_TRACE(Serial.println("[Juno HTTPS] certificate, key, or TLS configuration failed"));
+    return 0;
+  }
   mbedtls_ssl_conf_rng(&juno_https_config, mbedtls_ctr_drbg_random, &juno_https_random);
   juno_https_configured = true;
+  JUNO_HTTP_TRACE(Serial.println("[Juno HTTPS] TLS configuration ready"));
   juno_http_server_begin(port);
   return 1;
 }

@@ -82,6 +82,11 @@ initTheme();
 <div class="col-last odd-row-color">
 <div class="block">Board-side implementations of <code>java.net.http</code>: the JDK's HTTP client syntax on the board.</div>
 </div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.jdk.net.httpserver">io.github.jabrena.juno.jdk.net.httpserver</a></div>
+<div class="col-last even-row-color">
+<div class="block">Board-side implementations of the JDK's <code>com.sun.net.httpserver</code> API: <code>HttpServer</code>, <code>HttpsServer</code>
+and the exchange a handler answers.</div>
+</div>
 </div>
 <section class="package-uses">
 <ul class="block-list">
@@ -96,17 +101,21 @@ initTheme();
 <div class="block">The board-side <code>javax.net.ssl.KeyManager</code>, only as the type of <a href="SSLContext.html#init(io.github.jabrena.juno.javax.net.ssl.KeyManager%5B%5D,io.github.jabrena.juno.javax.net.ssl.TrustManager%5B%5D,io.github.jabrena.juno.jdk.security.SecureRandom)"><code>SSLContext.init(KeyManager[], TrustManager[], SecureRandom)</code></a>'s first parameter:
 client certificates are not supported, so a program passes <code>null</code>.</div>
 </div>
-<div class="col-first odd-row-color"><a href="class-use/SSLContext.html#io.github.jabrena.juno.javax.net.ssl">SSLContext</a></div>
+<div class="col-first odd-row-color"><a href="class-use/KeyManagerFactory.html#io.github.jabrena.juno.javax.net.ssl">KeyManagerFactory</a></div>
 <div class="col-last odd-row-color">
+<div class="block">Server identity subset of the JDK key manager factory.</div>
+</div>
+<div class="col-first even-row-color"><a href="class-use/SSLContext.html#io.github.jabrena.juno.javax.net.ssl">SSLContext</a></div>
+<div class="col-last even-row-color">
 <div class="block">The board-side <code>javax.net.ssl.SSLContext</code>: the trust a <code>java.net.http</code> client checks servers against,
 given with <code>HttpClient.newBuilder().sslContext(context)</code>.</div>
 </div>
-<div class="col-first even-row-color"><a href="class-use/TrustManager.html#io.github.jabrena.juno.javax.net.ssl">TrustManager</a></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><a href="class-use/TrustManager.html#io.github.jabrena.juno.javax.net.ssl">TrustManager</a></div>
+<div class="col-last odd-row-color">
 <div class="block">The board-side <code>javax.net.ssl.TrustManager</code>: what a <a href="TrustManagerFactory.html" title="class in io.github.jabrena.juno.javax.net.ssl"><code>TrustManagerFactory</code></a> hands to an <a href="SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl"><code>SSLContext</code></a>.</div>
 </div>
-<div class="col-first odd-row-color"><a href="class-use/TrustManagerFactory.html#io.github.jabrena.juno.javax.net.ssl">TrustManagerFactory</a></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><a href="class-use/TrustManagerFactory.html#io.github.jabrena.juno.javax.net.ssl">TrustManagerFactory</a></div>
+<div class="col-last even-row-color">
 <div class="block">The board-side <code>javax.net.ssl.TrustManagerFactory</code>: turns a <a href="../../../jdk/security/KeyStore.html" title="class in io.github.jabrena.juno.jdk.security"><code>KeyStore</code></a> of trusted certificates into
 the <a href="TrustManager.html" title="interface in io.github.jabrena.juno.javax.net.ssl"><code>TrustManager</code></a> an <a href="SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl"><code>SSLContext</code></a> takes.</div>
 </div>
@@ -120,6 +129,20 @@ the <a href="TrustManager.html" title="interface in io.github.jabrena.juno.javax
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="class-use/SSLContext.html#io.github.jabrena.juno.jdk.net.http">SSLContext</a></div>
+<div class="col-last even-row-color">
+<div class="block">The board-side <code>javax.net.ssl.SSLContext</code>: the trust a <code>java.net.http</code> client checks servers against,
+given with <code>HttpClient.newBuilder().sslContext(context)</code>.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.jdk.net.httpserver">
+<div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.javax.net.ssl</a> used by <a href="../../../jdk/net/httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a></span></div>
+<div class="summary-table two-column-summary">
+<div class="table-header col-first">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="class-use/SSLContext.html#io.github.jabrena.juno.jdk.net.httpserver">SSLContext</a></div>
 <div class="col-last even-row-color">
 <div class="block">The board-side <code>javax.net.ssl.SSLContext</code>: the trust a <code>java.net.http</code> client checks servers against,
 given with <code>HttpClient.newBuilder().sslContext(context)</code>.</div>

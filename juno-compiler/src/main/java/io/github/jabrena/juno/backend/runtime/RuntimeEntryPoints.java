@@ -29,10 +29,26 @@ public final class RuntimeEntryPoints {
 
 
     /**
+     * Where the program's {@code InputStream} calls go: through the registered-stream table when it registers a
+     * board-side stream (an HTTP server's request body), straight to the socket when that is its only stream, and
+     * otherwise to the SD card's files.
+     */
+    public InputStreamRoute inputStreamRoute(IrProgram program) {
+        boolean registersStream = program.methods().stream().anyMatch(method -> method.blocks().stream()
+                .flatMap(block -> block.instructions().stream())
+                .anyMatch(instruction -> instruction instanceof IrInstruction.IntrinsicCall call
+                        && call.intrinsic() == Intrinsic.HTTP_SERVER_REQUEST_STREAM));
+        if (registersStream) {
+            return InputStreamRoute.STREAMS;
+        }
+        return socketStreamsOnly(program) ? InputStreamRoute.SOCKET : InputStreamRoute.SD;
+    }
+
+    /**
      * Whether the program reads a socket's input stream and opens no SD card file or stream, so its one shared
      * {@code InputStream.read} can go straight to the socket and the SD runtime (and its RAM) can be left out.
      */
-    public boolean socketStreamsOnly(IrProgram program) {
+    private boolean socketStreamsOnly(IrProgram program) {
         boolean readsSocket = false;
         for (IrMethod method : program.methods()) {
             for (IrBasicBlock block : method.blocks()) {

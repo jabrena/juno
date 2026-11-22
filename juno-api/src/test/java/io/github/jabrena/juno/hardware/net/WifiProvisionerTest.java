@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.hardware.net;
 
+import io.github.jabrena.juno.hardware.internal.NativeHttpServer;
 import io.github.jabrena.juno.hardware.net.http.HttpMethod;
-import io.github.jabrena.juno.hardware.net.http.HttpServer;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.testing.Wire;
@@ -50,7 +50,7 @@ class WifiProvisionerTest {
         WifiProvisioner.clock = new DeadlineClock();
         wifi = new FakeWifi();
         WifiProvisioner.wifi = wifi;
-        HttpServer.reset();
+        NativeHttpServer.reset();
         Serial.reset();
     }
 
@@ -65,7 +65,7 @@ class WifiProvisionerTest {
         WifiProvisioner.run("Juno-Setup", "juno1234");
 
         // Then
-        assertThat(HttpServer.port).isEqualTo(80);
+        assertThat(NativeHttpServer.port).isEqualTo(80);
     }
 
     @Test
@@ -79,7 +79,7 @@ class WifiProvisionerTest {
         WifiProvisioner.run("Juno-Setup", "juno1234");
 
         // Then
-        assertThat(HttpServer.responses.get(0).body()).contains("Wi-Fi setup");
+        assertThat(NativeHttpServer.responses.get(0).body()).contains("Wi-Fi setup");
     }
 
     @Test
@@ -93,7 +93,7 @@ class WifiProvisionerTest {
         WifiProvisioner.run("Juno-Setup", "juno1234");
 
         // Then
-        assertThat(HttpServer.responses.get(1).body()).contains("Connecting...");
+        assertThat(NativeHttpServer.responses.get(1).body()).contains("Connecting...");
     }
 
     @Test
@@ -152,7 +152,7 @@ class WifiProvisionerTest {
         WifiProvisioner.run("Juno-Setup", "juno1234");
 
         // Then
-        assertThat(HttpServer.responses.get(0).status()).isEqualTo(404);
+        assertThat(NativeHttpServer.responses.get(0).status()).isEqualTo(404);
     }
 
     @Test
@@ -166,7 +166,7 @@ class WifiProvisionerTest {
         WifiProvisioner.run("Juno-Setup", "juno1234");
 
         // Then
-        assertThat(HttpServer.responses.get(0).body()).isEqualTo("Not found");
+        assertThat(NativeHttpServer.responses.get(0).body()).isEqualTo("Not found");
     }
 
     @Test
@@ -311,21 +311,21 @@ class WifiProvisionerTest {
     }
 
     /** Scripts the requests the server will receive, in order. */
-    private static void script(HttpServer.Request... requests) {
-        for (HttpServer.Request request : requests) {
-            HttpServer.requests.add(request);
+    private static void script(NativeHttpServer.Request... requests) {
+        for (NativeHttpServer.Request request : requests) {
+            NativeHttpServer.requests.add(request);
         }
     }
 
-    private static HttpServer.Request idle() {
-        return new HttpServer.Request(null, null, null);
+    private static NativeHttpServer.Request idle() {
+        return new NativeHttpServer.Request(null, null, null);
     }
 
-    private static HttpServer.Request get(String path) {
-        return new HttpServer.Request(HttpMethod.GET, path, "");
+    private static NativeHttpServer.Request get(String path) {
+        return new NativeHttpServer.Request(HttpMethod.GET, path, "");
     }
 
-    private static HttpServer.Request post(String path, String body) {
-        return new HttpServer.Request(HttpMethod.POST, path, body);
+    private static NativeHttpServer.Request post(String path, String body) {
+        return new NativeHttpServer.Request(HttpMethod.POST, path, body);
     }
 }

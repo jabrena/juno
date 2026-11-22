@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-M6FYOHIC.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-AOEEMNED.css" />
 
 </head>
 <body>
@@ -553,7 +553,7 @@ UNO R3 and ESP32-family boards, a task is switched at loop back-edges and method
 so a loop with no calls is still switched.</li>
 <li><strong>Tasks give up the processor when they block.</strong> That happens on <code>Delay.millis</code>, <code>Thread.sleep</code>, <code>Thread.yield</code>,
 <code>join</code>, entering a monitor that another task holds, or waiting on a latch, semaphore, barrier, condition or phaser.
-Juno-controlled waits in HTTP/HTTPS, <code>HttpServer.accept</code>, the retries of <code>SdCard.begin</code>, and Powered Up scans or
+Juno-controlled waits in HTTP/HTTPS, the HTTP server's accept, the retries of <code>SdCard.begin</code>, and Powered Up scans or
 replies also let other tasks run. A wait inside a vendor library can still hold up the other tasks. Each device is used by one task at a time, so a second
 task that needs it waits its turn.</li>
 <li><strong>Runtime critical sections are protected.</strong> A single carrier cannot switch in the middle of allocation, collection,

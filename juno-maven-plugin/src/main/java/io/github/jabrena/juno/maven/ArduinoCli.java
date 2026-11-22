@@ -20,15 +20,23 @@ final class ArduinoCli {
     private final CommandExecutor executor;
     private final Consumer<String> output;
     private final BoardListJsonParser boardListParser = new BoardListJsonParser();
+    /** How long {@code board list} waits for ports, such as {@code 10s}; {@code null} keeps Arduino CLI's default. */
+    private final @Nullable String discoveryTimeout;
 
     ArduinoCli(String executable, Consumer<String> output) {
         this(executable, new SystemCommandExecutor(), output);
     }
 
     ArduinoCli(String executable, CommandExecutor executor, Consumer<String> output) {
+        this(executable, executor, output, null);
+    }
+
+    ArduinoCli(String executable, CommandExecutor executor, Consumer<String> output,
+            @Nullable String discoveryTimeout) {
         this.executable = requireText(executable, "Arduino CLI executable");
         this.executor = executor;
         this.output = output;
+        this.discoveryTimeout = discoveryTimeout;
     }
 
     void installCore(String platform) {
@@ -154,7 +162,9 @@ final class ArduinoCli {
     }
 
     List<DetectedPort> boardList() {
-        Command command = captured("board", "list", "--json");
+        Command command = discoveryTimeout == null
+                ? captured("board", "list", "--json")
+                : captured("board", "list", "--json", "--discovery-timeout", discoveryTimeout);
         CommandResult result = executor.execute(command);
         checkExit(command, result);
         return boardListParser.parse(result.output());

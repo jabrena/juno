@@ -1,17 +1,24 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.Watchdog;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.camera.Camera;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.http.HttpMethod;
-import io.github.jabrena.juno.hardware.net.http.HttpServer;
-import io.github.jabrena.juno.hardware.net.http.HttpStatus;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+
+import static java.net.HttpURLConnection.HTTP_INTERNAL_ERROR;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
 
 /**
  * Serves the AI Thinker ESP32-CAM's camera over Wi-Fi. {@code GET /} is a page with the live view; {@code GET /stream}
@@ -20,15 +27,16 @@ import io.github.jabrena.juno.util.Delay;
  *
  * <p>The Wi-Fi credentials come from the board's secret store (its NVS partition), provisioned once with
  * {@code juno:secret} as {@code wifi.ssid} and {@code wifi.password}. Open {@code http://<address>/} in a browser on
- * the same network. One viewer streams at a time.
+ * the same network. One viewer streams at a time: the JDK {@code HttpServer} subset serves one connection at a time,
+ * and the stream ends when the viewer closes it, as the next write then throws {@code IOException}.
  *
  * <p>The OV2640's connection on the ribbon can be flaky: a camera start that fails is retried every two seconds,
  * and one that hangs inside the driver stops feeding the watchdog, which reboots the board after 15 s.
  *
- * <p>The 48 KB frame buffer does not fit the default 8 KB arena: build with {@code -Djuno.Xmx=63k}.
+ * <p>The 48 KB frame buffer does not fit the default 8 KB arena: build with {@code -Djuno.Xmx=59k}.
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash -Djuno.board=ai-thinker-esp32-cam -Djuno.port=<PORT> \
- *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.http.AiThinkerEsp32CamStream -Djuno.Xmx=63k
+ *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.http.AiThinkerEsp32CamStream -Djuno.Xmx=59k
  * }</pre>
  */
 @Board(AiThinkerEsp32CamBoard.class)
@@ -53,11 +61,13 @@ public final class AiThinkerEsp32CamStream {
     private static final String PAGE = "<html><body><h1>ESP32-CAM</h1><img src=\"/stream\">"
             + "<p><a href=\"/capture\">640x480 capture</a></p></body></html>";
     private static final int[] LOCAL_IP = new int[4];
+    private static final byte[] FRAME = new byte[FRAME_CAPACITY];
+    private static final byte[] DIGITS = new byte[8];
 
     private AiThinkerEsp32CamStream() {
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         Serial.println("Starting camera");
@@ -75,81 +85,90 @@ public final class AiThinkerEsp32CamStream {
         }
         printLocalIp();
 
-        HttpServer.begin(HTTP_PORT);
+        HttpServer server = HttpServer.create(new InetSocketAddress(HTTP_PORT), 4);
+        server.createContext("/stream", AiThinkerEsp32CamStream::stream);
+        server.createContext("/capture", AiThinkerEsp32CamStream::capture);
+        server.createContext("/", AiThinkerEsp32CamStream::page);
+        server.start();
         Serial.println("Listening on port 80");
-
-        byte[] requestBody = new byte[16];
-        byte[] frame = new byte[FRAME_CAPACITY];
-        byte[] digits = new byte[8];
         while (true) {
-            int bodyLength = HttpServer.accept(requestBody, requestBody.length);
-            if (bodyLength < 0) {
-                Delay.millis(5);
-                continue;
-            }
-            String method = HttpServer.method();
-            String path = HttpServer.path();
-            if (method.equals(HttpMethod.GET) && path.equals("/stream")) {
-                Serial.println("GET /stream started");
-                streamFrames(frame, digits);
-                Serial.println("GET /stream ended");
-            } else if (method.equals(HttpMethod.GET) && path.equals("/capture")) {
-                sendCapture(frame);
-            } else if (method.equals(HttpMethod.GET) && path.equals("/")) {
-                HttpServer.respond(HttpStatus.OK, "text/html", PAGE);
-            } else {
-                HttpServer.respond(HttpStatus.NOT_FOUND, "text/plain", "not found");
-            }
+            Delay.millis(10000);
         }
     }
 
+    private static void page(HttpExchange exchange) throws IOException {
+        boolean found = exchange.getRequestMethod().equals("GET") && exchange.getRequestURI().toString().equals("/");
+        sendText(exchange, found ? HTTP_OK : HTTP_NOT_FOUND, found ? "text/html" : "text/plain",
+                found ? PAGE : "not found");
+    }
+
     /** Takes one 640x480 photo and answers with it as a single JPEG; the sensor goes back to the stream's size. */
-    private static void sendCapture(byte[] frame) {
+    private static void capture(HttpExchange exchange) throws IOException {
         int length = -1;
         if (CAMERA.setFrameSize(Camera.FRAME_SIZE_VGA)) {
             for (int attempt = 0; attempt < CAPTURE_ATTEMPTS && length < 0; attempt++) {
-                length = CAMERA.capture(frame);
+                length = CAMERA.capture(FRAME);
             }
         }
         CAMERA.setFrameSize(Camera.FRAME_SIZE_QQVGA);
         if (length < 0) {
             Serial.println("GET /capture failed");
-            HttpServer.respond(HttpStatus.INTERNAL_SERVER_ERROR, "text/plain", "capture failed");
+            sendText(exchange, HTTP_INTERNAL_ERROR, "text/plain", "capture failed");
             return;
         }
         Serial.print("GET /capture sent ");
         Serial.print(length);
         Serial.println(" bytes");
-        HttpServer.beginStream(HttpStatus.OK, "image/jpeg");
-        HttpServer.streamBytes(frame, length);
-        HttpServer.endStream();
+        exchange.getResponseHeaders().set("Content-Type", "image/jpeg");
+        exchange.sendResponseHeaders(HTTP_OK, length);
+        try (OutputStream output = exchange.getResponseBody()) {
+            output.write(FRAME, 0, length);
+        }
     }
 
-    /** Sends one MJPEG part per captured frame until the viewer disconnects. */
-    private static void streamFrames(byte[] frame, byte[] digits) {
-        HttpServer.beginStream(HttpStatus.OK, STREAM_CONTENT_TYPE);
-        int dropped = 0;
-        while (true) {
-            int length = CAMERA.capture(frame);
-            if (length < 0) {
-                dropped = dropped + 1;
-                if (dropped % DROPPED_FRAMES_REPORT == 0) {
-                    Serial.print("Frames dropped (no frame, or larger than the buffer): ");
-                    Serial.println(dropped);
+    /** Sends one MJPEG part per captured frame until the viewer disconnects; the response has no length. */
+    private static void stream(HttpExchange exchange) throws IOException {
+        Serial.println("GET /stream started");
+        exchange.getResponseHeaders().set("Content-Type", STREAM_CONTENT_TYPE);
+        exchange.sendResponseHeaders(HTTP_OK, 0);
+        try (OutputStream output = exchange.getResponseBody()) {
+            int dropped = 0;
+            while (true) {
+                int length = CAMERA.capture(FRAME);
+                if (length < 0) {
+                    dropped = dropped + 1;
+                    if (dropped % DROPPED_FRAMES_REPORT == 0) {
+                        Serial.print("Frames dropped (no frame, or larger than the buffer): ");
+                        Serial.println(dropped);
+                    }
+                    Delay.millis(20);
+                    continue;
                 }
-                Delay.millis(20);
-                continue;
+                int digitCount = writeDecimal(DIGITS, length);
+                writeText(output, PART_PREFIX);
+                output.write(DIGITS, 0, digitCount);
+                writeText(output, PART_HEADER_END);
+                output.write(FRAME, 0, length);
+                writeText(output, PART_END);
             }
-            int digitCount = writeDecimal(digits, length);
-            if (!HttpServer.streamText(PART_PREFIX)
-                    || !HttpServer.streamBytes(digits, digitCount)
-                    || !HttpServer.streamText(PART_HEADER_END)
-                    || !HttpServer.streamBytes(frame, length)
-                    || !HttpServer.streamText(PART_END)) {
-                break;
-            }
+        } catch (IOException closed) {
+            Serial.println("GET /stream ended");
         }
-        HttpServer.endStream();
+    }
+
+    private static void sendText(HttpExchange exchange, int status, String contentType, String body)
+            throws IOException {
+        exchange.getResponseHeaders().set("Content-Type", contentType);
+        exchange.sendResponseHeaders(status, body.length());
+        try (OutputStream output = exchange.getResponseBody()) {
+            writeText(output, body);
+        }
+    }
+
+    private static void writeText(OutputStream output, String text) throws IOException {
+        for (int index = 0; index < text.length(); index++) {
+            output.write(text.charAt(index));
+        }
     }
 
     /** Writes {@code value} in decimal at the start of {@code out} and returns how many digits it used. */

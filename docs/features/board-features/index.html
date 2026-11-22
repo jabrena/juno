@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-M6FYOHIC.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-AOEEMNED.css" />
 
 </head>
 <body>
@@ -439,16 +439,6 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">—</td>
 </tr>
 <tr>
-<td>HTTP response streaming (<code>HttpServer.beginStream</code>)</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-</tr>
-<tr>
 <td>Onboard microSD (<code>MCU.getSdCard()</code>)</td>
 <td align="center">—</td>
 <td align="center">—</td>
@@ -564,6 +554,8 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 STARTTLS email, the onboard microSD socket, Bluetooth LE for LEGO Powered Up, the OV2640 camera, HTTP response
 streaming, explicit PSRAM buffers, the task watchdog, hardware-random UUIDs and double-precision <code>Math</code>. It has no
 native USB HID controller, onboard LED matrix or onboard IMU.</p>
+<p>The UNO R4 WiFi serves HTTP but not HTTPS: its ESP32-S3 coprocessor's firmware offers TLS only to clients, and the
+RA4M1 has no room for a software TLS server.</p>
 <p>The compiler checks this table for you: a program that uses an API its target board does not support fails with a
 <code>CompileException</code> naming the board and the missing capability. Some cells are compiled support that has not yet been run
 on every physical board; each board's page notes what is confirmed on hardware.</p>

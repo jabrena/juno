@@ -3888,23 +3888,23 @@ class JunoCompilerTest {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpServer;
                     public final class HttpServerDemo {
                         public static void main(String[] args) {
-                            HttpServer.begin(80);
+                            NativeHttpServer.begin(80);
                             byte[] body = new byte[128];
-                            int bodyLength = HttpServer.accept(body, body.length);
+                            int bodyLength = NativeHttpServer.accept(body, body.length);
                             if (bodyLength >= 0) {
-                                String method = HttpServer.method();
-                                String path = HttpServer.path();
-                                if (HttpServer.contentLength() > body.length) {
-                                    HttpServer.respond(413, "application/json", "{}");
+                                String method = NativeHttpServer.method();
+                                String path = NativeHttpServer.path();
+                                if (NativeHttpServer.contentLength() > body.length) {
+                                    NativeHttpServer.respond(413, "application/json", "{}");
                                 } else if (method.equals("GET") && path.equals("/status")) {
-                                    HttpServer.respond(200, "application/json", "{\\"ok\\":true}");
+                                    NativeHttpServer.respond(200, "application/json", "{\\"ok\\":true}");
                                 } else {
                                     StringBuilder json = new StringBuilder(32);
                                     json.append('{').append('}');
-                                    HttpServer.respond(404, "application/json", json);
+                                    NativeHttpServer.respond(404, "application/json", json.toString());
                                 }
                             }
                         }
@@ -3920,8 +3920,7 @@ class JunoCompilerTest {
                     ".asciz \"application/json\"", ".asciz \"{\\\"ok\\\":true}\"",
                     "bl juno_http_server_begin", "bl juno_http_server_accept", "bl juno_http_server_method",
                     "bl juno_http_server_path", "bl juno_http_server_content_length", "bl juno_string_equals",
-                    "bl juno_http_server_respond",
-                    "bl juno_http_server_respond_builder");
+                    "bl juno_http_server_respond");
             assertThat(result.runtimeShim()).contains("#include <WiFiS3.h>", "#include <new>",
                     "extern \"C\" void juno_http_server_begin(int32_t port)",
                     "extern \"C\" int32_t juno_http_server_accept(",
@@ -3930,7 +3929,6 @@ class JunoCompilerTest {
                     "extern \"C\" int32_t juno_http_server_content_length()",
                     "if (hasContentLength) juno_http_server_content_length_value = contentLength;",
                     "extern \"C\" void juno_http_server_respond(",
-                    "extern \"C\" void juno_http_server_respond_builder(",
                     "extern \"C\" int32_t juno_string_equals(int32_t a, int32_t b)",
                     "return static_cast<int32_t>(reinterpret_cast<intptr_t>(juno_http_server_path_buf));");
             // A long path (e.g. /api/v1/mailbox/<uuid>) must come back whole, not null.
@@ -3940,20 +3938,20 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Lowers HttpServer.header to a case-insensitive lookup in the captured request headers")
+        @DisplayName("Lowers NativeHttpServer.header to a case-insensitive lookup in the captured request headers")
         void shouldLowerHttpServerHeaderLookup() throws Exception {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpServer;
                     public final class HttpServerHeaderDemo {
                         public static void main(String[] args) {
-                            HttpServer.begin(80);
+                            NativeHttpServer.begin(80);
                             byte[] body = new byte[64];
                             byte[] key = new byte[32];
-                            if (HttpServer.accept(body, body.length) >= 0) {
-                                int keyLength = HttpServer.header("Mailbox-API-Key", key, key.length);
-                                HttpServer.respond(keyLength < 0 ? 401 : 200, "application/json", "{}");
+                            if (NativeHttpServer.accept(body, body.length) >= 0) {
+                                int keyLength = NativeHttpServer.header("Mailbox-API-Key", key, key.length);
+                                NativeHttpServer.respond(keyLength < 0 ? 401 : 200, "application/json", "{}");
                             }
                         }
                     }
@@ -3975,17 +3973,17 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Rejects HttpServer.beginTls on the UNO R4 WiFi, which has no TLS server")
+        @DisplayName("Rejects NativeHttpServer.beginTls on the UNO R4 WiFi, which has no TLS server")
         void shouldRejectHttpServerBeginTlsOnTheUnoR4Wifi() throws Exception {
             // Given
             String source = """
                     package demo;
-                    import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpServer;
                     public final class HttpsServerOnR4 {
                         public static void main(String[] args) {
                             byte[] certificate = new byte[64];
                             byte[] key = new byte[64];
-                            HttpServer.beginTls(443, certificate, 64, key, 64);
+                            NativeHttpServer.beginTls(443, certificate, 64, key, 64);
                         }
                     }
                     """;
@@ -3998,7 +3996,7 @@ class JunoCompilerTest {
         }
 
         /**
-         * {@code HttpServer.respond(int, String, String)}'s {@code body} is the one intrinsic {@code
+         * {@code NativeHttpServer.respond(int, String, String)}'s {@code body} is the one intrinsic {@code
          * String} parameter in all of Juno exempt from the compile-time-literal requirement (see
          * {@link io.github.jabrena.juno.intrinsic.IntrinsicRegistry#requiresLiteralStringArgument}) —
          * a runtime value built from {@code StringBuilder#toString()} must flow into it exactly like a
@@ -4012,10 +4010,10 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.time.Clock;
-                    import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpServer;
                     public final class HttpServerRuntimeBody {
                         public static void main(String[] args) {
-                            HttpServer.begin(80);
+                            NativeHttpServer.begin(80);
                             StringBuilder json = new StringBuilder(32);
                             json.append("{\\"uptime_ms\\":");
                             String uptime = String.valueOf(MCU.getClock().millis());
@@ -4023,7 +4021,7 @@ class JunoCompilerTest {
                                 json.append(uptime.charAt(i));
                             }
                             json.append('}');
-                            HttpServer.respond(200, "application/json", json.toString());
+                            NativeHttpServer.respond(200, "application/json", json.toString());
                         }
                     }
                     """;
@@ -4052,12 +4050,12 @@ class JunoCompilerTest {
                     package demo;
                     import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.time.Clock;
-                    import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                    import io.github.jabrena.juno.hardware.internal.NativeHttpServer;
                     public final class HttpServerDynamicContentType {
                         public static void main(String[] args) {
-                            HttpServer.begin(80);
+                            NativeHttpServer.begin(80);
                             String contentType = MCU.getClock().millis() > 0 ? "application/json" : "text/plain";
-                            HttpServer.respond(200, contentType, "{}");
+                            NativeHttpServer.respond(200, contentType, "{}");
                         }
                     }
                     """;

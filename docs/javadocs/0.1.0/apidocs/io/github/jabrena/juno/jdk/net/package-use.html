@@ -81,6 +81,11 @@ initTheme();
 <div class="col-last odd-row-color">
 <div class="block">Board-side implementations of <code>java.net.http</code>: the JDK's HTTP client syntax on the board.</div>
 </div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.jdk.net.httpserver">io.github.jabrena.juno.jdk.net.httpserver</a></div>
+<div class="col-last even-row-color">
+<div class="block">Board-side implementations of the JDK's <code>com.sun.net.httpserver</code> API: <code>HttpServer</code>, <code>HttpsServer</code>
+and the exchange a handler answers.</div>
+</div>
 </div>
 <section class="package-uses">
 <ul class="block-list">
@@ -106,6 +111,24 @@ initTheme();
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="class-use/URI.html#io.github.jabrena.juno.jdk.net.http">URI</a></div>
 <div class="col-last even-row-color">
+<div class="block">The board-side <code>java.net.URI</code>: the compiler reads this class as <code>java.net.URI</code>, so a program that calls
+<code>URI.create(...)</code> or <code>new URI(...)</code> against the JDK runs this code on the board.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.jdk.net.httpserver">
+<div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.jdk.net</a> used by <a href="httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a></span></div>
+<div class="summary-table two-column-summary">
+<div class="table-header col-first">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="class-use/InetSocketAddress.html#io.github.jabrena.juno.jdk.net.httpserver">InetSocketAddress</a></div>
+<div class="col-last even-row-color">
+<div class="block">Board-side port-only form of <code>java.net.InetSocketAddress</code> used when binding a server listener.</div>
+</div>
+<div class="col-first odd-row-color"><a href="class-use/URI.html#io.github.jabrena.juno.jdk.net.httpserver">URI</a></div>
+<div class="col-last odd-row-color">
 <div class="block">The board-side <code>java.net.URI</code>: the compiler reads this class as <code>java.net.URI</code>, so a program that calls
 <code>URI.create(...)</code> or <code>new URI(...)</code> against the JDK runs this code on the board.</div>
 </div>

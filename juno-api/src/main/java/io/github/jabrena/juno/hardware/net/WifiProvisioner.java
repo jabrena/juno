@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.hardware.net;
 
 import io.github.jabrena.juno.hardware.MCU;
+import io.github.jabrena.juno.hardware.internal.NativeHttpServer;
 import io.github.jabrena.juno.hardware.net.http.HttpMethod;
-import io.github.jabrena.juno.hardware.net.http.HttpServer;
 import io.github.jabrena.juno.hardware.net.http.HttpStatus;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;
@@ -10,7 +10,7 @@ import io.github.jabrena.juno.util.Delay;
 
 /**
  * Wi-Fi provisioning without baking credentials into the firmware, written in plain Java on top of
- * {@link MCU#getWifi()} and {@link HttpServer} (it adds no intrinsics, and costs nothing in a program that
+ * {@link MCU#getWifi()} and the board's native HTTP listener, without a server thread (it adds no intrinsics, and costs nothing in a program that
  * does not call it). {@link #run} opens an access point, serves an HTML form on port 80 and joins
  * the network the user submits. The caller must have started {@link Serial} first.
  *
@@ -54,26 +54,26 @@ public final class WifiProvisioner {
     public static void run(String apSsid, String apPassword) {
         int[] address = new int[4];
         startAccessPoint(apSsid, apPassword, address);
-        HttpServer.begin(80);
+        NativeHttpServer.begin(80);
 
         byte[] body = new byte[128];
         while (true) {
-            int bodyLength = HttpServer.accept(body, body.length);
+            int bodyLength = NativeHttpServer.accept(body, body.length);
             if (bodyLength < 0) {
                 continue;
             }
-            String method = HttpServer.method();
-            String path = HttpServer.path();
+            String method = NativeHttpServer.method();
+            String path = NativeHttpServer.path();
             if (method.equals(HttpMethod.POST) && path.equals("/connect")) {
-                HttpServer.respond(HttpStatus.OK, "text/html", CONNECTING);
+                NativeHttpServer.respond(HttpStatus.OK, "text/html", CONNECTING);
                 if (provision(body, bodyLength, address)) {
                     return;
                 }
                 startAccessPoint(apSsid, apPassword, address);
             } else if (method.equals(HttpMethod.GET) && path.equals("/")) {
-                HttpServer.respond(HttpStatus.OK, "text/html", FORM);
+                NativeHttpServer.respond(HttpStatus.OK, "text/html", FORM);
             } else {
-                HttpServer.respond(HttpStatus.NOT_FOUND, "text/plain", "Not found");
+                NativeHttpServer.respond(HttpStatus.NOT_FOUND, "text/plain", "Not found");
             }
         }
     }

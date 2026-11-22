@@ -251,7 +251,7 @@ ESP32-CAM, M5Stack Cardputer and Raspberry Pi Pico 2 W can run two tasks concurr
   so a loop with no calls is still switched.
 - **Tasks give up the processor when they block.** That happens on `Delay.millis`, `Thread.sleep`, `Thread.yield`,
   `join`, entering a monitor that another task holds, or waiting on a latch, semaphore, barrier, condition or phaser.
-  Juno-controlled waits in HTTP/HTTPS, `HttpServer.accept`, the retries of `SdCard.begin`, and Powered Up scans or
+  Juno-controlled waits in HTTP/HTTPS, the HTTP server's accept, the retries of `SdCard.begin`, and Powered Up scans or
   replies also let other tasks run. A wait inside a vendor library can still hold up the other tasks. Each device is used by one task at a time, so a second
   task that needs it waits its turn.
 - **Runtime critical sections are protected.** A single carrier cannot switch in the middle of allocation, collection,

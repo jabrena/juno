@@ -115,11 +115,11 @@ initTheme();
 <div class="block">Writes JSON into a caller-owned <code>byte[]</code>, placing commas and escaping strings, so request and response bodies
 need no hand-written quotes. Create one writer at startup and <a href="#reset()"><code>reset()</code></a> it per body: writing allocates
 nothing. <a href="#toString()"><code>toString()</code></a> copies the body into a <code>String</code> for APIs that take one, such as
-<a href="HttpServer.html#respond(int,java.lang.String,java.lang.String)"><code>HttpServer.respond(int, String, String)</code></a> or <code>HttpRequest.BodyPublishers.ofString</code>.
+a server's response or <code>HttpRequest.BodyPublishers.ofString</code>.
 
 <pre><code>JsonWriter json = new JsonWriter(new byte[64]);
 json.reset().beginObject().name("uptime_ms").value(clock.millis()).name("ok").value(true).endObject();
-HttpServer.respond(HttpStatus.OK, "application/json", json.toString());
+HttpRequest request = HttpRequest.newBuilder(uri).POST(HttpRequest.BodyPublishers.ofString(json.toString())).build();
 </code></pre>
 
 <p>Output that does not fit the buffer is dropped and <a href="#overflowed()"><code>overflowed()</code></a> turns true. Nesting deeper than

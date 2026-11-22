@@ -25,9 +25,9 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 | Wi-Fi station | ✓ | Through `MCU.getWifi()`; credentials can come from the onboard microSD card. | [`AiThinkerEsp32CamWifiFromSd`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/AiThinkerEsp32CamWifiFromSd.java) |
 | Wi-Fi access point | ✓ | `MCU.getWifi().beginAP(ssid, password)` uses the ESP32 soft-AP. | |
 | `java.net.http` (HTTP and HTTPS) | ✓ | Mozilla root certificates; an `SSLContext` can add its own. Certificate dates are checked once SNTP sets the clock. | [`ParallelHttpsGet`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/ParallelHttpsGet.java) |
-| `HttpServer` (HTTP) | ✓ | Runs on the station address. | [`AiThinkerEsp32CamStream`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/AiThinkerEsp32CamStream.java) |
-| HTTPS server | ✓ | `HttpServer.beginTls()` uses the ESP32 mbedTLS server transport. | |
-| HTTP response streaming | ✓ | `HttpServer.beginStream()` sends the camera's MJPEG response. | [`AiThinkerEsp32CamStream`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/AiThinkerEsp32CamStream.java) |
+| `HttpServer` (HTTP) | ✓ | Runs on the station address, through the JDK `com.sun.net.httpserver` API or Juno's own. | [`AiThinkerEsp32CamHttpServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/AiThinkerEsp32CamHttpServerSD.java), [`AiThinkerEsp32CamStream`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/AiThinkerEsp32CamStream.java) |
+| HTTPS server | ✓ | The JDK `HttpsServer` with an `SSLContext` built from `server.crt` and `server.key` on the microSD card, over the ESP32 mbedTLS server transport. | [`AiThinkerEsp32CamHttpsServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/AiThinkerEsp32CamHttpsServerSD.java) |
+| HTTP response streaming | ✓ | `sendResponseHeaders(200, 0)` sends the camera's MJPEG response until the viewer disconnects; build it with `-Djuno.Xmx=59k`. | [`AiThinkerEsp32CamStream`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/AiThinkerEsp32CamStream.java) |
 | Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | Implicit TLS uses the ESP32 secure client. | |
 | Email over STARTTLS (`Smtp.send`) | ✓ | STARTTLS upgrades through the ESP32 `ESP_SSLClient` wrapper. | |
 | Bluetooth LE (LEGO Powered Up) | ✓ | Through `RemotePoweredUpHub` and ArduinoBLE. | [`PoweredUpMotorEncoders`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/PoweredUpMotorEncoders.java) |
@@ -42,6 +42,10 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 
 The board has no USB port, so flash it through a USB-serial adapter; the port is passed with
 `-Djuno.port`.
+
+**Remove the microSD card before every upload.** The card holds GPIO2 high, which keeps the ESP32 out of download
+mode, so `juno:flash` cannot connect while it is inserted. Upload with the card out, put it back, then reset the
+board; opening `juno:monitor` resets it too, through the adapter's DTR/RTS lines.
 
 ## Camera
 
@@ -58,10 +62,10 @@ takes one fresh 640×480 photo on every request. It reads `wifi.ssid` and `wifi.
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:flash -Djuno.board=ai-thinker-esp32-cam -Djuno.port=<PORT> \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.net.http.AiThinkerEsp32CamStream -Djuno.Xmx=63k
+  -Djuno.main=io.github.jabrena.juno.api.hardware.net.http.AiThinkerEsp32CamStream -Djuno.Xmx=59k
 ```
 
-`-Djuno.Xmx=64k` does not link: the arena would overflow the ESP32's static DRAM segment by a few hundred bytes. The
+`-Djuno.Xmx=60k` does not link: the arena would overflow the ESP32's static DRAM segment by a few hundred bytes. The
 server answers one connection at a time, so a second viewer waits until the first one leaves.
 
 ### When the camera does not start
@@ -72,6 +76,4 @@ server answers one connection at a time, so a second viewer waits until the firs
   the sensor down. Juno clocks the sensor at 10 MHz rather than 20, which marginal modules probe more reliably.
 - The stream example retries a camera start that fails and carries `@Watchdog`, so a start that hangs inside the
   driver reboots the board instead of leaving it silent.
-- To flash, take the microSD card out: once initialized, the card holds GPIO2, a boot strapping pin, high and the chip
-  will not enter download mode. Hold IO0 through the whole upload.
-- Opening or closing the serial monitor resets the board through the adapter's DTR/RTS lines.
+- If uploads still fail with the card out, hold IO0 low through the whole upload.

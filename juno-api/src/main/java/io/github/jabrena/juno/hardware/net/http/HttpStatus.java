@@ -1,8 +1,8 @@
 package io.github.jabrena.juno.hardware.net.http;
 
 /**
- * Named HTTP status codes for {@link HttpServer#respond}'s {@code status} parameter, which stays
- * a plain {@code int} — these are ordinary compile-time-constant {@code int} fields, not a new
+ * Named HTTP status codes, for {@code HttpExchange.sendResponseHeaders} and {@code HttpResponse.statusCode()}, which
+ * stay a plain {@code int} — these are ordinary compile-time-constant {@code int} fields, not a new
  * intrinsic or type, exactly like {@link io.github.jabrena.juno.hardware.gpio.Gpio#getOutput()}.
  */
 public final class HttpStatus {

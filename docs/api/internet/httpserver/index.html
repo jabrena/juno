@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="HTTP server">
   <meta property="og:site_name" content="Juno: Java for Arduino">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="Serving HTTP and HTTPS requests from a Juno program with HttpServer: accept, path, respond and HTTPS.">
-  <meta property="og:description" content="Serving HTTP and HTTPS requests from a Juno program with HttpServer: accept, path, respond and HTTPS." />
-  <meta name="twitter:description" content="Serving HTTP and HTTPS requests from a Juno program with HttpServer: accept, path, respond and HTTPS.">
+  <meta name="description" content="Serving HTTP and HTTPS requests from a Juno program with the JDK&#39;s com.sun.net.httpserver API: contexts, exchanges, request headers and bodies, streaming and HTTPS.">
+  <meta property="og:description" content="Serving HTTP and HTTPS requests from a Juno program with the JDK&#39;s com.sun.net.httpserver API: contexts, exchanges, request headers and bodies, streaming and HTTPS." />
+  <meta name="twitter:description" content="Serving HTTP and HTTPS requests from a Juno program with the JDK&#39;s com.sun.net.httpserver API: contexts, exchanges, request headers and bodies, streaming and HTTPS.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/api/internet/httpserver/" />
@@ -55,7 +55,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-M6FYOHIC.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-AOEEMNED.css" />
 
 </head>
 <body>
@@ -309,127 +309,142 @@ document.addEventListener('DOMContentLoaded', function () {
   <h1>HTTP server</h1>
 </header>
     <div class="content-prose">
-<p><code>HttpServer</code> lets a Juno program answer HTTP requests from other devices on the same network. It is a minimal server:
-it listens on a port, reads one request at a time and replies to it. Connect to Wi-Fi first, since the server listens on
-the board's network address. The <a href="../../../features/board-features">Board features</a> page lists which boards serve plain HTTP and which
-serve HTTPS.</p>
-<h2 id="methods">Methods</h2>
+<p>A Juno program serves HTTP and HTTPS the way a JDK program does, with <code>com.sun.net.httpserver</code>: create an <code>HttpServer</code>
+or <code>HttpsServer</code>, register a handler per path with <code>createContext</code>, and <code>start()</code> it. Juno has no other server API.
+Connect to Wi-Fi first, since the server listens on the board's network address. The
+<a href="../../../features/board-features">Board features</a> page lists which boards serve plain HTTP and which serve HTTPS.</p>
+<p>The board's server is a bounded subset of the JDK's: it serves one connection at a time, on a virtual thread that
+<code>start()</code> launches, so the program's own <code>main</code> keeps running.</p>
+<h2 id="the-api">The API</h2>
 <table>
 <thead>
 <tr>
-<th>Method</th>
-<th>Arguments</th>
-<th>Purpose</th>
+<th>Class</th>
+<th>Methods</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>begin(int)</code></td>
-<td>a port</td>
-<td>Starts listening for plain HTTP. Call it once, after Wi-Fi connects.</td>
+<td><code>HttpServer</code></td>
+<td><code>create(InetSocketAddress, int)</code>, <code>createContext(String, HttpHandler)</code>, <code>start()</code></td>
+<td>The backlog is ignored. A context matches by path prefix; the longest prefix wins.</td>
 </tr>
 <tr>
-<td><code>beginTls(int, byte[], int, byte[], int)</code></td>
-<td>a port, the certificate, its length, the private key and its length</td>
-<td>Starts listening for HTTPS with a PEM certificate and key.</td>
+<td><code>HttpsServer</code></td>
+<td>the same, plus <code>setHttpsConfigurator(HttpsConfigurator)</code></td>
+<td>Needs a configurator before <code>start()</code>.</td>
 </tr>
 <tr>
-<td><code>accept(byte[], int)</code></td>
-<td>a body buffer and its capacity</td>
-<td>Reads the next request, or returns <code>-1</code> at once when no client is waiting.</td>
+<td><code>HttpsConfigurator</code></td>
+<td><code>HttpsConfigurator(SSLContext)</code>, <code>getSSLContext()</code></td>
+<td>The context's key manager holds the server's certificate and key.</td>
 </tr>
 <tr>
-<td><code>method()</code></td>
-<td>none</td>
-<td>The method of the request from the last <code>accept</code>, such as <code>GET</code>.</td>
+<td><code>HttpExchange</code></td>
+<td><code>getRequestMethod()</code>, <code>getRequestURI()</code>, <code>getRequestHeaders()</code>, <code>getRequestBody()</code>, <code>getResponseHeaders()</code>, <code>sendResponseHeaders(int, long)</code>, <code>getResponseBody()</code></td>
+<td>One exchange per request; close the response body to end it.</td>
 </tr>
 <tr>
-<td><code>path()</code></td>
-<td>none</td>
-<td>The path of the request from the last <code>accept</code>, such as <code>/status</code>.</td>
-</tr>
-<tr>
-<td><code>contentLength()</code></td>
-<td>none</td>
-<td>The request's <code>Content-Length</code>, or <code>-1</code> when it has none.</td>
-</tr>
-<tr>
-<td><code>header(String, byte[], int)</code></td>
-<td>a header name, a buffer and its capacity</td>
-<td>Copies a request header; returns its length, or <code>-1</code> when it is absent.</td>
-</tr>
-<tr>
-<td><code>respond(int, String, String)</code></td>
-<td>a status, a content type and a body</td>
-<td>Sends the reply and closes the connection.</td>
-</tr>
-<tr>
-<td><code>respond(int, String, StringBuilder)</code></td>
-<td>a status, a content type and a <code>StringBuilder</code></td>
-<td>Sends the contents of a <code>StringBuilder</code> as the reply, with no size cap.</td>
+<td><code>Headers</code></td>
+<td><code>getFirst(String)</code> on request headers, <code>set(String, String)</code> on response headers</td>
+<td>The response sends only <code>Content-Type</code>, with any value.</td>
 </tr>
 </tbody>
 </table>
-<p><code>HttpStatus</code> provides the status codes, such as <code>OK</code> (200), <code>NOT_FOUND</code> (404) and <code>BAD_REQUEST</code> (400).</p>
+<p>Use <code>java.net.HttpURLConnection</code>'s constants, such as <code>HTTP_OK</code> and <code>HTTP_NOT_FOUND</code>, for the status codes:
+<code>javac</code> copies them into the program, so they cost nothing on the board.</p>
 <h2 id="creating-rest-apis">Creating REST APIs</h2>
-<p>Call <code>accept</code> once per pass of the loop. It never waits for a client, so the rest of the loop keeps running. When it
-returns a value of zero or more, a request has been read: check <code>path()</code>, then send exactly one <code>respond</code> before the next
-<code>accept</code>:</p>
-<pre><code class="language-java">HttpServer.begin(80);
-byte[] body = new byte[HttpServer.DEFAULT_BODY_BUFFER_SIZE];
+<p>Register one handler per route, then <code>start()</code> the server. Each handler sets the content type, sends the status and
+length with <code>sendResponseHeaders</code>, writes the body and closes it:</p>
+<pre><code class="language-java">HttpServer server = HttpServer.create(new InetSocketAddress(80), 4);
+server.createContext(&quot;/api/status&quot;, exchange -&gt; send(exchange, HTTP_OK, &quot;{\&quot;led\&quot;:\&quot;off\&quot;}&quot;));
+server.createContext(&quot;/&quot;, exchange -&gt; send(exchange, HTTP_NOT_FOUND, &quot;{\&quot;title\&quot;:\&quot;not found\&quot;}&quot;));
+server.start();
 
-while (true) {
-    if (HttpServer.accept(body, body.length) &gt;= 0) {
-        if (HttpServer.path().equals(&quot;/status&quot;)) {
-            HttpServer.respond(HttpStatus.OK, &quot;text/plain&quot;, &quot;online&quot;);
-        } else {
-            HttpServer.respond(HttpStatus.NOT_FOUND, &quot;text/plain&quot;, &quot;not found&quot;);
+static void send(HttpExchange exchange, int status, String body) throws IOException {
+    exchange.getResponseHeaders().set(&quot;Content-Type&quot;, &quot;application/json&quot;);
+    exchange.sendResponseHeaders(status, body.length());
+    try (OutputStream output = exchange.getResponseBody()) {
+        for (int index = 0; index &lt; body.length(); index++) {
+            output.write(body.charAt(index));
         }
     }
 }
 </code></pre>
-<p><code>accept</code> reads the request body into the buffer, truncated to its length. Check <code>contentLength()</code> before parsing a body that
-might be larger than the buffer, because <code>accept</code> truncates it silently.</p>
+<p><code>sendResponseHeaders</code> sends the status line and headers at once. A length above zero becomes <code>Content-Length</code>, and
+<code>-1</code> means no body. The body's bytes go to the client as they are written, so a response can be as large as the
+program can produce.</p>
+<h2 id="request-headers-and-bodies">Request headers and bodies</h2>
+<p><code>getRequestHeaders().getFirst(name)</code> reads one request header, matched case-insensitively with spaces around the
+value trimmed, or returns <code>null</code> when the request has none. Only the first 384 bytes of the request's header lines
+are kept, and a value is truncated to 128 bytes.</p>
+<p><code>getRequestBody()</code> is an <code>InputStream</code> over the request's body. Its first 512 bytes arrive with the request; reading
+past them takes the rest from the client, waiting up to five seconds for it, so a body can be larger than any buffer the
+board holds. Compare the declared <code>Content-Length</code> header with the size your handler accepts before reading. A server
+that never calls these two methods spends no memory on them.</p>
+<h2 id="streaming">Streaming</h2>
+<p>Pass a length of <code>0</code> to <code>sendResponseHeaders</code> for a body of unknown length, such as an MJPEG camera stream: the body
+then ends when the connection closes. A write throws <code>IOException</code> once the client has gone, which ends the stream:</p>
+<pre><code class="language-java">exchange.getResponseHeaders().set(&quot;Content-Type&quot;, &quot;multipart/x-mixed-replace; boundary=frame&quot;);
+exchange.sendResponseHeaders(HTTP_OK, 0);
+try (OutputStream output = exchange.getResponseBody()) {
+    while (true) {
+        int length = camera.capture(frame);
+        // write one part: its headers, then frame[0..length)
+    }
+} catch (IOException closed) {
+    // the viewer disconnected
+}
+</code></pre>
 <h2 id="https">HTTPS</h2>
-<p><code>HttpServer.beginTls</code> serves HTTPS with a certificate and a private key, both in PEM form. A self-signed pair is enough
-for a server on your own network. Clients must trust that certificate themselves, so the usual test is
-<code>curl --cacert server.crt</code>. Use it on the boards whose TLS support is listed on the <a href="../../../features/board-features">Board features</a>
-page.</p>
+<p><code>HttpsServer</code> serves HTTPS with a certificate and its private key, loaded the JDK way: a <code>CertificateFactory</code> reads the
+certificate, a <code>KeyFactory(&quot;EC&quot;)</code> turns the key into a <code>PrivateKey</code>, and an in-memory <code>KeyStore</code> and <code>KeyManagerFactory</code>
+hand both to an <code>SSLContext</code>. The key may be SEC1 (<code>BEGIN EC PRIVATE KEY</code>) or PKCS#8 (<code>BEGIN PRIVATE KEY</code>): the board's
+TLS stack reads both. Use it on the boards whose TLS server support is listed on the
+<a href="../../../features/board-features">Board features</a> page; the UNO R4 WiFi has none.</p>
 <h3 id="creating-the-certificate">Creating the certificate</h3>
 <p>Create the pair on your computer with <code>openssl</code>. This makes an EC P-256 key and a certificate valid for ten years, for
-the name <code>juno.local</code>:</p>
+the address clients will connect to:</p>
 <pre><code class="language-bash">openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes -days 3650 \
-  -subj /CN=juno.local -keyout server.key -out server.crt
+  -subj /CN=&lt;cert-ip&gt; -addext subjectAltName=IP:&lt;cert-ip&gt; -keyout server.key -out server.crt
 </code></pre>
 <p><code>server.key</code> is the private key. Keep it private: anyone who has it can impersonate the server. <code>server.crt</code> is the
-public certificate that clients trust.</p>
+public certificate that clients trust. A certificate signed by your own CA works the same way.</p>
 <h3 id="putting-the-certificate-on-the-sd-card">Putting the certificate on the SD card</h3>
-<p>On the Nano ESP32 and the Cardputer, copy both files to the root of the microSD card, next to <code>application.properties</code>:</p>
+<p>Copy both files, unchanged, to the root of the microSD card next to <code>application.properties</code>:</p>
 <pre><code class="language-text">microSD card/
 ├── application.properties   wifi.ssid and wifi.password
 ├── server.crt
 └── server.key
 </code></pre>
-<p>The program reads both files at startup into buffers it allocates once, then passes them to <code>beginTls</code>. The server parses
-them and keeps its own copy, so the program does not hold the key afterwards. Each buffer must hold its whole file, so
-keep the PEM text small: the examples use 2048-byte buffers.</p>
-<p>On the Portenta H7, the <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox/server/Mailbox.java"><code>Mailbox</code></a>
-server reads <code>server.crt</code> and <code>server.key</code> from the root of the Hat Carrier's microSD card at startup, so neither file is
-built into the program or committed to the repository.</p>
+<p>The program reads both files at startup and builds its <code>SSLContext</code>; the server parses the identity in <code>start()</code> and
+wipes the key, so the program does not hold it afterwards. On the Portenta H7 the
+<a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox/server/Mailbox.java"><code>Mailbox</code></a>
+server reads them from the root of the Hat Carrier's microSD card.</p>
 <h3 id="testing-the-server">Testing the server</h3>
-<p>Find the board's address on the serial monitor, then request the status route from a computer that trusts the
-certificate:</p>
-<pre><code class="language-bash">curl --cacert server.crt --resolve juno.local:443:&lt;address&gt; https://juno.local/status
+<p>Find the board's address on the serial monitor, then call it from a computer that trusts the certificate. Pass
+<code>--cacert</code> the CA's certificate when a CA signed <code>server.crt</code>:</p>
+<pre><code class="language-bash">curl --cacert server.crt https://&lt;cert-ip&gt;/api/status
 </code></pre>
-<p>The <code>--resolve</code> option sends the name <code>juno.local</code> to the board's address, so the certificate's name matches the request.</p>
+<p>When DHCP gives the board another address than the certificate names, keep the check by sending the certificate's
+address to the board's: <code>--connect-to &lt;cert-ip&gt;:443:&lt;address&gt;:443</code>.</p>
+<h2 id="memory">Memory</h2>
+<p>The server's dispatch thread needs a larger carrier stack than the UNO R4 WiFi's default, so build a server for the R4
+with <code>-Djuno.Xss=5120 -Djuno.Xmx=4096</code>. Check the build's <code>Arena:</code> line and <code>JUNO-RISK-002</code> before flashing.</p>
 <h2 id="examples">Examples</h2>
 <ul>
 <li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpServerSD.java"><code>NanoHttpServerSD</code></a>
-joins the network with credentials from the SD card, prints its address and answers <code>GET /status</code> on port 80.</li>
-<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/PortentaHttpsServer.java"><code>PortentaHttpsServer</code></a>
-serves HTTPS on the Portenta H7, with the certificate and key sent over Serial at startup.</li>
+and <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/NanoHttpsServerSD.java"><code>NanoHttpsServerSD</code></a>
+serve <code>GET /api/status</code> and <code>POST /api/led?state=on|off</code> over HTTP and HTTPS on the Nano ESP32, with the Wi-Fi
+credentials and the certificate on the SD card. The Cardputer, ESP32-CAM, UNO R4 WiFi and Portenta H7 have the same
+pair or its HTTP half.</li>
+<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerHeader.java"><code>HttpServerHeader</code></a>
+greets the caller by a request header.</li>
 <li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerBacklight.java"><code>HttpServerBacklight</code></a>
-demonstrates <code>POST</code> handling with an LCD Keypad Shield attached.</li>
+handles <code>POST</code> with an LCD Keypad Shield attached.</li>
+<li><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/AiThinkerEsp32CamStream.java"><code>AiThinkerEsp32CamStream</code></a>
+streams the camera as MJPEG.</li>
 </ul>
     </div>
   </section>

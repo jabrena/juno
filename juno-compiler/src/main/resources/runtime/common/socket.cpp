@@ -15,6 +15,22 @@ struct JunoInetAddressOctets {
 
 // The one open socket's handle, which the SD read path checks before treating a handle as a file.
 static int32_t juno_socket_stream_handle = 0;
+using JunoOutputStreamWriteHook = void (*)(int32_t, const uint8_t*, int32_t, int32_t);
+using JunoOutputStreamByteHook = void (*)(int32_t, int32_t);
+using JunoOutputStreamCloseHook = void (*)(int32_t);
+static int32_t juno_registered_output_stream_handle = 0;
+static JunoOutputStreamWriteHook juno_registered_output_stream_write = nullptr;
+static JunoOutputStreamByteHook juno_registered_output_stream_write_byte = nullptr;
+static JunoOutputStreamCloseHook juno_registered_output_stream_close = nullptr;
+
+extern "C" void juno_socket_register_output_stream(int32_t handle, JunoOutputStreamWriteHook writeHook,
+                                                     JunoOutputStreamByteHook byteHook,
+                                                     JunoOutputStreamCloseHook closeHook) {
+  juno_registered_output_stream_handle = handle;
+  juno_registered_output_stream_write = writeHook;
+  juno_registered_output_stream_write_byte = byteHook;
+  juno_registered_output_stream_close = closeHook;
+}
 
 static void juno_socket_raise(int32_t classId, const char* message) {
   auto* exception = static_cast<int32_t*>(juno_alloc(${JUNO_THROWABLE_BYTES}u, 4u));
@@ -71,6 +87,12 @@ extern "C" void juno_socket_set_so_timeout(int32_t handle, int32_t timeoutMillis
 
 extern "C" void juno_socket_output_stream_write(int32_t handle, const uint8_t* payload, int32_t offset,
                                                 int32_t length) {
+  if (handle != 0 && handle == juno_registered_output_stream_handle) {
+    if (juno_registered_output_stream_write != nullptr) {
+      juno_registered_output_stream_write(handle, payload, offset, length);
+    }
+    return;
+  }
   if (juno_socket_pointer<JunoSocket>(handle) == nullptr) return;
   if (payload == nullptr) {
     juno_throw_raise(0);
@@ -82,6 +104,26 @@ extern "C" void juno_socket_output_stream_write(int32_t handle, const uint8_t* p
   }
   if (juno_tcp_write(payload + offset, length) != length) {
     juno_socket_raise(JUNO_SOCKET_IO, "Write failed: connection closed");
+  }
+}
+
+extern "C" void juno_socket_output_stream_init(int32_t) {}
+
+extern "C" void juno_socket_output_stream_write_byte(int32_t handle, int32_t value) {
+  if (handle != 0 && handle == juno_registered_output_stream_handle) {
+    if (juno_registered_output_stream_write_byte != nullptr) {
+      juno_registered_output_stream_write_byte(handle, value);
+    }
+    return;
+  }
+  uint8_t byte = static_cast<uint8_t>(value);
+  juno_tcp_write(&byte, 1);
+}
+
+extern "C" void juno_socket_output_stream_close(int32_t handle) {
+  if (handle != 0 && handle == juno_registered_output_stream_handle
+      && juno_registered_output_stream_close != nullptr) {
+    juno_registered_output_stream_close(handle);
   }
 }
 

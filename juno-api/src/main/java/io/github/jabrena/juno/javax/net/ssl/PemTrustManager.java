@@ -14,4 +14,8 @@ final class PemTrustManager implements TrustManager {
     @Nullable String pem() {
         return pem;
     }
+
+    static @Nullable String pemOf(PemTrustManager manager) {
+        return manager.pem;
+    }
 }

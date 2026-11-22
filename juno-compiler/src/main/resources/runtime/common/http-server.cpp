@@ -17,6 +17,9 @@ struct JunoHttpServerAcceptJob {
 };
 
 static int32_t juno_http_server_accept_request(uint8_t* bodyBuffer, int32_t bodyBufferLength);
+// Set once a JDK HttpExchange registers its request body, which then learns each accepted body's length and how many
+// of its bytes accept() left unread: a body larger than the buffer is read on from the client as the program reads it.
+static void (*juno_http_server_request_received)(const uint8_t* bodyBuffer, int32_t length, int32_t unread) = nullptr;
 
 static void juno_http_server_accept_job(void* argument) {
   auto* job = static_cast<JunoHttpServerAcceptJob*>(argument);
@@ -125,6 +128,11 @@ ${JUNO_HTTP_SERVER_HEADER_CAPTURE}      recent[0] = recent[1];
       complete = true;
       break;
     }
+    if (written == bodyBufferLength && juno_http_server_request_received != nullptr) {
+      // The rest stays with the client, for the program's request body stream to read.
+      complete = true;
+      break;
+    }
   }
   if (!complete) {
     // A request cut off before its headers (or declared body) ended must not reach the program: its partial path
@@ -138,7 +146,12 @@ ${JUNO_HTTP_SERVER_HEADER_CAPTURE}      recent[0] = recent[1];
   juno_http_server_method_buf[methodLength] = '\0';
   juno_http_server_path_buf[pathLength] = '\0';
   if (hasContentLength) juno_http_server_content_length_value = contentLength;
-  return written < bodyBufferLength ? written : bodyBufferLength;
+  int32_t received = written < bodyBufferLength ? written : bodyBufferLength;
+  if (juno_http_server_request_received != nullptr) {
+    int32_t unread = hasContentLength && contentLength > written ? contentLength - written : 0;
+    juno_http_server_request_received(bodyBuffer, received, unread);
+  }
+  return received;
 }
 
 ${JUNO_HTTP_SERVER_HEADER_LOOKUP}extern "C" int32_t juno_http_server_content_length() {
@@ -191,12 +204,3 @@ static void juno_http_server_respond_bytes(int32_t status, const char* contentTy
 extern "C" void juno_http_server_respond(int32_t status, const char* contentType, const char* body) {
   juno_http_server_respond_bytes(status, contentType, body, static_cast<int32_t>(strlen(body)));
 }
-
-extern "C" void juno_http_server_respond_builder(int32_t status, const char* contentType,
-                                                   int32_t bodyHandle) {
-  auto* header = reinterpret_cast<int32_t*>(static_cast<intptr_t>(bodyHandle));
-  int32_t length = header[0];
-  const uint8_t* buffer = juno_string_builder_buffer(bodyHandle);
-  juno_http_server_respond_bytes(status, contentType, reinterpret_cast<const char*>(buffer), length);
-}
-

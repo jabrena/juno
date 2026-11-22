@@ -18,6 +18,9 @@ public final class SSLContext {
 
     private final String protocol;
     private @Nullable String pem;
+    private @Nullable String serverCertificate;
+    private byte @Nullable [] serverPrivateKey;
+    private int serverPrivateKeyLength;
     private boolean initialized;
 
     private SSLContext(String protocol) {
@@ -66,14 +69,25 @@ public final class SSLContext {
      */
     public void init(KeyManager @Nullable [] keyManagers, TrustManager @Nullable [] trustManagers,
             @Nullable SecureRandom random) throws KeyManagementException {
-        if (keyManagers != null && keyManagers.length > 0) {
-            throw new KeyManagementException("Client certificates are not supported on the board");
+        serverCertificate = null;
+        serverPrivateKey = null;
+        serverPrivateKeyLength = 0;
+        if (keyManagers != null) {
+            for (KeyManager manager : keyManagers) {
+                if (manager instanceof PemKeyManager identity) {
+                    serverCertificate = PemKeyManager.certificateOf(identity);
+                    serverPrivateKey = PemKeyManager.privateKeyOf(identity);
+                    serverPrivateKeyLength = PemKeyManager.privateKeyLengthOf(identity);
+                } else {
+                    throw new KeyManagementException("Unsupported key manager on the board");
+                }
+            }
         }
         pem = null;
         if (trustManagers != null) {
             for (TrustManager manager : trustManagers) {
                 if (manager instanceof PemTrustManager pemManager) {
-                    pem = pemManager.pem();
+                    pem = PemTrustManager.pemOf(pemManager);
                     break;
                 }
             }
@@ -91,5 +105,20 @@ public final class SSLContext {
             throw new IllegalStateException("SSLContext is not initialized");
         }
         return pem;
+    }
+
+    /** Board-side access to the server certificate installed by a key manager. */
+    public @Nullable String serverCertificate() {
+        return serverCertificate;
+    }
+
+    /** Board-side access to the PKCS#8 server key installed by a key manager. */
+    public byte @Nullable [] serverPrivateKey() {
+        return serverPrivateKey;
+    }
+
+    /** The length of the key's DER encoding within {@link #serverPrivateKey()}. */
+    public int serverPrivateKeyLength() {
+        return serverPrivateKeyLength;
     }
 }

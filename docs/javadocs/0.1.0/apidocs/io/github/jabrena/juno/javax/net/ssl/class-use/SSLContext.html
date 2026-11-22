@@ -83,6 +83,11 @@ initTheme();
 <div class="col-last odd-row-color">
 <div class="block">Board-side implementations of <code>java.net.http</code>: the JDK's HTTP client syntax on the board.</div>
 </div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.jdk.net.httpserver">io.github.jabrena.juno.jdk.net.httpserver</a></div>
+<div class="col-last even-row-color">
+<div class="block">Board-side implementations of the JDK's <code>com.sun.net.httpserver</code> API: <code>HttpServer</code>, <code>HttpsServer</code>
+and the exchange a handler answers.</div>
+</div>
 </div>
 <section class="class-uses">
 <ul class="block-list">
@@ -135,6 +140,33 @@ initTheme();
 <div class="col-second even-row-color"><span class="type-name-label">HttpClient.Builder.</span><code><a href="../../../../jdk/net/http/HttpClient.Builder.html#sslContext(io.github.jabrena.juno.javax.net.ssl.SSLContext)" class="member-name-link">sslContext</a><wbr>(<a href="../SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a>&nbsp;sslContext)</code></div>
 <div class="col-last even-row-color">
 <div class="block">Sets the trust anchors the client checks HTTPS servers against.</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.jdk.net.httpserver">
+<h2>Uses of <a href="../SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a> in <a href="../../../../jdk/net/httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a></h2>
+<div class="caption"><span>Methods in <a href="../../../../jdk/net/httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a> that return <a href="../SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Method</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code><a href="../SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">HttpsConfigurator.</span><code><a href="../../../../jdk/net/httpserver/HttpsConfigurator.html#getSSLContext()" class="member-name-link">getSSLContext</a>()</code></div>
+<div class="col-last even-row-color">
+<div class="block">The SSL context whose key manager holds the server certificate and key.</div>
+</div>
+</div>
+<div class="caption"><span>Constructors in <a href="../../../../jdk/net/httpserver/package-summary.html">io.github.jabrena.juno.jdk.net.httpserver</a> with parameters of type <a href="../SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier</div>
+<div class="table-header col-second">Constructor</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../../../jdk/net/httpserver/HttpsConfigurator.html#%3Cinit%3E(io.github.jabrena.juno.javax.net.ssl.SSLContext)" class="member-name-link">HttpsConfigurator</a><wbr>(<a href="../SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a>&nbsp;context)</code></div>
+<div class="col-last even-row-color">
+<div class="block">A configurator for the server identity installed in <code>context</code>.</div>
 </div>
 </div>
 </section>

@@ -158,6 +158,17 @@ object-shaped API over passing a pin number to every call.</div>
 <li>
 <section class="detail" id="io.github.jabrena.juno.hardware.device.carrier">
 <h2>Uses of <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a> in <a href="../../device/carrier/package-summary.html">io.github.jabrena.juno.hardware.device.carrier</a></h2>
+<div class="caption"><span>Methods in <a href="../../device/carrier/package-summary.html">io.github.jabrena.juno.hardware.device.carrier</a> that return <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></span></div>
+<div class="summary-table three-column-summary">
+<div class="table-header col-first">Modifier and Type</div>
+<div class="table-header col-second">Method</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><code><a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">PortentaHatCarrier.</span><code><a href="../../device/carrier/PortentaHatCarrier.html#getGpio()" class="member-name-link">getGpio</a>()</code></div>
+<div class="col-last even-row-color">
+<div class="block">The GPIO context the carrier's header pins belong to; a HAT on the header drives its control lines through it.</div>
+</div>
+</div>
 <div class="caption"><span>Constructors in <a href="../../device/carrier/package-summary.html">io.github.jabrena.juno.hardware.device.carrier</a> with parameters of type <a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a></span></div>
 <div class="summary-table three-column-summary">
 <div class="table-header col-first">Modifier</div>
@@ -171,7 +182,13 @@ object-shaped API over passing a pin number to every call.</div>
 <div class="col-first odd-row-color"><code>&nbsp;</code></div>
 <div class="col-second odd-row-color"><code><a href="../../device/carrier/PortentaHatCarrier.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">PortentaHatCarrier</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio)</code></div>
 <div class="col-last odd-row-color">
-<div class="block">Creates the carrier handle for a board GPIO context.</div>
+<div class="block">Creates the carrier handle for a board GPIO context, its header's SPI bus being the board's (<a href="../../MCU.html#getSpi()"><code>MCU.getSpi()</code></a>).</div>
+</div>
+<div class="col-first even-row-color"><code>&nbsp;</code></div>
+<div class="col-second even-row-color"><code><a href="../../device/carrier/PortentaHatCarrier.html#%3Cinit%3E(io.github.jabrena.juno.hardware.gpio.Gpio,io.github.jabrena.juno.hardware.spi.Spi)" class="member-name-link">PortentaHatCarrier</a><wbr>(<a href="../Gpio.html" title="interface in io.github.jabrena.juno.hardware.gpio">Gpio</a>&nbsp;gpio,
+ @Nullable <a href="../../spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a>&nbsp;spi)</code></div>
+<div class="col-last even-row-color">
+<div class="block">Creates the carrier handle for <code>gpio</code> and the header's <code>spi</code> bus: mocked ones in a unit test.</div>
 </div>
 </div>
 </section>

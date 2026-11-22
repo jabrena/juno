@@ -83,15 +83,12 @@ initTheme();
 </span>package <span class="element-name">io.github.jabrena.juno.hardware.net.http</span></div>
 <section class="package-description" id="package-description">
 <div class="block">HTTP support built on <a href="../Wifi.html" title="interface in io.github.jabrena.juno.hardware.net"><code>Wifi</code></a>'s connection, next to the JDK's
-<code>java.net.http</code> client that programs send requests with: <a href="Json.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>Json</code></a>
-and <a href="JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonValue</code></a> to read values directly out of a response body or a
-request buffer without building a parsed document, <a href="JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonWriter</code></a> to
-write JSON into a buffer, and
-<a href="HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a> to serve requests, with
-<a href="HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpMethod</code></a>/<a href="HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpStatus</code></a> as named constants for both directions.
-
-<p><a href="HttpServer.html#respond(int,java.lang.String,java.lang.String)"><code>HttpServer.respond(int, String, String)</code></a> also accepts a runtime
-response body. JSON support needs the UNO R4 WiFi or a larger board.</div>
+<code>java.net.http</code> client that programs send requests with and the JDK's <code>com.sun.net.httpserver</code> that they
+serve requests with: <a href="Json.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>Json</code></a> and
+<a href="JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonValue</code></a> to read values directly out of a response or request body
+without building a parsed document, <a href="JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonWriter</code></a> to write JSON into a
+buffer, and <a href="HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpMethod</code></a>/<a href="HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpStatus</code></a> as named constants for both directions. JSON support needs the
+UNO R4 WiFi or a larger board.</div>
 </section>
 </div>
 <section class="summary">
@@ -131,33 +128,27 @@ configures the server, and the exchange runs on a <a href="https://docs.oracle.c
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
-<div class="block">Named HTTP methods for matching against <a href="HttpServer.html#method()"><code>HttpServer.method()</code></a>.</div>
+<div class="block">Named HTTP methods for matching against <code>HttpExchange.getRequestMethod()</code>.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpServer</a></div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
-<div class="block">A minimal, non-blocking HTTP/1.1 server recognized as compiler intrinsics by Juno, backed by
-the Arduino <code>WiFiS3</code> library's <code>WiFiServer</code> on UNO R4 WiFi and by each core's
-own Wi-Fi server elsewhere.</div>
-</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="HttpStatus.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpStatus</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
-<div class="block">Named HTTP status codes for <a href="HttpServer.html#respond(int,java.lang.String,java.lang.String)"><code>HttpServer.respond(int, String, String)</code></a>'s <code>status</code> parameter, which stays
-a plain <code>int</code> — these are ordinary compile-time-constant <code>int</code> fields, not a new
+<div class="block">Named HTTP status codes, for <code>HttpExchange.sendResponseHeaders</code> and <code>HttpResponse.statusCode()</code>, which
+stay a plain <code>int</code> — these are ordinary compile-time-constant <code>int</code> fields, not a new
 intrinsic or type, exactly like <a href="../../gpio/Gpio.html#getOutput()"><code>Gpio.getOutput()</code></a>.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="Json.html" title="class in io.github.jabrena.juno.hardware.net.http">Json</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Entry point of Juno's JSON support, after JDK 28's <code>jdk.incubator.json</code> (JEP 540): <a href="Json.html#parse(java.lang.String)"><code>Json.parse(String)</code></a> validates a
 document once and returns its root <a href="JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonValue</code></a>, navigated with <code>get(String)</code> and <code>get(int)</code> and read
 with <code>asInt()</code>, <code>asDouble()</code>, <code>asString()</code> and similar methods; <a href="JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>JsonWriter</code></a> produces JSON.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="JsonValue.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonValue</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">One value inside a JSON document, with the navigation and conversion methods of JDK 28's <code>JsonValue</code>
 (JEP 540): <code>get(String)</code>, <code>get(int)</code>, <code>asInt()</code>, <code>asString()</code>, <code>toString()</code>.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Writes JSON into a caller-owned <code>byte[]</code>, placing commas and escaping strings, so request and response bodies
 need no hand-written quotes.</div>
 </div>

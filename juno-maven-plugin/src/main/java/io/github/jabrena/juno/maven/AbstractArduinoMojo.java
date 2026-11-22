@@ -32,6 +32,13 @@ abstract class AbstractArduinoMojo extends AbstractMojo {
     @Parameter(property = "juno.dfuSerial")
     private @Nullable String dfuSerial;
 
+    /**
+     * How long port discovery waits, as Arduino CLI's {@code --discovery-timeout} takes it ({@code 10s}). Unset keeps
+     * its one-second default; raise it when a slow-starting discovery, such as a core's Python one, hides the board.
+     */
+    @Parameter(property = "juno.discoveryTimeout")
+    private @Nullable String discoveryTimeout;
+
     /** Runs {@code arduino-cli} itself, except in tests, which substitute a fake so no real process is touched. */
     private CommandExecutor commandExecutor = new SystemCommandExecutor();
 
@@ -48,7 +55,8 @@ abstract class AbstractArduinoMojo extends AbstractMojo {
     abstract void run();
 
     final ArduinoCli arduinoCli() {
-        return new ArduinoCli(arduinoCli, commandExecutor, message -> getLog().info(message));
+        return new ArduinoCli(arduinoCli, commandExecutor, message -> getLog().info(message),
+                configured(discoveryTimeout).orElse(null));
     }
 
     /** The executor this goal runs external commands with, shared with {@link ArduinoCli}. */

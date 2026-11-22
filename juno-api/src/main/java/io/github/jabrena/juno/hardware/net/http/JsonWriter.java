@@ -4,12 +4,12 @@ package io.github.jabrena.juno.hardware.net.http;
  * Writes JSON into a caller-owned {@code byte[]}, placing commas and escaping strings, so request and response bodies
  * need no hand-written quotes. Create one writer at startup and {@link #reset()} it per body: writing allocates
  * nothing. {@link #toString()} copies the body into a {@code String} for APIs that take one, such as
- * {@link HttpServer#respond(int, String, String)} or {@code HttpRequest.BodyPublishers.ofString}.
+ * a server's response or {@code HttpRequest.BodyPublishers.ofString}.
  *
  * <pre>{@code
  * JsonWriter json = new JsonWriter(new byte[64]);
  * json.reset().beginObject().name("uptime_ms").value(clock.millis()).name("ok").value(true).endObject();
- * HttpServer.respond(HttpStatus.OK, "application/json", json.toString());
+ * HttpRequest request = HttpRequest.newBuilder(uri).POST(HttpRequest.BodyPublishers.ofString(json.toString())).build();
  * }</pre>
  *
  * <p>Output that does not fit the buffer is dropped and {@link #overflowed()} turns true. Nesting deeper than

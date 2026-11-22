@@ -9,6 +9,7 @@ import io.github.jabrena.juno.backend.GeneratedCode;
 import io.github.jabrena.juno.backend.IntrinsicLowering;
 import io.github.jabrena.juno.backend.ProgramLayout;
 import io.github.jabrena.juno.backend.WordSource;
+import io.github.jabrena.juno.backend.runtime.InputStreamRoute;
 import io.github.jabrena.juno.backend.runtime.RuntimeEntryPoints;
 import io.github.jabrena.juno.backend.runtime.RuntimeShim;
 import io.github.jabrena.juno.backend.runtime.core.CoreRuntimes;
@@ -92,7 +93,7 @@ public final class XtensaAsmBackend implements AsmBackend {
     private final Board board;
     private final ResolvedRuntimeConfig runtimeConfig;
     private boolean usesThreads;
-    private boolean socketStreamsOnly;
+    private InputStreamRoute inputStreamRoute;
     private boolean usesWatchdog;
     private MethodRef entryPoint;
     private ProgramLayout layout;
@@ -121,7 +122,7 @@ public final class XtensaAsmBackend implements AsmBackend {
     @Override
     public GeneratedCode generate(IrProgram program) {
         usesThreads = runtimeEntryPoints.usesThreads(program);
-        socketStreamsOnly = runtimeEntryPoints.socketStreamsOnly(program);
+        inputStreamRoute = runtimeEntryPoints.inputStreamRoute(program);
         usesWatchdog = program.watchdogTimeoutMillis().isPresent();
         entryPoint = program.entryPoint();
         for (int index = 0; index < program.methods().size(); index++) {
@@ -145,7 +146,7 @@ public final class XtensaAsmBackend implements AsmBackend {
         lambdas = new XtensaLambdaLowering(xtensa, layout, memory, functionLabels);
         intrinsics = new IntrinsicLowering(new XtensaIntrinsicTarget(xtensa, dualCarrier),
                 coreRuntime, board, board.onboardSdChipSelect(),
-                features, usedMath, usesThreads, socketStreamsOnly, carrierCount);
+                features, usedMath, usesThreads, inputStreamRoute, carrierCount);
 
         StringBuilder text = new StringBuilder();
         for (IrMethod method : program.methods()) {
