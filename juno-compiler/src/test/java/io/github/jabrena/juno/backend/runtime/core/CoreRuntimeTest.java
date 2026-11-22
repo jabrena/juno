@@ -226,12 +226,13 @@ class CoreRuntimeTest {
     }
 
     @Test
-    @DisplayName("The ESP32 task watchdog rounds milliseconds up to whole seconds")
+    @DisplayName("The ESP32 task watchdog rounds milliseconds up to whole seconds and is fed only by a subscribed task")
     void shouldProvideTheEsp32WatchdogSequence() {
         assertThat(coreRuntimes.of(ArduinoCore.ESP32).watchdog(3001))
                 .extracting("includes", "begin", "refresh", "effectiveTimeoutMillis")
                 .containsExactly("#include <esp_task_wdt.h>\n",
-                        "esp_task_wdt_init(4u, true);\nesp_task_wdt_add(nullptr);", "esp_task_wdt_reset();", 4000);
+                        "esp_task_wdt_init(4u, true);\nesp_task_wdt_add(nullptr);",
+                        "if (esp_task_wdt_status(nullptr) == ESP_OK) esp_task_wdt_reset();", 4000);
     }
 
     @Test
