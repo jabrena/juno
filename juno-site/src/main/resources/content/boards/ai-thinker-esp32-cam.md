@@ -32,7 +32,7 @@ PSRAM is not part of the Java arena and is not managed by the garbage collector.
 | Email over STARTTLS (`Smtp.send`) | ✓ | STARTTLS upgrades through the ESP32 `ESP_SSLClient` wrapper. | |
 | Bluetooth LE (LEGO Powered Up) | ✓ | Through `RemotePoweredUpHub` and ArduinoBLE. | [`PoweredUpMotorEncoders`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/remote/lego/poweredup/PoweredUpMotorEncoders.java) |
 | `SdCard` | ✓ | Built-in microSD socket through `MCU.getSdCard()`, using GPIO13 as chip select. | [`AiThinkerEsp32CamWifiFromSd`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/AiThinkerEsp32CamWifiFromSd.java) |
-| OV2640 camera | ✓ | `MCU.getCamera()` captures JPEG frames into a caller-owned buffer; the native driver owns the camera frame buffer. `setFrameSize` switches between 160×120 and 800×600 at run time. | [`AiThinkerEsp32CamCapture`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/camera/AiThinkerEsp32CamCapture.java) |
+| OV2640 camera | ✓ | `MCU.getCamera()` captures JPEG frames into a caller-owned buffer; the native driver owns the camera frame buffer. `setFrameSize(FrameSize)` switches between 160×120 and 800×600 at run time; the GPIO4 flash LED is a plain `D4` output. | [`AiThinkerEsp32CamCapture`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/camera/AiThinkerEsp32CamCapture.java) |
 | Explicit PSRAM buffers | ✓ | The static `Psram` API provides caller-owned byte buffers; PSRAM is outside the Java arena. | |
 | Threads, `synchronized`, locks, `StructuredTaskScope`, `ScopedValue` | ✓ | | |
 | USB HID mouse | — | The board has no native USB port; use a USB-serial adapter for flashing and serial output. | |
@@ -49,16 +49,45 @@ board; opening `juno:monitor` resets it too, through the adapter's DTR/RTS lines
 
 ## Camera
 
-`Camera.begin()` starts the OV2640 at 160×120, small enough to stream from a few kilobytes of buffer.
-`Camera.setFrameSize(size)` switches it at run time to `FRAME_SIZE_QQVGA` (160×120), `FRAME_SIZE_QVGA` (320×240),
-`FRAME_SIZE_VGA` (640×480) or `FRAME_SIZE_SVGA` (800×600), and drops the frames already taken at the old size, so the next
-`capture` is at the new one. A larger frame needs a larger buffer: a 640×480 JPEG takes tens of kilobytes, and
-`capture` returns `-1` for a frame that does not fit rather than truncating it.
+`Camera.begin()` starts the OV2640 at `FrameSize.QQVGA` (160×120), small enough to stream from a few kilobytes of
+buffer. `Camera.setFrameSize(FrameSize)` switches it at run time to `QQVGA` (160×120), `QVGA` (320×240), `VGA`
+(640×480) or `SVGA` (800×600), and drops the frames already taken at the old size, so the next `capture` is at the new
+one; each `FrameSize` also gives its `width()` and `height()`. A larger frame needs a larger buffer: a 640×480 JPEG
+takes tens of kilobytes, and `capture` returns `-1` for a frame that does not fit rather than truncating it.
+
+```java
+Camera camera = MCU.getCamera();
+byte[] jpeg = new byte[49152];
+if (camera.begin() && camera.setFrameSize(FrameSize.VGA)) {
+    int length = camera.capture(jpeg);
+}
+```
+
+### Flash LED
+
+The bright white LED next to the lens is the flash. It is not part of `Camera`: it sits on GPIO4, which the board
+numbers as `D4`, so it is an ordinary digital output. Light it before the capture and turn it off right after:
+
+```java
+Gpio gpio = MCU.getGpio();
+int flash = gpio.digitalPin("D4");
+gpio.pinMode(flash, gpio.getOutput());
+
+gpio.digitalWrite(flash, true);
+camera.setFrameSize(FrameSize.VGA);    // drops the frames queued before the light came on
+int length = camera.capture(jpeg);
+gpio.digitalWrite(flash, false);
+```
+
+The camera keeps up to two frames queued, so a frame taken right after the LED goes on may still have been exposed
+without it: switching the frame size drops the queued frames, or capture and discard one frame first. Keep the LED on
+only for the photo: it is bright and gets hot when left lit.
 
 [`AiThinkerEsp32CamStream`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/AiThinkerEsp32CamStream.java)
-serves three paths: `GET /` is a page with the live view, `GET /stream` is a 160×120 MJPEG stream, and `GET /capture`
-takes one fresh 640×480 photo on every request. It reads `wifi.ssid` and `wifi.password` from the board's secret store
-(provision them once with `juno:secret`), and its 48 KB frame buffer needs a larger arena:
+serves four paths: `GET /` is a page with the live view, `GET /stream` is a 160×120 MJPEG stream, `GET /capture`
+takes one fresh 640×480 photo on every request, and `GET /capture/flash` takes it with the flash lit. It reads
+`wifi.ssid` and `wifi.password` from the board's secret store (provision them once with `juno:secret`), and its 48 KB
+frame buffer needs a larger arena:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:flash -Djuno.board=ai-thinker-esp32-cam -Djuno.port=<PORT> \

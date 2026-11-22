@@ -358,12 +358,13 @@ class XtensaAsmBackendTest {
                 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.MCU;
+                import io.github.jabrena.juno.hardware.device.camera.FrameSize;
                 import io.github.jabrena.juno.hardware.serial.Serial;
                 @Board(AiThinkerEsp32CamBoard.class)
                 public final class AiThinkerEsp32CamStart {
                     public static void main(String[] args) {
                         Serial.println(MCU.getCamera().begin());
-                        Serial.println(MCU.getCamera().setFrameSize(2));
+                        Serial.println(MCU.getCamera().setFrameSize(FrameSize.VGA));
                     }
                 }
                 """;

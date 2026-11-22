@@ -7,6 +7,8 @@ import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.Watchdog;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.device.camera.Camera;
+import io.github.jabrena.juno.hardware.device.camera.FrameSize;
+import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.net.Wifi;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
@@ -24,6 +26,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
  * Serves the AI Thinker ESP32-CAM's camera over Wi-Fi. {@code GET /} is a page with the live view; {@code GET /stream}
  * is an MJPEG stream of 160x120 JPEG frames, one part per frame; {@code GET /capture} takes one fresh 640x480 photo
  * on every request and returns it as a single JPEG, then puts the sensor back to the stream's size.
+ * {@code GET /capture/flash} does the same with the white flash LED on GPIO4 lit while the photo is taken.
  *
  * <p>The Wi-Fi credentials come from the board's secret store (its NVS partition), provisioned once with
  * {@code juno:secret} as {@code wifi.ssid} and {@code wifi.password}. Open {@code http://<address>/} in a browser on
@@ -44,6 +47,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 public final class AiThinkerEsp32CamStream {
     private static final Wifi WIFI = MCU.getWifi();
     private static final Camera CAMERA = MCU.getCamera();
+    private static final Gpio GPIO = MCU.getGpio();
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
     private static final int CAMERA_RETRY_MILLIS = 2000;
     private static final int HTTP_PORT = 80;
@@ -59,10 +63,13 @@ public final class AiThinkerEsp32CamStream {
     private static final String PART_HEADER_END = "\r\n\r\n";
     private static final String PART_END = "\r\n";
     private static final String PAGE = "<html><body><h1>ESP32-CAM</h1><img src=\"/stream\">"
-            + "<p><a href=\"/capture\">640x480 capture</a></p></body></html>";
+            + "<p><a href=\"/capture\">640x480 capture</a> | <a href=\"/capture/flash\">with flash</a></p>"
+            + "</body></html>";
     private static final int[] LOCAL_IP = new int[4];
     private static final byte[] FRAME = new byte[FRAME_CAPACITY];
     private static final byte[] DIGITS = new byte[8];
+    /** The white flash LED: GPIO4, which the board numbers as {@code D4}. */
+    private static int flashLed;
 
     private AiThinkerEsp32CamStream() {
     }
@@ -70,6 +77,9 @@ public final class AiThinkerEsp32CamStream {
     public static void main(String[] args) throws IOException {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
+        flashLed = GPIO.digitalPin("D4");
+        GPIO.pinMode(flashLed, GPIO.getOutput());
+        GPIO.digitalWrite(flashLed, false);
         Serial.println("Starting camera");
         int attempts = 1;
         while (!CAMERA.begin()) {
@@ -87,6 +97,7 @@ public final class AiThinkerEsp32CamStream {
 
         HttpServer server = HttpServer.create(new InetSocketAddress(HTTP_PORT), 4);
         server.createContext("/stream", AiThinkerEsp32CamStream::stream);
+        server.createContext("/capture/flash", AiThinkerEsp32CamStream::flashCapture);
         server.createContext("/capture", AiThinkerEsp32CamStream::capture);
         server.createContext("/", AiThinkerEsp32CamStream::page);
         server.start();
@@ -102,21 +113,37 @@ public final class AiThinkerEsp32CamStream {
                 found ? PAGE : "not found");
     }
 
-    /** Takes one 640x480 photo and answers with it as a single JPEG; the sensor goes back to the stream's size. */
     private static void capture(HttpExchange exchange) throws IOException {
+        sendCapture(exchange, false);
+    }
+
+    private static void flashCapture(HttpExchange exchange) throws IOException {
+        sendCapture(exchange, true);
+    }
+
+    /**
+     * Takes one 640x480 photo and answers with it as a single JPEG; the sensor goes back to the stream's size. With
+     * {@code flash}, the flash LED is lit for the photo: the first frame after switching size is dropped anyway, so
+     * the one returned is exposed with the light on.
+     */
+    private static void sendCapture(HttpExchange exchange, boolean flash) throws IOException {
         int length = -1;
-        if (CAMERA.setFrameSize(Camera.FRAME_SIZE_VGA)) {
+        if (flash) {
+            GPIO.digitalWrite(flashLed, true);
+        }
+        if (CAMERA.setFrameSize(FrameSize.VGA)) {
             for (int attempt = 0; attempt < CAPTURE_ATTEMPTS && length < 0; attempt++) {
                 length = CAMERA.capture(FRAME);
             }
         }
-        CAMERA.setFrameSize(Camera.FRAME_SIZE_QQVGA);
+        GPIO.digitalWrite(flashLed, false);
+        CAMERA.setFrameSize(FrameSize.QQVGA);
         if (length < 0) {
             Serial.println("GET /capture failed");
             sendText(exchange, HTTP_INTERNAL_ERROR, "text/plain", "capture failed");
             return;
         }
-        Serial.print("GET /capture sent ");
+        Serial.print(flash ? "GET /capture/flash sent " : "GET /capture sent ");
         Serial.print(length);
         Serial.println(" bytes");
         exchange.getResponseHeaders().set("Content-Type", "image/jpeg");

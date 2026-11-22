@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.hardware.internal;
 
 import io.github.jabrena.juno.hardware.device.camera.Camera;
+import io.github.jabrena.juno.hardware.device.camera.FrameSize;
 
 /**
  * The AI Thinker ESP32-CAM's camera: {@link #begin()} and the native capture are intrinsics the compiler lowers to the
@@ -27,8 +28,13 @@ public final class NativeCamera implements Camera {
     }
 
     @Override
-    public native boolean setFrameSize(int frameSize);
+    public boolean setFrameSize(FrameSize frameSize) {
+        return setFrameSize(frameSize.ordinal());
+    }
 
     /** The native capture into {@code capacity} bytes of {@code jpeg}; see {@link Camera#capture(byte[])}. */
     native int capture(byte[] jpeg, int capacity);
+
+    /** The native switch to the {@link FrameSize} with this ordinal; see {@link Camera#setFrameSize(FrameSize)}. */
+    native boolean setFrameSize(int frameSize);
 }

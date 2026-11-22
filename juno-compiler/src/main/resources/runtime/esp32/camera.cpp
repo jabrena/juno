@@ -60,7 +60,7 @@ extern "C" int32_t juno_camera_begin() {
   return 1;
 }
 
-// Camera.FRAME_SIZE_* in order: 160x120, 320x240, 640x480, 800x600.
+// FrameSize in ordinal order: QQVGA 160x120, QVGA 320x240, VGA 640x480, SVGA 800x600.
 static const framesize_t juno_camera_frame_sizes[] = {FRAMESIZE_QQVGA, FRAMESIZE_QVGA, FRAMESIZE_VGA, FRAMESIZE_SVGA};
 
 extern "C" int32_t juno_camera_set_frame_size(int32_t frameSize) {
