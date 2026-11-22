@@ -466,7 +466,7 @@ reported it.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/camera/Camera.html#begin()" class="member-name-link">begin()</a> - Method in interface io.github.jabrena.juno.hardware.device.camera.<a href="io/github/jabrena/juno/hardware/device/camera/Camera.html" title="interface in io.github.jabrena.juno.hardware.device.camera">Camera</a></dt>
 <dd>
-<div class="block">Starts the camera at its fixed JPEG frame size and returns whether it initialized.</div>
+<div class="block">Starts the camera at <a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html#QQVGA"><code>FrameSize.QQVGA</code></a> and returns whether it initialized.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveGpsAir530.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveGpsAir530</a></dt>
 <dd>
@@ -1987,6 +1987,10 @@ centered, and <a href="io/github/jabrena/juno/hardware/device/tft/Mhs35TftDispla
 <dd>
 <div class="block">Required length of the caller-owned framebuffer.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html" class="type-name-link" title="enum class in io.github.jabrena.juno.hardware.device.camera">FrameSize</a> - Enum Class in <a href="io/github/jabrena/juno/hardware/device/camera/package-summary.html">io.github.jabrena.juno.hardware.device.camera</a></dt>
+<dd>
+<div class="block">The frame sizes <a href="io/github/jabrena/juno/hardware/device/camera/Camera.html#setFrameSize(io.github.jabrena.juno.hardware.device.camera.FrameSize)"><code>Camera.setFrameSize(FrameSize)</code></a> switches the sensor between, smallest first.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html#FRAMING_ERROR" class="member-name-link">FRAMING_ERROR</a> - Static variable in class io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html" title="class in io.github.jabrena.juno.hardware.device.ir">Infrared</a></dt>
 <dd>
 <div class="block"><a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html#readByte(int)"><code>Infrared.readByte(int)</code></a> result when a byte arrived with a wrong parity bit or stop bit.</div>
@@ -3265,6 +3269,10 @@ trimmed, into <code>buffer</code> and returns its length, or <code>-1</code> whe
 <dt><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#HEALTH_WARNING" class="member-name-link">HEALTH_WARNING</a> - Static variable in class io.github.jabrena.juno.hardware.device.lidar.<a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html" title="class in io.github.jabrena.juno.hardware.device.lidar">RplidarA2</a></dt>
 <dd>
 <div class="block"><a href="io/github/jabrena/juno/hardware/device/lidar/RplidarA2.html#health()"><code>RplidarA2.health()</code></a> result: the lidar works but reports a warning.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html#height()" class="member-name-link">height()</a> - Method in enum class io.github.jabrena.juno.hardware.device.camera.<a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html" title="enum class in io.github.jabrena.juno.hardware.device.camera">FrameSize</a></dt>
+<dd>
+<div class="block">The frame's height in pixels.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#height()" class="member-name-link">height()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
 <dd>
@@ -5766,9 +5774,17 @@ over I2C as plain Java on top of <a href="io/github/jabrena/juno/hardware/i2c/I2
 </dl>
 <h2 class="title" id="I:Q">Q</h2>
 <dl class="index">
+<dt><a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html#QQVGA" class="member-name-link">QQVGA</a> - Enum constant in enum class io.github.jabrena.juno.hardware.device.camera.<a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html" title="enum class in io.github.jabrena.juno.hardware.device.camera">FrameSize</a></dt>
+<dd>
+<div class="block">160 x 120: the size <a href="io/github/jabrena/juno/hardware/device/camera/Camera.html#begin()"><code>Camera.begin()</code></a> starts at, small enough to stream from a few kilobytes of buffer.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html#QUERY" class="member-name-link">QUERY</a> - Static variable in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/HttpMethod.html" title="class in io.github.jabrena.juno.hardware.net.http">HttpMethod</a></dt>
 <dd>
 <div class="block">Safe, idempotent request with a body (RFC 10008), sent with <code>HttpRequest.Builder.method("QUERY", body)</code>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html#QVGA" class="member-name-link">QVGA</a> - Enum constant in enum class io.github.jabrena.juno.hardware.device.camera.<a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html" title="enum class in io.github.jabrena.juno.hardware.device.camera">FrameSize</a></dt>
+<dd>
+<div class="block">320 x 240.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:R">R</h2>
@@ -6957,6 +6973,13 @@ whole-program emulator in a test, never on the board.</div>
 <dd>
 <div class="block">Drives the DTR line: <code>true</code> is the asserted (active, electrically low) state.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/camera/Camera.html#setFrameSize(io.github.jabrena.juno.hardware.device.camera.FrameSize)" class="member-name-link">setFrameSize(FrameSize)</a> - Method in interface io.github.jabrena.juno.hardware.device.camera.<a href="io/github/jabrena/juno/hardware/device/camera/Camera.html" title="interface in io.github.jabrena.juno.hardware.device.camera">Camera</a></dt>
+<dd>
+<div class="block">Switches the sensor to <code>frameSize</code> and drops the frames already taken at the old size, so the next
+<a href="io/github/jabrena/juno/hardware/device/camera/Camera.html#capture(byte%5B%5D)"><code>Camera.capture(byte[])</code></a> is at the new one.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeCamera.html#setFrameSize(io.github.jabrena.juno.hardware.device.camera.FrameSize)" class="member-name-link">setFrameSize(FrameSize)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeCamera.html" title="class in io.github.jabrena.juno.hardware.internal">NativeCamera</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html#setGpio(io.github.jabrena.juno.hardware.gpio.Gpio)" class="member-name-link">setGpio(Gpio)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeGpio.html" title="class in io.github.jabrena.juno.hardware.internal">NativeGpio</a></dt>
 <dd>
 <div class="block">Makes <a href="io/github/jabrena/juno/hardware/MCU.html#getGpio()"><code>MCU.getGpio()</code></a> hand out <code>replacement</code>: for a
@@ -7681,6 +7704,10 @@ listeners; the navigator follows it on its own thread.</div>
 <dd>
 <div class="block">The longest body <a href="io/github/jabrena/juno/jdk/net/http/HttpRequest.BodyPublishers.html#ofString(java.lang.String)"><code>HttpRequest.BodyPublishers.ofString(String)</code></a> accepts, in bytes.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html#SVGA" class="member-name-link">SVGA</a> - Enum constant in enum class io.github.jabrena.juno.hardware.device.camera.<a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html" title="enum class in io.github.jabrena.juno.hardware.device.camera">FrameSize</a></dt>
+<dd>
+<div class="block">800 x 600, the largest size.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html#switchOff()" class="member-name-link">switchOff()</a> - Method in class io.github.jabrena.juno.remote.lego.poweredup.<a href="io/github/jabrena/juno/remote/lego/poweredup/RemotePoweredUpHub.html" title="class in io.github.jabrena.juno.remote.lego.poweredup">RemotePoweredUpHub</a></dt>
 <dd>
 <div class="block">Asks the hub to switch itself off, which also ends the connection.</div>
@@ -8198,6 +8225,10 @@ no Arduino library.</div>
 <dd>
 <div class="block">Returns the enum constant of this class with the specified name.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html#valueOf(java.lang.String)" class="member-name-link">valueOf(String)</a> - Static method in enum class io.github.jabrena.juno.hardware.device.camera.<a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html" title="enum class in io.github.jabrena.juno.hardware.device.camera">FrameSize</a></dt>
+<dd>
+<div class="block">Returns the enum constant of this class with the specified name.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html#valueOf(java.lang.String)" class="member-name-link">valueOf(String)</a> - Static method in enum class io.github.jabrena.juno.hardware.device.ir.<a href="io/github/jabrena/juno/hardware/device/ir/InfraredDriver.Type.html" title="enum class in io.github.jabrena.juno.hardware.device.ir">InfraredDriver.Type</a></dt>
 <dd>
 <div class="block">Returns the enum constant of this class with the specified name.</div>
@@ -8264,6 +8295,11 @@ no Arduino library.</div>
 <div class="block">Returns the enum constant of this class with the specified name.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/BoardModel.html#values()" class="member-name-link">values()</a> - Static method in enum class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/BoardModel.html" title="enum class in io.github.jabrena.juno.hardware">BoardModel</a></dt>
+<dd>
+<div class="block">Returns an array containing the constants of this enum class, in
+the order they are declared.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html#values()" class="member-name-link">values()</a> - Static method in enum class io.github.jabrena.juno.hardware.device.camera.<a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html" title="enum class in io.github.jabrena.juno.hardware.device.camera">FrameSize</a></dt>
 <dd>
 <div class="block">Returns an array containing the constants of this enum class, in
 the order they are declared.</div>
@@ -8380,6 +8416,10 @@ version, 4 of minor, two binary-coded-decimal digits of bug-fix number, and 16 b
 <dd>
 <div class="block">The minor version of a packed version number: 4 bits.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html#VGA" class="member-name-link">VGA</a> - Enum constant in enum class io.github.jabrena.juno.hardware.device.camera.<a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html" title="enum class in io.github.jabrena.juno.hardware.device.camera">FrameSize</a></dt>
+<dd>
+<div class="block">640 x 480: a JPEG takes tens of kilobytes.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/util/mvc/View.html" class="type-name-link" title="interface in io.github.jabrena.juno.util.mvc">View</a> - Interface in <a href="io/github/jabrena/juno/util/mvc/package-summary.html">io.github.jabrena.juno.util.mvc</a></dt>
 <dd>
 <div class="block">One screen of a multi-view program.</div>
@@ -8479,6 +8519,10 @@ face there, as leJOS's <code>Waypoint</code>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/display/Display.html#WHITE" class="member-name-link">WHITE</a> - Static variable in interface io.github.jabrena.juno.hardware.display.<a href="io/github/jabrena/juno/hardware/display/Display.html" title="interface in io.github.jabrena.juno.hardware.display">Display</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html#width()" class="member-name-link">width()</a> - Method in enum class io.github.jabrena.juno.hardware.device.camera.<a href="io/github/jabrena/juno/hardware/device/camera/FrameSize.html" title="enum class in io.github.jabrena.juno.hardware.device.camera">FrameSize</a></dt>
+<dd>
+<div class="block">The frame's width in pixels.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html#width()" class="member-name-link">width()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.display.<a href="io/github/jabrena/juno/hardware/device/grove/display/GroveOledSsd1315.html" title="class in io.github.jabrena.juno.hardware.device.grove.display">GroveOledSsd1315</a></dt>
 <dd>
 <div class="block">Returns 128.</div>

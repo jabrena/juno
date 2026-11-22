@@ -354,11 +354,16 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return yieldFunction() + runtimeSource.load("esp32/watchdog-yield.cpp");
     }
 
+    /**
+     * Only the task that runs {@code main} is subscribed, but {@code yield()} and the safepoints also run on the other
+     * virtual-thread carrier and on the core's Wi-Fi tasks, where {@code esp_task_wdt_reset()} logs
+     * {@code task not found} on every call; the refresh therefore feeds the watchdog only from a subscribed task.
+     */
     @Override
     public WatchdogRuntime watchdog(int timeoutMillis) {
         int timeoutSeconds = Math.ceilDiv(timeoutMillis, 1000);
         return new WatchdogRuntime("#include <esp_task_wdt.h>\n", taskWatchdogSetup(timeoutSeconds),
-                "esp_task_wdt_reset();", Math.multiplyExact(timeoutSeconds, 1000));
+                "if (esp_task_wdt_status(nullptr) == ESP_OK) esp_task_wdt_reset();", Math.multiplyExact(timeoutSeconds, 1000));
     }
 
     /**

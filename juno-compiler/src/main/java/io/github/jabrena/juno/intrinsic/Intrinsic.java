@@ -208,6 +208,7 @@ public enum Intrinsic {
     SD_FREE_KIB,
     CAMERA_BEGIN,
     CAMERA_CAPTURE,
+    CAMERA_SET_FRAME_SIZE,
     SD_WRITE_BYTES,
     RAF_OPEN,
     RAF_READ,
@@ -574,7 +575,8 @@ public enum Intrinsic {
             SD_REMOVE_DIRECTORY, SD_REMOVE_FILE, SD_TOTAL_KIB, SD_FREE_KIB, SD_WRITE_BYTES);
 
     /** The camera calls behind {@code NativeCamera}: the one sensor is the only state, so they ignore their receiver. */
-    private static final Set<Intrinsic> CAMERA_OPERATIONS = EnumSet.of(CAMERA_BEGIN, CAMERA_CAPTURE);
+    private static final Set<Intrinsic> CAMERA_OPERATIONS = EnumSet.of(CAMERA_BEGIN, CAMERA_CAPTURE,
+            CAMERA_SET_FRAME_SIZE);
 
     /** The explicit PSRAM operations behind the static {@code Psram} API; they have no Java receiver. */
     private static final Set<Intrinsic> PSRAM_OPERATIONS = EnumSet.of(PSRAM_AVAILABLE, PSRAM_NOMINAL_CAPACITY,
