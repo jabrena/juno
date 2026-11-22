@@ -12,14 +12,20 @@ public final class HttpsServer extends HttpServer {
         super(port, bodyCapacity);
     }
 
+    /**
+     * An HTTPS server for {@code address}'s port; the board serves one connection at a time, so {@code backlog} is
+     * ignored.
+     */
     public static HttpsServer create(InetSocketAddress address, int backlog) {
         return new HttpsServer(address.getPort(), DEFAULT_BODY_CAPACITY);
     }
 
+    /** Sets the server identity; required before {@link #start()}. */
     public void setHttpsConfigurator(HttpsConfigurator configurator) {
         this.configurator = configurator;
     }
 
+    /** The configurator set with {@link #setHttpsConfigurator}, or {@code null} before that. */
     public @Nullable HttpsConfigurator getHttpsConfigurator() {
         return configurator;
     }

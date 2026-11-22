@@ -9,14 +9,17 @@ public final class KeyManagerFactory {
     private KeyManagerFactory() {
     }
 
+    /** {@code "SunX509"}, the JDK's default name; the board accepts any. */
     public static String getDefaultAlgorithm() {
         return "SunX509";
     }
 
+    /** A factory for the board's single server-identity key manager. */
     public static KeyManagerFactory getInstance(String algorithm) {
         return new KeyManagerFactory();
     }
 
+    /** Takes the server key and certificate from {@code keyStore}; the in-memory store needs no password. */
     public void init(KeyStore keyStore, char[] password) {
         byte @org.jspecify.annotations.Nullable [] key = keyStore.serverPrivateKey();
         String certificate = keyStore.serverCertificate();
@@ -24,6 +27,7 @@ public final class KeyManagerFactory {
         managers = new KeyManager[]{new PemKeyManager(certificate, key, keyStore.serverPrivateKeyLength())};
     }
 
+    /** The key manager holding the identity from {@link #init(KeyStore, char[])}. */
     public KeyManager[] getKeyManagers() {
         return managers;
     }

@@ -34,14 +34,17 @@ public final class HttpExchange {
         return URI.create(io.github.jabrena.juno.hardware.net.http.HttpServer.path());
     }
 
+    /** The response headers, to set before {@link #sendResponseHeaders(int, long)}. */
     public Headers getResponseHeaders() {
         return responseHeaders;
     }
 
+    /** Starts the response with {@code status}; the board computes the length from what the body stream receives. */
     public void sendResponseHeaders(int status, long responseLength) throws IOException {
         HttpServer.beginResponse(status, responseHeaders.contentType());
     }
 
+    /** The response body; closing it sends the response, buffered up to 512 bytes. */
     public OutputStream getResponseBody() {
         return responseBody;
     }

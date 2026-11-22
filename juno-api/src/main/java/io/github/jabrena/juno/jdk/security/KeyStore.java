@@ -91,6 +91,7 @@ public final class KeyStore {
         return key == null ? null : key.getEncoded();
     }
 
+    /** The length of the key's DER encoding within {@link #serverPrivateKey()}. */
     public int serverPrivateKeyLength() {
         return privateKeyLength;
     }

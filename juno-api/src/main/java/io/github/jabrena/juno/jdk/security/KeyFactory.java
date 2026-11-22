@@ -8,11 +8,13 @@ public final class KeyFactory {
     private KeyFactory() {
     }
 
+    /** A factory for {@code "EC"} keys, the only algorithm the board supports. */
     public static KeyFactory getInstance(String algorithm) throws NoSuchAlgorithmException {
         if (!algorithm.equals("EC")) throw new NoSuchAlgorithmException(algorithm);
         return new KeyFactory();
     }
 
+    /** A private key from a {@link PKCS8EncodedKeySpec}; the board's TLS stack also accepts SEC1 DER in it. */
     public PrivateKey generatePrivate(KeySpec keySpec) {
         if (!(keySpec instanceof PKCS8EncodedKeySpec spec)) {
             throw new IllegalArgumentException("Expected a PKCS#8 private key");
@@ -32,6 +34,7 @@ public final class KeyFactory {
         return value + bytes + 2;
     }
 
+    /** The length of {@code key}'s DER encoding, which may be shorter than its encoded array. */
     public static int encodedLength(PrivateKey key) {
         return key instanceof EncodedPrivateKey encoded ? encoded.length : key.getEncoded().length;
     }

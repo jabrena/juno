@@ -7,6 +7,7 @@ public final class Headers {
     private static final int PROBLEM_JSON = 2;
     private int contentType = TEXT_PLAIN;
 
+    /** Sets a response header; the board keeps only {@code Content-Type}, as JSON, problem JSON or plain text. */
     public void set(String name, String value) {
         if (!name.equals("Content-Type")) return;
         if (value.equals("application/json")) {

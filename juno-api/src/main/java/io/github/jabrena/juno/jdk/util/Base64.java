@@ -5,15 +5,20 @@ public final class Base64 {
     private Base64() {
     }
 
+    /** A decoder that, like the JDK's MIME decoder, skips line breaks and any other non-Base64 character. */
     public static Decoder getMimeDecoder() {
         return new Decoder();
     }
 
+    /** The decoder {@link #getMimeDecoder()} returns; it decodes into a fixed 2 KiB buffer. */
     public static final class Decoder {
         private int decodedLength;
         private Decoder() {
         }
 
+        /**
+         * Decodes {@code source} into a 2 KiB array, of which the first {@link #decodedLength()} bytes are the result.
+         */
         public byte[] decode(String source) {
             int digits = 0;
             int padding = 0;
@@ -47,6 +52,7 @@ public final class Base64 {
             return decoded;
         }
 
+        /** The number of bytes the last {@link #decode(String)} wrote. */
         public int decodedLength() {
             return decodedLength;
         }

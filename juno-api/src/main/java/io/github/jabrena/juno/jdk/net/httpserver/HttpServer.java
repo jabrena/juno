@@ -21,12 +21,15 @@ public class HttpServer {
 
     static native void writeResponseByte(int value);
 
+    /** The port the server listens on. */
     protected final int port;
     private final int bodyCapacity;
     private final HttpExchange exchange;
     private @Nullable HttpContext contexts = null;
+    /** Whether {@link #start()} has run. */
     protected boolean started;
 
+    /** A server for {@code port} whose request bodies are read into {@code bodyCapacity} bytes. */
     protected HttpServer(int port, int bodyCapacity) {
         this.port = port;
         this.bodyCapacity = bodyCapacity;
@@ -53,6 +56,7 @@ public class HttpServer {
         startDispatchLoop();
     }
 
+    /** Starts the virtual thread that accepts requests and calls the matching handler. */
     protected final void startDispatchLoop() {
         if (started) throw new IllegalStateException("server already started");
         started = true;

@@ -6,10 +6,12 @@ import io.github.jabrena.juno.javax.net.ssl.SSLContext;
 public class HttpsConfigurator {
     private final SSLContext context;
 
+    /** A configurator for the server identity installed in {@code context}. */
     public HttpsConfigurator(SSLContext context) {
         this.context = context;
     }
 
+    /** The SSL context whose key manager holds the server certificate and key. */
     public SSLContext getSSLContext() {
         return context;
     }

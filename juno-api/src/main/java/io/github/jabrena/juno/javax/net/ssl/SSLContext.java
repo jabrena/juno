@@ -117,6 +117,7 @@ public final class SSLContext {
         return serverPrivateKey;
     }
 
+    /** The length of the key's DER encoding within {@link #serverPrivateKey()}. */
     public int serverPrivateKeyLength() {
         return serverPrivateKeyLength;
     }
