@@ -43,6 +43,9 @@ STARTTLS email, the onboard microSD socket, Bluetooth LE for LEGO Powered Up, th
 streaming, explicit PSRAM buffers, the task watchdog, hardware-random UUIDs and double-precision `Math`. It has no
 native USB HID controller, onboard LED matrix or onboard IMU.
 
+The UNO R4 WiFi serves HTTP but not HTTPS: its ESP32-S3 coprocessor's firmware offers TLS only to clients, and the
+RA4M1 has no room for a software TLS server.
+
 The compiler checks this table for you: a program that uses an API its target board does not support fails with a
 `CompileException` naming the board and the missing capability. Some cells are compiled support that has not yet been run
 on every physical board; each board's page notes what is confirmed on hardware.

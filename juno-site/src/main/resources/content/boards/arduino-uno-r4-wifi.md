@@ -49,7 +49,8 @@ peripherals. The UNO R4 Minima is not a Juno target.
 | Wi-Fi station and access point | ✓ | Through the ESP32-S3 and `WiFiS3`. | |
 | `java.net.http` (HTTP and HTTPS) | ✓ | TLS runs in the ESP32-S3 coprocessor, with its firmware's root certificates; an `SSLContext` cannot add its own. | [`SingleHttpsGet`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/SingleHttpsGet.java) |
 | `Json`, `JsonValue`, `JsonWriter` | ✓ | The smallest board with JSON support: read responses and request bodies with `Json.parse`, write bodies with `JsonWriter`. | [`WeatherTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/weather/WeatherTFT.java) |
-| `HttpServer` | ✓ | | [`HttpServerBacklight`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerBacklight.java) |
+| `HttpServer` (HTTP) | ✓ | Juno's own or the JDK `com.sun.net.httpserver` API; the JDK one dispatches on a virtual thread, so build it with `-Djuno.Xss=5120 -Djuno.Xmx=4096`. | [`UnoR4HttpServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/UnoR4HttpServerSD.java), [`HttpServerBacklight`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/HttpServerBacklight.java) |
+| HTTPS server | — | The ESP32-S3 coprocessor's firmware offers TLS only to clients, and the RA4M1's 32 KB of RAM cannot hold a software TLS server's 16.7 KB record buffer. Serve HTTP, or put a TLS proxy in front of the board. | |
 | `Smtp`, `Pop3Client` | ✓ | Implicit TLS and STARTTLS (STARTTLS needs the `ESP_SSLClient` library). | [`EmailClient`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/email/EmailClient.java) |
 | Bluetooth LE (LEGO Powered Up) | ✓ | Through `ArduinoBLE`; see [LEGO](../../third-parties/lego-ecosystem). | |
 | `SdCard` | ✓ | On a shield's microSD slot; see [Shields](#shields). | [`SdFileOperations`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java) |
@@ -243,6 +244,8 @@ if (sd.begin()) {
 
 [`WifiStatusSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/wifi/WifiStatusSD.java) joins the network this way and prints its status;
 [`SdFileOperations`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java) exercises every `SdCard` file operation.
+[`UnoR4HttpServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/UnoR4HttpServerSD.java) joins the network the same way and serves HTTP on port 80;
+the built-in LED shares D13 with the shield's SPI clock, so it uses the LED matrix as its LED.
 
 ## Build and run
 
