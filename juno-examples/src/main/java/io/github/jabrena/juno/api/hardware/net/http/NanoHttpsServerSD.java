@@ -30,6 +30,11 @@ import java.util.Properties;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 
+import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
+
 /**
  * {@link NanoHttpServerSD} over HTTPS: joins the Wi-Fi network named in {@code application.properties} on the microSD
  * card of a Nano Connector Carrier, then loads a certificate and its private key from the same card and serves port
@@ -60,6 +65,9 @@ public final class NanoHttpsServerSD {
 
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
     private static final int HTTPS_PORT = 443;
+    private static final String CONTENT_TYPE = "Content-Type";
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String APPLICATION_PROBLEM_JSON = "application/problem+json";
     private static final int PEM_CAPACITY = 2048;
 
     private NanoHttpsServerSD() {
@@ -70,28 +78,39 @@ public final class NanoHttpsServerSD {
         Delay.millis(2000);
         Serial.println("HTTPS: boot");
 
-        Wifi wifi = MCU.getWifi();
         Gpio gpio = MCU.getGpio();
-        int ledPin = gpio.getBuiltinLed();
+        Wifi wifi = MCU.getWifi();
+        SdCard sdCard = openSdCard(gpio);
+        if (sdCard == null || !joinWifi(wifi, sdCard)) return;
+        startServer(gpio, loadSslContext(sdCard));
+        reportAlive(wifi);
+    }
+
+    /** Mounts the microSD card of the Nano Connector Carrier, or returns {@code null} when it is missing. */
+    private static SdCard openSdCard(Gpio gpio) {
         Serial.println("HTTPS: opening Nano Connector Carrier SD");
         SdCard sdCard = new NanoConnectorCarrier(gpio).getSdCard();
         if (!sdCard.begin()) {
-            haltAndReport("HTTPS: Nano Connector Carrier SD initialization failed");
-            return;
+            Serial.println("HTTPS: Nano Connector Carrier SD initialization failed");
+            return null;
         }
         Serial.println("HTTPS: Nano Connector Carrier SD initialized");
+        return sdCard;
+    }
+
+    /** Joins the network named in {@code application.properties}; {@code false} when that fails. */
+    private static boolean joinWifi(Wifi wifi, SdCard sdCard) throws IOException {
         Credentials credentials = loadCredentials(sdCard);
         if (credentials == null) {
-            haltAndReport("HTTPS: application.properties or Wi-Fi credentials unavailable");
-            return;
+            Serial.println("HTTPS: application.properties or Wi-Fi credentials unavailable");
+            return false;
         }
-        if (!connectWifi(wifi, credentials.ssid(), credentials.password())) {
-            haltAndReport("HTTPS: Wi-Fi connection failed");
-            return;
-        }
-        Serial.println("HTTPS: loading server.crt and server.key");
-        SSLContext sslContext = loadSslContext(sdCard);
+        return connectWifi(wifi, credentials.ssid(), credentials.password());
+    }
 
+    /** Registers the API handlers and starts listening on port 443 with the given server identity. */
+    private static void startServer(Gpio gpio, SSLContext sslContext) throws IOException {
+        int ledPin = gpio.getBuiltinLed();
         gpio.pinMode(ledPin, gpio.getOutput());
         gpio.digitalWrite(ledPin, false);
         HttpsServer server = HttpsServer.create(new InetSocketAddress(HTTPS_PORT), 4);
@@ -101,7 +120,10 @@ public final class NanoHttpsServerSD {
         server.createContext("/", NanoHttpsServerSD::notFound);
         server.start();
         Serial.println("Listening on port 443");
+    }
 
+    /** Prints the address every 10 seconds, so a monitor attached late still finds the server. */
+    private static void reportAlive(Wifi wifi) {
         while (true) {
             printLocalIp(wifi);
             Serial.println("HTTPS: server alive");
@@ -109,38 +131,11 @@ public final class NanoHttpsServerSD {
         }
     }
 
-    /** Loads an X.509 certificate and an unencrypted EC private key (SEC1 or PKCS#8 PEM) from the carrier's SD card. */
+    /** Builds the SSL context from {@code server.crt} and {@code server.key} on the carrier's SD card. */
     private static SSLContext loadSslContext(SdCard sdCard) throws IOException, GeneralSecurityException {
-        Certificate certificate;
-        try (InputStream input = sdCard.open("server.crt")) {
-            if (input == null) throw new IOException("server.crt is missing");
-            certificate = CertificateFactory.getInstance("X.509").generateCertificate(input);
-        }
-        StringBuilder pem = new StringBuilder(PEM_CAPACITY);
-        int pemLength = 0;
-        boolean skipLine = false;
-        boolean lineStart = true;
-        try (InputStream input = sdCard.open("server.key")) {
-            if (input == null) throw new IOException("server.key is missing");
-            int value;
-            while ((value = input.read()) >= 0) {
-                if (value == '\n') {
-                    skipLine = false;
-                    lineStart = true;
-                } else if (lineStart && value == '-') {
-                    skipLine = true;
-                    lineStart = false;
-                } else if (!skipLine && value != '\r') {
-                    if (pemLength == PEM_CAPACITY) throw new IOException("server.key exceeds PEM_CAPACITY");
-                    pem.append((char) value);
-                    pemLength++;
-                    lineStart = false;
-                }
-            }
-        }
-        byte[] der = Base64.getMimeDecoder().decode(pem.toString());
-        PrivateKey privateKey = KeyFactory.getInstance("EC")
-                .generatePrivate(new PKCS8EncodedKeySpec(der));
+        Serial.println("HTTPS: loading server.crt and server.key");
+        Certificate certificate = loadCertificate(sdCard);
+        PrivateKey privateKey = loadPrivateKey(sdCard);
         // This store exists only in memory; no environment variable or password file is needed.
         char[] password = new char[0];
         KeyStore identity = KeyStore.getInstance("PKCS12");
@@ -153,35 +148,77 @@ public final class NanoHttpsServerSD {
         return context;
     }
 
+    private static Certificate loadCertificate(SdCard sdCard) throws IOException, GeneralSecurityException {
+        try (InputStream input = sdCard.open("server.crt")) {
+            if (input == null) throw new IOException("server.crt is missing");
+            return CertificateFactory.getInstance("X.509").generateCertificate(input);
+        }
+    }
+
+    /** Reads an unencrypted EC private key (SEC1 or PKCS#8 PEM); the board's TLS stack accepts either DER. */
+    private static PrivateKey loadPrivateKey(SdCard sdCard) throws IOException, GeneralSecurityException {
+        String base64;
+        try (InputStream input = sdCard.open("server.key")) {
+            if (input == null) throw new IOException("server.key is missing");
+            base64 = readPemBody(input);
+        }
+        byte[] der = Base64.getMimeDecoder().decode(base64);
+        return KeyFactory.getInstance("EC").generatePrivate(new PKCS8EncodedKeySpec(der));
+    }
+
+    /** The Base64 lines of a PEM file, without its {@code -----BEGIN/END} lines or line breaks. */
+    private static String readPemBody(InputStream input) throws IOException {
+        StringBuilder pem = new StringBuilder(PEM_CAPACITY);
+        int pemLength = 0;
+        boolean skipLine = false;
+        boolean lineStart = true;
+        int value;
+        while ((value = input.read()) >= 0) {
+            if (value == '\n') {
+                skipLine = false;
+                lineStart = true;
+            } else if (lineStart && value == '-') {
+                skipLine = true;
+                lineStart = false;
+            } else if (!skipLine && value != '\r') {
+                if (pemLength == PEM_CAPACITY) throw new IOException("server.key exceeds PEM_CAPACITY");
+                pem.append((char) value);
+                pemLength++;
+                lineStart = false;
+            }
+        }
+        return pem.toString();
+    }
+
     private static void status(HttpExchange exchange) throws IOException {
         if (!exchange.getRequestMethod().equals("GET")) {
-            send(exchange, 405, "application/problem+json", "{\"title\":\"method not allowed\"}");
+            send(exchange, HTTP_BAD_METHOD, APPLICATION_PROBLEM_JSON, "{\"title\":\"method not allowed\"}");
             return;
         }
-        send(exchange, 200, "application/json", ledOn ? "{\"led\":\"on\"}" : "{\"led\":\"off\"}");
+        send(exchange, HTTP_OK, APPLICATION_JSON, ledOn ? "{\"led\":\"on\"}" : "{\"led\":\"off\"}");
     }
 
     private static void setLed(HttpExchange exchange, Gpio gpio, int ledPin) throws IOException {
         if (!exchange.getRequestMethod().equals("POST")) {
-            send(exchange, 405, "application/problem+json", "{\"title\":\"method not allowed\"}");
+            send(exchange, HTTP_BAD_METHOD, APPLICATION_PROBLEM_JSON, "{\"title\":\"method not allowed\"}");
             return;
         }
         String path = exchange.getRequestURI().toString();
         if (!path.equals("/api/led?state=on") && !path.equals("/api/led?state=off")) {
-            send(exchange, 400, "application/problem+json", "{\"title\":\"invalid state\"}");
+            send(exchange, HTTP_BAD_REQUEST, APPLICATION_PROBLEM_JSON, "{\"title\":\"invalid state\"}");
             return;
         }
         ledOn = path.equals("/api/led?state=on");
         gpio.digitalWrite(ledPin, ledOn);
-        send(exchange, 200, "application/json", ledOn ? "{\"led\":\"on\"}" : "{\"led\":\"off\"}");
+        send(exchange, HTTP_OK, APPLICATION_JSON, ledOn ? "{\"led\":\"on\"}" : "{\"led\":\"off\"}");
     }
 
     private static void notFound(HttpExchange exchange) throws IOException {
-        send(exchange, 404, "application/problem+json", "{\"title\":\"not found\"}");
+        send(exchange, HTTP_NOT_FOUND, APPLICATION_PROBLEM_JSON, "{\"title\":\"not found\"}");
     }
 
     private static void send(HttpExchange exchange, int status, String contentType, String body) throws IOException {
-        exchange.getResponseHeaders().set("Content-Type", contentType);
+        exchange.getResponseHeaders().set(CONTENT_TYPE, contentType);
         exchange.sendResponseHeaders(status, body.length());
         try (OutputStream output = exchange.getResponseBody()) {
             for (int index = 0; index < body.length(); index++) {
@@ -205,13 +242,6 @@ public final class NanoHttpsServerSD {
         }
         Serial.println("WiFi connected");
         return true;
-    }
-
-    private static void haltAndReport(String message) {
-        while (true) {
-            Serial.println(message);
-            Delay.millis(5000);
-        }
     }
 
     private static void printLocalIp(Wifi wifi) {

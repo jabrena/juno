@@ -19,16 +19,24 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.util.Properties;
 
+import static java.net.HttpURLConnection.HTTP_BAD_METHOD;
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
+
 /**
  * Joins the Wi-Fi network named in {@code application.properties} on the microSD card of a Nano Connector Carrier,
- * prints the board's address, then serves port 80 with {@code GET /api/status} and {@code POST /api/led?state=on|off}. Requests are logged over Serial at 115200 baud. POST to {@code /api/led?state=on} or {@code /api/led?state=off} to change the example state.
+ * then serves port 80 with {@code GET /api/status} and {@code POST /api/led?state=on|off}. The board's address is
+ * printed over Serial at 115200 baud every 10 seconds.
  *
- * <p>The card needs {@code wifi.ssid} and {@code wifi.password}. Open {@code http://<address>/api/status} from a laptop on
- * the same network.
+ * <p>The card needs {@code wifi.ssid} and {@code wifi.password}. Flash it, read the address from the monitor, then
+ * call it from a laptop on the same network:
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.hardware.net.http.NanoHttpServerSD -Djuno.board=arduino-nano-esp32
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
+ * curl http://<address>/api/status
+ * curl -X POST 'http://<address>/api/led?state=on'
  * }</pre>
  */
 @Board({ArduinoNanoEsp32Board.class})
@@ -37,6 +45,9 @@ public final class NanoHttpServerSD {
 
     private static final int MAX_CONNECTION_ATTEMPTS = 30;
     private static final int HTTP_PORT = 80;
+    private static final String CONTENT_TYPE = "Content-Type";
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String APPLICATION_PROBLEM_JSON = "application/problem+json";
 
     private NanoHttpServerSD() {
     }
@@ -46,25 +57,39 @@ public final class NanoHttpServerSD {
         Delay.millis(2000);
         Serial.println("HTTP: boot");
 
-        Wifi wifi = MCU.getWifi();
         Gpio gpio = MCU.getGpio();
-        int ledPin = gpio.getBuiltinLed();
+        Wifi wifi = MCU.getWifi();
+        SdCard sdCard = openSdCard(gpio);
+        if (sdCard == null || !joinWifi(wifi, sdCard)) return;
+        startServer(gpio);
+        reportAlive(wifi);
+    }
+
+    /** Mounts the microSD card of the Nano Connector Carrier, or returns {@code null} when it is missing. */
+    private static SdCard openSdCard(Gpio gpio) {
         Serial.println("HTTP: opening Nano Connector Carrier SD");
         SdCard sdCard = new NanoConnectorCarrier(gpio).getSdCard();
         if (!sdCard.begin()) {
-            haltAndReport("HTTP: Nano Connector Carrier SD initialization failed");
-            return;
+            Serial.println("HTTP: Nano Connector Carrier SD initialization failed");
+            return null;
         }
         Serial.println("HTTP: Nano Connector Carrier SD initialized");
+        return sdCard;
+    }
+
+    /** Joins the network named in {@code application.properties}; {@code false} when that fails. */
+    private static boolean joinWifi(Wifi wifi, SdCard sdCard) throws IOException {
         Credentials credentials = loadCredentials(sdCard);
         if (credentials == null) {
-            haltAndReport("HTTP: application.properties or Wi-Fi credentials unavailable");
-            return;
+            Serial.println("HTTP: application.properties or Wi-Fi credentials unavailable");
+            return false;
         }
-        if (!connectWifi(wifi, credentials.ssid(), credentials.password())) {
-            haltAndReport("HTTP: Wi-Fi connection failed");
-            return;
-        }
+        return connectWifi(wifi, credentials.ssid(), credentials.password());
+    }
+
+    /** Registers the API handlers and starts listening on port 80. */
+    private static void startServer(Gpio gpio) throws IOException {
+        int ledPin = gpio.getBuiltinLed();
         gpio.pinMode(ledPin, gpio.getOutput());
         gpio.digitalWrite(ledPin, false);
         HttpServer server = HttpServer.create(new InetSocketAddress(HTTP_PORT), 4);
@@ -73,7 +98,10 @@ public final class NanoHttpServerSD {
         server.createContext("/", NanoHttpServerSD::notFound);
         server.start();
         Serial.println("Listening on port 80");
+    }
 
+    /** Prints the address every 10 seconds, so a monitor attached late still finds the server. */
+    private static void reportAlive(Wifi wifi) {
         while (true) {
             printLocalIp(wifi);
             Serial.println("HTTP: server alive");
@@ -83,33 +111,33 @@ public final class NanoHttpServerSD {
 
     private static void status(HttpExchange exchange) throws IOException {
         if (!exchange.getRequestMethod().equals("GET")) {
-            send(exchange, 405, "application/problem+json", "{\"title\":\"method not allowed\"}");
+            send(exchange, HTTP_BAD_METHOD, APPLICATION_PROBLEM_JSON, "{\"title\":\"method not allowed\"}");
             return;
         }
-        send(exchange, 200, "application/json", ledOn ? "{\"led\":\"on\"}" : "{\"led\":\"off\"}");
+        send(exchange, HTTP_OK, APPLICATION_JSON, ledOn ? "{\"led\":\"on\"}" : "{\"led\":\"off\"}");
     }
 
     private static void setLed(HttpExchange exchange, Gpio gpio, int ledPin) throws IOException {
         if (!exchange.getRequestMethod().equals("POST")) {
-            send(exchange, 405, "application/problem+json", "{\"title\":\"method not allowed\"}");
+            send(exchange, HTTP_BAD_METHOD, APPLICATION_PROBLEM_JSON, "{\"title\":\"method not allowed\"}");
             return;
         }
         String path = exchange.getRequestURI().toString();
         if (!path.equals("/api/led?state=on") && !path.equals("/api/led?state=off")) {
-            send(exchange, 400, "application/problem+json", "{\"title\":\"state must be on or off\"}");
+            send(exchange, HTTP_BAD_REQUEST, APPLICATION_PROBLEM_JSON, "{\"title\":\"state must be on or off\"}");
             return;
         }
         ledOn = path.equals("/api/led?state=on");
         gpio.digitalWrite(ledPin, ledOn);
-        send(exchange, 200, "application/json", ledOn ? "{\"led\":\"on\"}" : "{\"led\":\"off\"}");
+        send(exchange, HTTP_OK, APPLICATION_JSON, ledOn ? "{\"led\":\"on\"}" : "{\"led\":\"off\"}");
     }
 
     private static void notFound(HttpExchange exchange) throws IOException {
-        send(exchange, 404, "application/problem+json", "{\"title\":\"not found\"}");
+        send(exchange, HTTP_NOT_FOUND, APPLICATION_PROBLEM_JSON, "{\"title\":\"not found\"}");
     }
 
     private static void send(HttpExchange exchange, int status, String contentType, String body) throws IOException {
-        exchange.getResponseHeaders().set("Content-Type", contentType);
+        exchange.getResponseHeaders().set(CONTENT_TYPE, contentType);
         exchange.sendResponseHeaders(status, body.length());
         try (OutputStream output = exchange.getResponseBody()) {
             for (int index = 0; index < body.length(); index++) {
@@ -133,13 +161,6 @@ public final class NanoHttpServerSD {
         }
         Serial.println("WiFi connected");
         return true;
-    }
-
-    private static void haltAndReport(String message) {
-        while (true) {
-            Serial.println(message);
-            Delay.millis(5000);
-        }
     }
 
     private static void printLocalIp(Wifi wifi) {
