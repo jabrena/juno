@@ -133,6 +133,22 @@ class ArduinoCliTest {
         }
 
         @Test
+        @DisplayName("Passes a configured discovery timeout to the board list")
+        void shouldPassAConfiguredDiscoveryTimeoutToTheBoardList() {
+            // Given
+            FakeExecutor executor = new FakeExecutor().respond(0, boardList(detected("/dev/cu.usbmodem123", FQBN)));
+            ArduinoCli cli = new ArduinoCli("arduino-cli", executor, ignored -> { }, "10s");
+
+            // When
+            String port = cli.resolvePort(FQBN, Optional.empty());
+
+            // Then
+            assertThat(port).isEqualTo("/dev/cu.usbmodem123");
+            assertThat(executor.invocations()).containsExactly(
+                    captured(List.of("arduino-cli", "board", "list", "--json", "--discovery-timeout", "10s")));
+        }
+
+        @Test
         @DisplayName("Discovers the Cardputer from its Espressif USB serial vendor ID")
         void shouldDiscoverTheCardputerFromItsEspressifUsbSerialVendorId() {
             // Given
