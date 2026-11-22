@@ -17,7 +17,6 @@ import io.github.jabrena.juno.usecases.mailbox.server.cover.MailboxView;
 import io.github.jabrena.juno.usecases.mailbox.server.security.MailboxSecurity;
 import io.github.jabrena.juno.usecases.mailbox.server.services.MailboxController;
 import io.github.jabrena.juno.usecases.mailbox.server.services.MailboxModel;
-import io.github.jabrena.juno.usecases.mailbox.server.services.MailboxServerTask;
 import io.github.jabrena.juno.usecases.mailbox.server.services.MailboxStartupTask;
 import io.github.jabrena.juno.util.Delay;
 
@@ -83,11 +82,9 @@ public final class Mailbox {
 
         MailboxUiState uiState = new MailboxUiState();
         MailboxStartupState startupState = new MailboxStartupState();
-        MailboxController controller = new MailboxController(model, security, uiState);
-        byte[] requestBody = new byte[MailboxModel.MAX_REQUEST_BYTES];
         Clock clock = MCU.getClock();
-        MailboxServerTask serverTask = new MailboxServerTask(controller, requestBody, clock);
-        Thread.startVirtualThread(new MailboxStartupTask(sdCard, model, security, startupState, uiState, serverTask));
+        MailboxController controller = new MailboxController(model, security, uiState, clock);
+        Thread.startVirtualThread(new MailboxStartupTask(sdCard, model, security, startupState, uiState, controller));
         runUserInterface(tft, view, uiState, startupState, clock);
     }
 

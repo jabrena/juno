@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.backend;
 
 import io.github.jabrena.juno.CompileException;
+import io.github.jabrena.juno.backend.runtime.InputStreamRoute;
 import io.github.jabrena.juno.backend.runtime.MathRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.ShimFeature;
@@ -133,7 +134,7 @@ public final class IntrinsicLowering {
     private final IntrinsicTarget target;
     private final Set<ShimFeature> features;
     private final Set<Intrinsic> usedMath;
-    private final boolean socketStreamsOnly;
+    private final InputStreamRoute inputStreamRoute;
     private final RuntimeLockBracket lockBracket;
     private final BoardModel boardModel;
 
@@ -146,20 +147,20 @@ public final class IntrinsicLowering {
      */
     public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, Board board,
                       OptionalInt onboardSdChipSelect, Set<ShimFeature> features, Set<Intrinsic> usedMath,
-                      boolean usesThreads, boolean socketStreamsOnly) {
-        this(target, coreRuntime, board, onboardSdChipSelect, features, usedMath, usesThreads, socketStreamsOnly,
+                      boolean usesThreads, InputStreamRoute inputStreamRoute) {
+        this(target, coreRuntime, board, onboardSdChipSelect, features, usedMath, usesThreads, inputStreamRoute,
                 coreRuntime.carrierCount());
     }
 
     /** Creates the lowering with the effective carrier count selected by the runtime configuration. */
     public IntrinsicLowering(IntrinsicTarget target, CoreRuntime coreRuntime, Board board,
                       OptionalInt onboardSdChipSelect, Set<ShimFeature> features, Set<Intrinsic> usedMath,
-                      boolean usesThreads, boolean socketStreamsOnly, int carrierCount) {
+                      boolean usesThreads, InputStreamRoute inputStreamRoute, int carrierCount) {
         this.boardModel = board.boardModel();
         this.target = target;
         this.features = features;
         this.usedMath = usedMath;
-        this.socketStreamsOnly = socketStreamsOnly;
+        this.inputStreamRoute = inputStreamRoute;
         this.lockBracket = new RuntimeLockBracket(target, usesThreads && carrierCount > 1);
         registerExceptions();
         registerGpio(coreRuntime, onboardSdChipSelect, usesThreads);
@@ -698,6 +699,40 @@ public final class IntrinsicLowering {
         shim(Intrinsic.DOUBLE_HASH_CODE, "juno_double_hash_code", Result.WORD, wide(0), ShimFeature.DOUBLE);
     }
 
+    /**
+     * {@code java.io.InputStream}, whose calls all lower to one shared function per method: the SD card's files by
+     * default, the socket alone when it is the program's only stream, or the registered-stream table of
+     * {@code common/streams.cpp} when the program has a board-side stream.
+     */
+    private void registerInputStreams() {
+        shim(Intrinsic.INPUT_STREAM_INIT, "juno_input_stream_init", Result.NONE, List.of(RECEIVER),
+                ShimFeature.INPUT_STREAMS);
+        if (inputStreamRoute == InputStreamRoute.STREAMS) {
+            shim(Intrinsic.SD_FILE_AVAILABLE, "juno_input_stream_available", Result.WORD, List.of(RECEIVER),
+                    ShimFeature.INPUT_STREAMS);
+            shim(Intrinsic.SD_FILE_READ, "juno_input_stream_read", Result.WORD, List.of(RECEIVER),
+                    ShimFeature.INPUT_STREAMS);
+            shim(Intrinsic.SD_FILE_READ_BYTES, "juno_input_stream_read_bytes", Result.WORD,
+                    List.of(RECEIVER, arg(0), arg(1), arg(2)), ShimFeature.INPUT_STREAMS);
+            shim(Intrinsic.SD_FILE_CLOSE, "juno_input_stream_close", Result.NONE, List.of(RECEIVER),
+                    ShimFeature.INPUT_STREAMS);
+            return;
+        }
+        shim(Intrinsic.SD_FILE_AVAILABLE, "juno_sd_file_available", Result.WORD, List.of(RECEIVER),
+                ShimFeature.SD);
+        shim(Intrinsic.SD_FILE_READ, "juno_sd_file_read", Result.WORD, List.of(RECEIVER), ShimFeature.SD);
+        if (inputStreamRoute == InputStreamRoute.SOCKET) {
+            // A socket program's shared InputStream.read goes straight to the socket; the SD runtime is left out.
+            shim(Intrinsic.SD_FILE_READ_BYTES, "juno_socket_stream_read", Result.WORD,
+                    List.of(RECEIVER, arg(0), arg(1), arg(2)), ShimFeature.TCP, ShimFeature.EXCEPTIONS,
+                    ShimFeature.SOCKET);
+        } else {
+            shim(Intrinsic.SD_FILE_READ_BYTES, "juno_sd_file_read_bytes", Result.WORD,
+                    List.of(RECEIVER, arg(0), arg(1), arg(2)), ShimFeature.SD);
+        }
+        shim(Intrinsic.SD_FILE_CLOSE, "juno_sd_file_close", Result.NONE, List.of(RECEIVER), ShimFeature.SD);
+    }
+
     /** SD card files and {@code Properties} parsed from them. */
     private void registerStorage() {
         shim(Intrinsic.SD_BEGIN, "juno_sd_begin", Result.WORD, List.of(arg(0)), ShimFeature.SD);
@@ -710,19 +745,7 @@ public final class IntrinsicLowering {
                 parameters(List.of(0, 1), 0, 1), ShimFeature.SD);
         shim(Intrinsic.SD_LIST, "juno_sd_list", Result.WORD,
                 parameters(List.of(0), 0, 1, 2, 3), ShimFeature.SD);
-        shim(Intrinsic.SD_FILE_AVAILABLE, "juno_sd_file_available", Result.WORD, List.of(RECEIVER),
-                ShimFeature.SD);
-        shim(Intrinsic.SD_FILE_READ, "juno_sd_file_read", Result.WORD, List.of(RECEIVER), ShimFeature.SD);
-        if (socketStreamsOnly) {
-            // A socket program's shared InputStream.read goes straight to the socket; the SD runtime is left out.
-            shim(Intrinsic.SD_FILE_READ_BYTES, "juno_socket_stream_read", Result.WORD,
-                    List.of(RECEIVER, arg(0), arg(1), arg(2)), ShimFeature.TCP, ShimFeature.EXCEPTIONS,
-                    ShimFeature.SOCKET);
-        } else {
-            shim(Intrinsic.SD_FILE_READ_BYTES, "juno_sd_file_read_bytes", Result.WORD,
-                    List.of(RECEIVER, arg(0), arg(1), arg(2)), ShimFeature.SD);
-        }
-        shim(Intrinsic.SD_FILE_CLOSE, "juno_sd_file_close", Result.NONE, List.of(RECEIVER), ShimFeature.SD);
+        registerInputStreams();
         shim(Intrinsic.SD_APPEND_LINE, "juno_sd_file_append_line", Result.WORD, List.of(literal(0), arg(0)), ShimFeature.SD);
         shim(Intrinsic.SD_APPEND_TEXT, "juno_sd_file_append_text", Result.WORD, List.of(literal(0), arg(0)),
                 ShimFeature.SD);
@@ -740,14 +763,6 @@ public final class IntrinsicLowering {
         shim(Intrinsic.CAMERA_BEGIN, "juno_camera_begin", Result.WORD, List.of(), ShimFeature.CAMERA);
         shim(Intrinsic.CAMERA_CAPTURE, "juno_camera_capture", Result.WORD, List.of(arg(0), arg(1)),
                 ShimFeature.CAMERA);
-        shim(Intrinsic.HTTP_SERVER_BEGIN_STREAM, "juno_http_server_begin_stream", Result.NONE,
-                parameters(List.of(1), 0, 1), ShimFeature.HTTP_STREAM);
-        shim(Intrinsic.HTTP_SERVER_STREAM_BYTES, "juno_http_server_stream_bytes", Result.WORD,
-                parameters(List.of(), 0, 1), ShimFeature.HTTP_STREAM);
-        shim(Intrinsic.HTTP_SERVER_STREAM_TEXT, "juno_http_server_stream_text", Result.WORD,
-                parameters(List.of(0), 0), ShimFeature.HTTP_STREAM);
-        shim(Intrinsic.HTTP_SERVER_END_STREAM, "juno_http_server_end_stream", Result.NONE, List.of(),
-                ShimFeature.HTTP_STREAM);
         shim(Intrinsic.SD_WRITE_BYTES, "juno_sd_write_bytes", Result.WORD,
                 parameters(List.of(0), 0, 1, 2), ShimFeature.SD);
         registerRandomAccessFile();
@@ -968,7 +983,7 @@ public final class IntrinsicLowering {
         shim(Intrinsic.HTTP_SERVER_METHOD, "juno_http_server_method", Result.WORD, List.of(), server);
         shim(Intrinsic.HTTP_SERVER_PATH, "juno_http_server_path", Result.WORD, List.of(), server);
         shim(Intrinsic.HTTP_SERVER_CONTENT_LENGTH, "juno_http_server_content_length", Result.WORD, List.of(), server);
-        shim(Intrinsic.HTTP_SERVER_HEADER, "juno_http_server_header", Result.WORD, List.of(literal(0), arg(0), arg(1)),
+        shim(Intrinsic.HTTP_SERVER_HEADER, "juno_http_server_header", Result.WORD, parameters(List.of(0), 0, 1, 2),
                 ShimFeature.HTTP_SERVER, ShimFeature.HTTP_SERVER_HEADERS, ShimFeature.RUNTIME_STRINGS,
                 ShimFeature.STRING_BUILDER);
         // body (the second argument) may be a literal's address or a runtime pooled string's address
@@ -976,15 +991,19 @@ public final class IntrinsicLowering {
         // const char* to the shim, so both flow the same way.
         shim(Intrinsic.HTTP_SERVER_RESPOND, "juno_http_server_respond", Result.NONE,
                 List.of(arg(0), literal(0), arg(1)), server);
-        shim(Intrinsic.HTTP_SERVER_RESPOND_BUILDER, "juno_http_server_respond_builder", Result.NONE,
-                List.of(arg(0), literal(0), arg(1)), server);
         shim(Intrinsic.HTTP_SERVER_RESPONSE_STREAM, "juno_http_server_response_stream", Result.NONE,
-                List.of(arg(0)), ShimFeature.HTTP_SERVER, ShimFeature.RUNTIME_STRINGS,
+                List.of(arg(0)), ShimFeature.HTTP_SERVER, ShimFeature.HTTP_SERVER_RESPONSE, ShimFeature.RUNTIME_STRINGS,
                 ShimFeature.STRING_BUILDER, ShimFeature.SOCKET);
         shim(Intrinsic.HTTP_SERVER_RESPONSE_BEGIN, "juno_http_server_response_begin", Result.NONE,
-                List.of(arg(0), arg(1)), server);
+                parameters(List.of(1), 0, 1, 2), ShimFeature.HTTP_SERVER, ShimFeature.HTTP_SERVER_RESPONSE,
+                ShimFeature.RUNTIME_STRINGS, ShimFeature.STRING_BUILDER, ShimFeature.SOCKET);
+        shim(Intrinsic.HTTP_SERVER_REQUEST_STREAM, "juno_http_server_request_stream", Result.NONE,
+                List.of(arg(0), arg(1)), ShimFeature.HTTP_SERVER, ShimFeature.HTTP_SERVER_REQUEST_BODY,
+                ShimFeature.INPUT_STREAMS,
+                ShimFeature.RUNTIME_STRINGS, ShimFeature.STRING_BUILDER);
         shim(Intrinsic.HTTP_SERVER_RESPONSE_WRITE_BYTE, "juno_http_server_response_write_byte", Result.NONE,
-                List.of(arg(0)), server);
+                List.of(arg(0)), ShimFeature.HTTP_SERVER, ShimFeature.HTTP_SERVER_RESPONSE, ShimFeature.RUNTIME_STRINGS,
+                ShimFeature.STRING_BUILDER, ShimFeature.SOCKET);
         shim(Intrinsic.HTTP_SERVER_BEGIN_TLS, "juno_http_server_begin_tls", Result.WORD,
                 List.of(arg(0), arg(1), arg(2), arg(3), arg(4)), ShimFeature.HTTP_SERVER, ShimFeature.HTTPS_SERVER,
                 ShimFeature.RUNTIME_STRINGS, ShimFeature.STRING_BUILDER);

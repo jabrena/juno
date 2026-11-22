@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.hardware.net.http;
+package io.github.jabrena.juno.hardware.internal;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
@@ -11,7 +11,7 @@ import java.util.List;
  * request with a null body is an idle poll that accept reports as nothing received. Responses are recorded in
  * {@link #responses}. When the script runs out, accept throws, which ends a test that would otherwise loop forever.
  */
-public final class HttpServer {
+public final class NativeHttpServer {
     public static final int DEFAULT_BODY_BUFFER_SIZE = 512;
 
     /** One scripted request: its method, path and body, or a null body for an idle poll. */
@@ -27,7 +27,7 @@ public final class HttpServer {
     public static int port;
     private static Request current;
 
-    private HttpServer() {
+    private NativeHttpServer() {
     }
 
     public static void reset() {
@@ -38,7 +38,7 @@ public final class HttpServer {
     }
 
     public static void begin(int port) {
-        HttpServer.port = port;
+        NativeHttpServer.port = port;
     }
 
     public static int accept(byte[] bodyBuffer, int bodyBufferLength) {

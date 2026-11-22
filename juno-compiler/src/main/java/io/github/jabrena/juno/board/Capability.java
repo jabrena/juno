@@ -135,13 +135,6 @@ public enum Capability {
                     + "speaks TLS from the first byte); use Smtp.sendTls with implicit TLS, usually port 465";
         }
     },
-    HTTP_STREAM("HttpServer.beginStream") {
-        @Override
-        public String unsupportedReason(Board board) {
-            return board.displayName() + " cannot keep an HTTP response open for streaming; use HttpServer.respond "
-                    + "for a fixed body";
-        }
-    },
     BLUETOOTH_LE("BluetoothLe") {
         @Override
         public String unsupportedReason(Board board) {

@@ -183,6 +183,8 @@ public enum Intrinsic {
     SOCKET_CLOSE,
     SOCKET_OUTPUT_STREAM_WRITE,
     SOCKET_OUTPUT_STREAM_INIT,
+    /** {@code new InputStream()} from a board-side subclass's constructor: nothing to set up. */
+    INPUT_STREAM_INIT,
     SOCKET_OUTPUT_STREAM_WRITE_BYTE,
     SOCKET_OUTPUT_STREAM_CLOSE,
     SD_BEGIN,
@@ -206,10 +208,6 @@ public enum Intrinsic {
     SD_FREE_KIB,
     CAMERA_BEGIN,
     CAMERA_CAPTURE,
-    HTTP_SERVER_BEGIN_STREAM,
-    HTTP_SERVER_STREAM_BYTES,
-    HTTP_SERVER_STREAM_TEXT,
-    HTTP_SERVER_END_STREAM,
     SD_WRITE_BYTES,
     RAF_OPEN,
     RAF_READ,
@@ -250,10 +248,11 @@ public enum Intrinsic {
     /** {@code HttpServer.header}: one request header's value, copied into a caller-owned buffer. */
     HTTP_SERVER_HEADER,
     HTTP_SERVER_RESPOND,
-    HTTP_SERVER_RESPOND_BUILDER,
     HTTP_SERVER_RESPONSE_STREAM,
     HTTP_SERVER_RESPONSE_BEGIN,
     HTTP_SERVER_RESPONSE_WRITE_BYTE,
+    /** {@code HttpExchange.getRequestBody()}: registers the request body stream over the exchange's buffer. */
+    HTTP_SERVER_REQUEST_STREAM,
     /** {@code HttpServer.beginTls}: the HTTPS listener, with a PEM certificate and private key. */
     HTTP_SERVER_BEGIN_TLS,
     MEMORY_ARENA_USED,

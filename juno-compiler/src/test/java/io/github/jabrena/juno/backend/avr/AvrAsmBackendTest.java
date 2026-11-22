@@ -307,8 +307,8 @@ class AvrAsmBackendTest {
     @DisplayName("Rejects an HTTP server on the UNO R3, which has no network support")
     void shouldRejectAnHttpServerOnTheUnoR3() {
         // When & Then
-        assertThatThrownBy(() -> compileR3("demo.R3HttpServer", "HttpServer.begin(80);",
-                "import io.github.jabrena.juno.hardware.net.http.HttpServer;"))
+        assertThatThrownBy(() -> compileR3("demo.R3HttpServer", "NativeHttpServer.begin(80);",
+                "import io.github.jabrena.juno.hardware.internal.NativeHttpServer;"))
                 .isInstanceOf(CompileException.class)
                 .hasMessageContaining("UNO R3");
     }

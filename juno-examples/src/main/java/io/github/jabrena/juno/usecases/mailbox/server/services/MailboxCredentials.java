@@ -4,85 +4,101 @@ import io.github.jabrena.juno.hardware.device.sd.SdCard;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.security.KeyFactory;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.Base64;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 
 /**
- * The HTTPS certificate and private key, read as PEM text from {@code /server.crt} and {@code /server.key} on the SD
- * card at startup, so a certificate is replaced by swapping two files instead of rebuilding the firmware. Both buffers
- * are allocated once; the key is wiped as soon as the server has parsed it.
+ * The HTTPS identity, read from {@code /server.crt} and {@code /server.key} (PEM) on the SD card at startup, so a
+ * certificate is replaced by swapping two files instead of rebuilding the firmware. The key may be SEC1
+ * ({@code BEGIN EC PRIVATE KEY}) or PKCS#8 ({@code BEGIN PRIVATE KEY}). The pair goes into an in-memory key store and
+ * out as an {@link SSLContext}, the JDK way; the server wipes the key once it has parsed it.
  */
 public final class MailboxCredentials {
     static final String CERTIFICATE_FILE = "server.crt";
     static final String PRIVATE_KEY_FILE = "server.key";
-    /** Large enough for an EC P-256 or RSA-2048 certificate or key in PEM. */
+    /** Large enough for an EC P-256 or RSA-2048 private key in PEM. */
     static final int PEM_CAPACITY = 2048;
     private final SdCard sdCard;
-    private final byte[] certificate = new byte[PEM_CAPACITY];
-    private final byte[] privateKey = new byte[PEM_CAPACITY];
-    private int certificateLength;
-    private int privateKeyLength;
 
     public MailboxCredentials(SdCard sdCard) {
         this.sdCard = sdCard;
     }
 
-    /** Reads both files; false when either is missing, empty, unreadable or larger than {@link #PEM_CAPACITY}. */
-    boolean load() {
-        certificateLength = read(false, certificate);
-        privateKeyLength = read(true, privateKey);
-        return certificateLength > 0 && privateKeyLength > 0;
-    }
-
-    byte[] certificate() {
-        return certificate;
-    }
-
-    int certificateLength() {
-        return certificateLength;
-    }
-
-    byte[] privateKey() {
-        return privateKey;
-    }
-
-    int privateKeyLength() {
-        return privateKeyLength;
-    }
-
-    /** Overwrites the key; the TLS server keeps its own parsed copy, so the program no longer needs it. */
-    void wipePrivateKey() {
-        for (int i = 0; i < privateKeyLength; i++) {
-            privateKey[i] = 0;
-        }
-        privateKeyLength = 0;
-    }
-
-    /**
-     * Copies the key or the certificate into {@code target}; its length, or {@code -1} when the file is missing,
-     * unreadable or too large. Juno resolves an SD path at compile time, so each file is opened by its own constant.
-     */
-    private int read(boolean key, byte[] target) {
-        InputStream file = key ? sdCard.open(PRIVATE_KEY_FILE) : sdCard.open(CERTIFICATE_FILE);
-        if (file == null) {
-            return -1;
-        }
-        int length = 0;
-        try (InputStream openedFile = file) {
-            while (true) {
-                if (length == target.length) {
-                    return openedFile.available() == 0 ? length : -1;
-                }
-                int count = openedFile.read(target, length, target.length - length);
-                if (count < 0) {
-                    break;
-                }
-                if (count == 0) {
-                    return -1;
-                }
-                length += count;
+    /** The server's SSL context; {@code null} when either file is missing, unreadable or does not parse. */
+    SSLContext load() {
+        try {
+            Certificate certificate = loadCertificate();
+            PrivateKey privateKey = loadPrivateKey();
+            if (certificate == null || privateKey == null) {
+                return null;
             }
-        } catch (IOException exception) {
-            return -1;
+            // This store exists only in memory; no password file is needed.
+            char[] password = new char[0];
+            KeyStore identity = KeyStore.getInstance("PKCS12");
+            identity.load(null, password);
+            identity.setKeyEntry("server", privateKey, password, new Certificate[]{certificate});
+            KeyManagerFactory managers = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            managers.init(identity, password);
+            SSLContext context = SSLContext.getInstance("TLS");
+            context.init(managers.getKeyManagers(), null, null);
+            return context;
+        } catch (IOException | GeneralSecurityException exception) {
+            return null;
         }
-        return length;
+    }
+
+    private Certificate loadCertificate() throws IOException, GeneralSecurityException {
+        try (InputStream input = sdCard.open(CERTIFICATE_FILE)) {
+            if (input == null) {
+                return null;
+            }
+            return CertificateFactory.getInstance("X.509").generateCertificate(input);
+        }
+    }
+
+    private PrivateKey loadPrivateKey() throws IOException, GeneralSecurityException {
+        String base64;
+        try (InputStream input = sdCard.open(PRIVATE_KEY_FILE)) {
+            if (input == null) {
+                return null;
+            }
+            base64 = readPemBody(input);
+        }
+        byte[] der = Base64.getMimeDecoder().decode(base64);
+        return KeyFactory.getInstance("EC").generatePrivate(new PKCS8EncodedKeySpec(der));
+    }
+
+    /** The Base64 lines of a PEM file, without its {@code -----BEGIN/END} lines or line breaks. */
+    private static String readPemBody(InputStream input) throws IOException {
+        StringBuilder pem = new StringBuilder(PEM_CAPACITY);
+        int pemLength = 0;
+        boolean skipLine = false;
+        boolean lineStart = true;
+        int value;
+        while ((value = input.read()) >= 0) {
+            if (value == '\n') {
+                skipLine = false;
+                lineStart = true;
+            } else if (lineStart && value == '-') {
+                skipLine = true;
+                lineStart = false;
+            } else if (!skipLine && value != '\r') {
+                if (pemLength == PEM_CAPACITY) {
+                    throw new IOException("server.key exceeds PEM_CAPACITY");
+                }
+                pem.append((char) value);
+                pemLength++;
+                lineStart = false;
+            }
+        }
+        return pem.toString();
     }
 }

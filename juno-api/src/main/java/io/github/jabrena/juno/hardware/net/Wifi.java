@@ -35,8 +35,8 @@ public interface Wifi {
 
     /**
      * Starts the board as a Wi-Fi access point named {@code ssid}, so a phone or laptop can join it
-     * directly (typically to serve a provisioning page through {@link
-     * io.github.jabrena.juno.hardware.net.http.HttpServer}). On UNO R4 WiFi and ESP32 boards, {@code password} is a WPA2
+     * directly (typically to serve a provisioning page, as {@link
+     * io.github.jabrena.juno.hardware.net.WifiProvisioner} does). On UNO R4 WiFi and ESP32 boards, {@code password} is a WPA2
      * passphrase of at least 8 characters, or empty for an open network; call {@link #localIP} after
      * {@link #status} reports {@link #STATUS_AP_LISTENING} to obtain the access point's address.
      */

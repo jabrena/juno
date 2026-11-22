@@ -3,7 +3,7 @@ package io.github.jabrena.juno.jdk.net.httpserver;
 import java.io.IOException;
 import java.io.OutputStream;
 
-/** Fixed-buffer response stream registered with the board's HTTP transport. */
+/** The response body, registered with the board's HTTP transport, which sends its bytes as they are written. */
 final class ResponseBody extends OutputStream {
     ResponseBody() {
         HttpServer.registerResponseStream(this);

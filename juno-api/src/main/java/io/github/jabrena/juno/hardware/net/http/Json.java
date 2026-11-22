@@ -7,7 +7,7 @@ import org.jspecify.annotations.Nullable;
  * document once and returns its root {@link JsonValue}, navigated with {@code get(String)} and {@code get(int)} and read
  * with {@code asInt()}, {@code asDouble()}, {@code asString()} and similar methods; {@link JsonWriter} produces JSON.
  * The document is read where it is, from a {@code java.net.http} response body held in a {@code String} or from a
- * {@code byte[]} buffer such as an {@link HttpServer} request body; there is no parsed tree.
+ * {@code byte[]} buffer such as a server's request body; there is no parsed tree.
  *
  * <p>Unlike JEP 540 nothing throws: a missing member, a type mismatch or an invalid document gives a value whose
  * {@link JsonValue#type()} says so, and its conversions return zero values or {@code null}. The scanner validates

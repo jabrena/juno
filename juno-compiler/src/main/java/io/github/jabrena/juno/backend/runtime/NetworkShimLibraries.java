@@ -71,24 +71,27 @@ final class NetworkShimLibraries {
     }
 
     /**
-     * Backs {@link io.github.jabrena.juno.hardware.net.http.HttpServer}: a single static {@code
+     * Backs {@code NativeHttpServer} and the board-side {@code com.sun.net.httpserver} on it: a single static {@code
      * WiFiServer} (constructed via placement-new into static storage once {@code begin(port)}
      * runs, since {@code WiFiServer} has no default constructor and this backend never calls the
      * heap allocator {@code new} for anything Java-visible) plus a single "current" {@code
      * WiFiClient} held across one {@code accept()}/{@code respond()} pair — this hardware can only
      * meaningfully serve one request at a time, so there is no connection-handle scheme.
      * {@code accept()} mirrors {@link #httpHelpers(Set, String, String)}'s response-parsing state machine, reversed
-     * to parse a request line and headers instead of a status line. With {@code headers}, for {@code HttpServer.header},
+     * to parse a request line and headers instead of a status line. With {@code headers}, for {@code NativeHttpServer.header},
      * it also keeps the request's header lines in a fixed buffer; without it the four hooks expand to nothing, so a
-     * server that never reads a header gets the same shim as before.
+     * server that never reads a header gets the same shim as before. With {@code response}, for {@code HttpExchange},
+     * it appends the JDK response, written straight to the client; with {@code requestBody}, for
+     * {@code HttpExchange.getRequestBody()}, the request body's board-side {@code InputStream}.
      */
-    String httpServerHelpers(String transport, boolean headers) {
+    String httpServerHelpers(String transport, boolean headers, boolean response, boolean requestBody) {
         String server = runtimeSource.load("common/http-server.cpp");
         String hooks = headers ? runtimeSource.load("common/http-server-headers.cpp") : "";
         for (String hook : HTTP_SERVER_HEADER_HOOKS) {
             server = server.replace("${JUNO_HTTP_SERVER_HEADER_" + hook + "}", headerHook(hooks, hook));
         }
-        return transport + server;
+        return transport + server + (response ? runtimeSource.load("common/http-server-response.cpp") : "")
+                + (requestBody ? runtimeSource.load("common/http-server-request-body.cpp") : "");
     }
 
     /**
