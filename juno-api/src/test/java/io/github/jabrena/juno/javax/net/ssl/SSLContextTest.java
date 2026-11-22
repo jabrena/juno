@@ -1,9 +1,12 @@
 package io.github.jabrena.juno.javax.net.ssl;
 
+import io.github.jabrena.juno.jdk.security.KeyFactory;
 import io.github.jabrena.juno.jdk.security.KeyManagementException;
 import io.github.jabrena.juno.jdk.security.KeyStore;
 import io.github.jabrena.juno.jdk.security.NoSuchAlgorithmException;
+import io.github.jabrena.juno.jdk.security.cert.Certificate;
 import io.github.jabrena.juno.jdk.security.cert.CertificateFactory;
+import io.github.jabrena.juno.jdk.security.spec.PKCS8EncodedKeySpec;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +18,24 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SSLContextTest {
     private static final String PEM = "-----BEGIN CERTIFICATE-----\nMIIB\n-----END CERTIFICATE-----\n";
+
+    @Test
+    void carriesAnEcServerIdentityFromTheJdkKeyRecipe() throws Exception {
+        byte[] der = {1, 2, 3};
+        KeyStore store = KeyStore.getInstance("PKCS12");
+        store.load(null, new char[0]);
+        Certificate certificate = CertificateFactory.getInstance("X.509")
+                .generateCertificate(new ByteArrayInputStream(PEM.getBytes(StandardCharsets.US_ASCII)));
+        store.setKeyEntry("server", KeyFactory.getInstance("EC")
+                .generatePrivate(new PKCS8EncodedKeySpec(der)), new char[0], new Certificate[]{certificate});
+        KeyManagerFactory factory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        factory.init(store, new char[0]);
+        SSLContext context = SSLContext.getInstance("TLS");
+        context.init(factory.getKeyManagers(), null, null);
+
+        assertThat(context.serverCertificate()).isEqualTo(PEM);
+        assertThat(context.serverPrivateKey()).isEqualTo(der);
+    }
 
     @Test
     @DisplayName("the JDK's trust-my-CA recipe gives a context that trusts that CA")

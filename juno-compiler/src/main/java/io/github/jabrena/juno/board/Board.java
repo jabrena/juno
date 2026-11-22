@@ -56,7 +56,7 @@ public enum Board {
      */
     AI_THINKER_ESP32_CAM("io/github/jabrena/juno/annotations/AiThinkerEsp32CamBoard", "ai-thinker-esp32-cam",
             "AI Thinker ESP32-CAM", "esp32:esp32:esp32cam", ArduinoCore.ESP32_CAM, Esp32Family.AI_THINKER_ESP32_CAM, new BoardMemoryProfile(327680, 8192, 305216, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, OptionalInt.of(4 * 1024 * 1024)), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
-                    Capability.BLUETOOTH_LE, Capability.CAMERA, Capability.PSRAM, Capability.HTTP_SERVER, Capability.HTTP_STREAM,
+                    Capability.BLUETOOTH_LE, Capability.CAMERA, Capability.PSRAM, Capability.HTTP_SERVER,
                     Capability.STRUCTURED_CONCURRENCY, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.JSON, Capability.JDK_HTTP_CLIENT,
                     Capability.WIFI_ACCESS_POINT, Capability.HTTPS_SERVER, Capability.TLS_EMAIL, Capability.SMTP_STARTTLS,
                     Capability.WATCHDOG, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.DOUBLE_MATH,

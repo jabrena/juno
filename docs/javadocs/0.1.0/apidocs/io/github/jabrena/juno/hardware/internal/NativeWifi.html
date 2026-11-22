@@ -189,7 +189,7 @@ so it has no Java body and cannot run, or be mocked, on a desktop JVM. Mock <a h
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;password)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Starts the board as a Wi-Fi access point named <code>ssid</code>, so a phone or laptop can join it
-directly (typically to serve a provisioning page through <a href="../net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a>).</div>
+directly (typically to serve a provisioning page, as <a href="../net/WifiProvisioner.html" title="class in io.github.jabrena.juno.hardware.net"><code>WifiProvisioner</code></a> does).</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#gatewayIP(int%5B%5D)" class="member-name-link">gatewayIP</a><wbr>(int[]&nbsp;octets)</code></div>
@@ -300,7 +300,7 @@ whole-program emulator in a test, never on the board.</div>
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;password)</span></div>
 <div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../net/Wifi.html#beginAP(java.lang.String,java.lang.String)">Wifi</a></code></span></div>
 <div class="block">Starts the board as a Wi-Fi access point named <code>ssid</code>, so a phone or laptop can join it
-directly (typically to serve a provisioning page through <a href="../net/http/HttpServer.html" title="class in io.github.jabrena.juno.hardware.net.http"><code>HttpServer</code></a>). On UNO R4 WiFi and ESP32 boards, <code>password</code> is a WPA2
+directly (typically to serve a provisioning page, as <a href="../net/WifiProvisioner.html" title="class in io.github.jabrena.juno.hardware.net"><code>WifiProvisioner</code></a> does). On UNO R4 WiFi and ESP32 boards, <code>password</code> is a WPA2
 passphrase of at least 8 characters, or empty for an open network; call <a href="../net/Wifi.html#localIP(int%5B%5D)"><code>Wifi.localIP(int[])</code></a> after
 <a href="../net/Wifi.html#status()"><code>Wifi.status()</code></a> reports <a href="../net/Wifi.html#STATUS_AP_LISTENING"><code>Wifi.STATUS_AP_LISTENING</code></a> to obtain the access point's address.</div>
 <dl class="notes">

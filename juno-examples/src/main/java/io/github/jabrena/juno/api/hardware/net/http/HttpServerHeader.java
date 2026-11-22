@@ -1,78 +1,98 @@
 package io.github.jabrena.juno.api.hardware.net.http;
 
 
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpServer;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
-import io.github.jabrena.juno.hardware.net.http.HttpMethod;
-import io.github.jabrena.juno.hardware.net.http.HttpServer;
-import io.github.jabrena.juno.hardware.net.http.HttpStatus;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static java.net.HttpURLConnection.HTTP_OK;
+
 /**
- * Reads a request header with {@link HttpServer#header}: connects to WiFi with credentials from
- * the board's secret store, prints its {@link Wifi#localIP}, then serves {@code GET /hello}
- * on port 80. The reply greets the caller by the {@code X-Client-Name} header ({@code {"hello":"<name>"}}); a request
- * without it gets a {@code 400} RFC 7807 problem detail, and any other route a {@code 404}. Try it with
- * {@code curl -H "X-Client-Name: Ada" http://<ip>/hello}.
+ * Reads a request header with the JDK {@code HttpServer}: connects to WiFi with credentials from the board's secret
+ * store, prints its {@link Wifi#localIP}, then serves {@code GET /hello} on port 80. The reply greets the caller by the
+ * {@code X-Client-Name} header ({@code {"hello":"<name>"}}), read with
+ * {@code exchange.getRequestHeaders().getFirst("X-Client-Name")}; a request without it gets a {@code 400} RFC 7807
+ * problem detail, and any other route a {@code 404}. Try it with {@code curl -H "X-Client-Name: Ada" http://<ip>/hello}.
  *
- * <p>The header value lands in a caller-owned {@code byte[]} allocated once at startup, so the loop allocates nothing
- * to read it. Quotes and backslashes are dropped from the echoed value to keep the JSON body valid.
+ * <p>Quotes and backslashes are dropped from the echoed value to keep the JSON body valid.
  */
 public final class HttpServerHeader {
     private static final Wifi WIFI = MCU.getWifi();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         new HttpServerHeader().run();
     }
 
-    private void run() {
+    private void run() throws IOException {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         connectWifi();
         printLocalIP();
 
-        HttpServer.begin(80);
+        HttpServer server = HttpServer.create(new InetSocketAddress(80), 4);
+        server.createContext("/", HttpServerHeader::handle);
+        server.start();
         Serial.println("Listening on port 80");
-
-        byte[] body = new byte[64];
-        byte[] clientName = new byte[24];
         while (true) {
-            if (HttpServer.accept(body, body.length) >= 0) {
-                handle(HttpServer.method(), HttpServer.path(), clientName);
-            }
+            Delay.millis(10000);
         }
     }
 
-    private void handle(String method, String path, byte[] clientName) {
-        if (!method.equals(HttpMethod.GET) || !path.equals("/hello")) {
-            HttpServer.respond(HttpStatus.NOT_FOUND, "application/problem+json",
-                    "{\"type\":\"about:blank\",\"title\":\"Not Found\",\"status\":404}");
+    private static void handle(HttpExchange exchange) throws IOException {
+        if (!exchange.getRequestMethod().equals("GET") || !exchange.getRequestURI().toString().equals("/hello")) {
+            send(exchange, HTTP_NOT_FOUND, "{\"type\":\"about:blank\",\"title\":\"Not Found\",\"status\":404}");
             return;
         }
-        int length = HttpServer.header("X-Client-Name", clientName, clientName.length);
+        String clientName = exchange.getRequestHeaders().getFirst("X-Client-Name");
         Serial.print("X-Client-Name length=");
-        Serial.println(length);
-        if (length <= 0) {
-            HttpServer.respond(HttpStatus.BAD_REQUEST, "application/problem+json",
+        Serial.println(clientName == null ? -1 : clientName.length());
+        if (clientName == null || clientName.length() == 0) {
+            send(exchange, HTTP_BAD_REQUEST,
                     "{\"type\":\"about:blank\",\"title\":\"Missing X-Client-Name header\",\"status\":400}");
             return;
         }
-        HttpServer.respond(HttpStatus.OK, "application/json", buildGreeting(clientName, length));
+        exchange.getResponseHeaders().set("Content-Type", "application/json");
+        String greeting = buildGreeting(clientName);
+        exchange.sendResponseHeaders(HTTP_OK, greeting.length());
+        write(exchange, greeting);
     }
 
-    private StringBuilder buildGreeting(byte[] clientName, int length) {
+    private static String buildGreeting(String clientName) {
         StringBuilder json = new StringBuilder(64);
         json.append("{\"hello\":\"");
-        for (int i = 0; i < length; i++) {
-            char c = (char) clientName[i];
+        for (int i = 0; i < clientName.length(); i++) {
+            char c = clientName.charAt(i);
             if (c != '"' && c != '\\') {
                 json.append(c);
             }
         }
         json.append("\"}");
-        return json;
+        return json.toString();
+    }
+
+    /** An RFC 7807 problem detail. */
+    private static void send(HttpExchange exchange, int status, String problem) throws IOException {
+        exchange.getResponseHeaders().set("Content-Type", "application/problem+json");
+        exchange.sendResponseHeaders(status, problem.length());
+        write(exchange, problem);
+    }
+
+    private static void write(HttpExchange exchange, String body) throws IOException {
+        try (OutputStream output = exchange.getResponseBody()) {
+            for (int index = 0; index < body.length(); index++) {
+                output.write(body.charAt(index));
+            }
+        }
     }
 
     private void connectWifi() {

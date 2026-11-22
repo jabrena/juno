@@ -45,6 +45,7 @@ class ExamplesArchitectureTest {
             JavaClass type, Set<String> apiNames, Set<String> rcxFirmwareNames, Set<String> examplesNames) {
         // javax.net.ssl has board-side classes (juno-api's javax package), read under the JDK name like java.*.
         return type.isPrimitive() || type.getPackageName().startsWith("java.")
+                || type.getPackageName().startsWith("com.sun.net.httpserver")
                 || type.getPackageName().equals("javax.net.ssl")
                 || isKotlinAnnotation(type) || isScalaSerializationProxy(type) || isClojureRuntime(type)
                 || isGroovyRuntime(type)

@@ -306,7 +306,8 @@ public final class AvrRuntimeShim {
         }
         if (uses(ShimFeature.HTTP_SERVER)) {
             shim.append(networkShimLibraries.httpServerHelpers(core.httpServerTransport(),
-                    uses(ShimFeature.HTTP_SERVER_HEADERS)));
+                    uses(ShimFeature.HTTP_SERVER_HEADERS), uses(ShimFeature.HTTP_SERVER_RESPONSE),
+                    uses(ShimFeature.HTTP_SERVER_REQUEST_BODY)));
         }
         // Smtp.sendTls and Pop3Client, exactly as on the UNO R4 WiFi: the board's TLS client is WiFiSSLClient.
         if (usesAny(ShimFeature.SMTP_TLS, ShimFeature.POP3)) {

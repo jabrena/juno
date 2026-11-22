@@ -81,19 +81,25 @@ the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../BoardModel.
 board the program was compiled for) and <a href="../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.tft">io.github.jabrena.juno.hardware.device.tft</a></div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.carrier">io.github.jabrena.juno.hardware.device.carrier</a></div>
 <div class="col-last odd-row-color">
+<div class="block">Pin maps for passive carrier boards a Nano plugs into, currently
+<a href="../device/carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier"><code>NanoConnectorCarrier</code></a>: its microSD slot, Grove and Qwiic
+connectors are ordinary Nano header pins, so a carrier needs no compiler intrinsic of its own.</div>
+</div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.device.tft">io.github.jabrena.juno.hardware.device.tft</a></div>
+<div class="col-last even-row-color">
 <div class="block">Drivers for TFT display shields, currently
 <a href="../device/tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft"><code>TftTouchShield</code></a>: the ELEGOO 2.8" 240x320 ILI9341 display
 on an 8-bit parallel bus, with a resistive touch panel and a microSD socket (its card is
 <a href="../device/tft/TftTouchShield.html#getSdCard()"><code>TftTouchShield.getSdCard()</code></a>).</div>
 </div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.device.usb">io.github.jabrena.juno.hardware.device.usb</a></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.usb">io.github.jabrena.juno.hardware.device.usb</a></div>
+<div class="col-last odd-row-color">
 <div class="block">USB host support: the MAX3421E USB Host Shield and the device drivers built on it.</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.internal">io.github.jabrena.juno.hardware.internal</a></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.internal">io.github.jabrena.juno.hardware.internal</a></div>
+<div class="col-last even-row-color">
 <div class="block">The board's native implementations: the classes whose methods are compiler intrinsics.</div>
 </div>
 </div>
@@ -106,6 +112,19 @@ on an 8-bit parallel bus, with a resistive touch panel and a microSD socket (its
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><a href="class-use/Spi.html#io.github.jabrena.juno.hardware">Spi</a></div>
+<div class="col-last even-row-color">
+<div class="block">Full-duplex SPI on the board's primary bus (SCK, MOSI and MISO).</div>
+</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="io.github.jabrena.juno.hardware.device.carrier">
+<div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.hardware.spi</a> used by <a href="../device/carrier/package-summary.html">io.github.jabrena.juno.hardware.device.carrier</a></span></div>
+<div class="summary-table two-column-summary">
+<div class="table-header col-first">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="class-use/Spi.html#io.github.jabrena.juno.hardware.device.carrier">Spi</a></div>
 <div class="col-last even-row-color">
 <div class="block">Full-duplex SPI on the board's primary bus (SCK, MOSI and MISO).</div>
 </div>

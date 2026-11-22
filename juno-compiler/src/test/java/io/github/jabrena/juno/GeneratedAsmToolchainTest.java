@@ -1517,19 +1517,19 @@ class GeneratedAsmToolchainTest {
         Assumptions.assumeTrue(compiler != null, "No C++ compiler available");
         String source = """
                 package demo;
-                import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                import io.github.jabrena.juno.hardware.internal.NativeHttpServer;
                 public final class AsmHttpServer {
                     public static void main(String[] args) {
-                        HttpServer.begin(80);
+                        NativeHttpServer.begin(80);
                         byte[] body = new byte[64];
-                        int bodyLength = HttpServer.accept(body, body.length);
+                        int bodyLength = NativeHttpServer.accept(body, body.length);
                         if (bodyLength >= 0) {
-                            if (HttpServer.method().equals("GET") && HttpServer.path().equals("/status")) {
-                                HttpServer.respond(200, "application/json", "{\\"ok\\":true}");
+                            if (NativeHttpServer.method().equals("GET") && NativeHttpServer.path().equals("/status")) {
+                                NativeHttpServer.respond(200, "application/json", "{\\"ok\\":true}");
                             } else {
                                 StringBuilder json = new StringBuilder(32);
                                 json.append('{').append('}');
-                                HttpServer.respond(404, "application/json", json);
+                                NativeHttpServer.respond(404, "application/json", json.toString());
                             }
                         }
                     }
@@ -1561,15 +1561,15 @@ class GeneratedAsmToolchainTest {
                 import io.github.jabrena.juno.annotations.Board;
                 import io.github.jabrena.juno.hardware.MCU;
                 import io.github.jabrena.juno.hardware.net.Wifi;
-                import io.github.jabrena.juno.hardware.net.http.HttpServer;
+                import io.github.jabrena.juno.hardware.internal.NativeHttpServer;
                 @Board(%1$s.class)
                 public final class %2$s {
                     public static void main(String[] args) {
                         MCU.getWifi().beginAP("juno-setup", "junosetup");
-                        HttpServer.begin(80);
+                        NativeHttpServer.begin(80);
                         byte[] body = new byte[64];
-                        if (HttpServer.accept(body, body.length) >= 0) {
-                            HttpServer.respond(200, "text/html", "<form></form>");
+                        if (NativeHttpServer.accept(body, body.length) >= 0) {
+                            NativeHttpServer.respond(200, "text/html", "<form></form>");
                         }
                     }
                 }

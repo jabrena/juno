@@ -11,6 +11,7 @@ import io.github.jabrena.juno.backend.ProgramLayout;
 import io.github.jabrena.juno.backend.WordSource;
 import io.github.jabrena.juno.backend.runtime.AvrRuntimeShim;
 import io.github.jabrena.juno.backend.runtime.AvrShimThunks;
+import io.github.jabrena.juno.backend.runtime.InputStreamRoute;
 import io.github.jabrena.juno.backend.runtime.RuntimeEntryPoints;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
 import io.github.jabrena.juno.backend.runtime.core.CoreRuntimes;
@@ -87,7 +88,7 @@ public final class AvrAsmBackend implements AsmBackend {
     private final List<String> clinitLabels = new ArrayList<>();
     private MethodRef entryPoint;
     private boolean usesThreads;
-    private boolean socketStreamsOnly;
+    private InputStreamRoute inputStreamRoute;
     private boolean usesWatchdog;
     private ProgramLayout layout;
     private AvrEmitter avr;
@@ -116,7 +117,7 @@ public final class AvrAsmBackend implements AsmBackend {
     public GeneratedCode generate(IrProgram program) {
         entryPoint = program.entryPoint();
         usesThreads = runtimeEntryPoints.usesThreads(program);
-        socketStreamsOnly = runtimeEntryPoints.socketStreamsOnly(program);
+        inputStreamRoute = runtimeEntryPoints.inputStreamRoute(program);
         usesWatchdog = program.watchdogTimeoutMillis().isPresent();
         for (int index = 0; index < program.methods().size(); index++) {
             IrMethod method = program.methods().get(index);
@@ -136,7 +137,7 @@ public final class AvrAsmBackend implements AsmBackend {
         calls = new AvrCallLowering(avr, layout, memory, functionLabels);
         CoreRuntime coreRuntime = coreRuntimes.of(board.core());
         intrinsics = new IntrinsicLowering(new AvrIntrinsicTarget(avr), coreRuntime, board,
-                board.onboardSdChipSelect(), features, usedMath, usesThreads, socketStreamsOnly);
+                board.onboardSdChipSelect(), features, usedMath, usesThreads, inputStreamRoute);
 
         StringBuilder text = new StringBuilder();
         for (IrMethod method : program.methods()) {

@@ -25,7 +25,6 @@ language itself, see the [Java subset](../java-subset) page.
 | HTTPS client | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | HTTP server | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | — |
 | HTTPS server | ✓ | ✓ | ✓ | — | ✓ | — | — |
-| HTTP response streaming (`HttpServer.beginStream`) | — | — | — | ✓ | — | — | — |
 | Onboard microSD (`MCU.getSdCard()`) | — | — | ✓ | ✓ | — | — | — |
 | Email over TLS (`Smtp.sendTls`, `Pop3Client`) | ✓ | ✓ | ✓ | — | ✓ | ✓ | — |
 | Email over STARTTLS (`Smtp.send`) | ✓ | ✓ | — | — | — | ✓ | — |
@@ -42,6 +41,9 @@ The AI Thinker ESP32-CAM supports Wi-Fi station and access-point modes, HTTPS se
 STARTTLS email, the onboard microSD socket, Bluetooth LE for LEGO Powered Up, the OV2640 camera, HTTP response
 streaming, explicit PSRAM buffers, the task watchdog, hardware-random UUIDs and double-precision `Math`. It has no
 native USB HID controller, onboard LED matrix or onboard IMU.
+
+The UNO R4 WiFi serves HTTP but not HTTPS: its ESP32-S3 coprocessor's firmware offers TLS only to clients, and the
+RA4M1 has no room for a software TLS server.
 
 The compiler checks this table for you: a program that uses an API its target board does not support fails with a
 `CompileException` naming the board and the missing capability. Some cells are compiled support that has not yet been run

@@ -43,4 +43,13 @@ class JdkClassAliasesTest {
                 + "Lio/github/jabrena/juno/jdk/net/http/HttpClient$Builder;"))
                 .isEqualTo("(Ljavax/net/ssl/SSLContext;)Ljava/net/http/HttpClient$Builder;");
     }
+
+    @Test
+    @DisplayName("a board-side HTTP server class is read as the JDK HTTP server API")
+    void readsHttpServerClassesAsJdkOnes() {
+        assertThat(aliases.apply("io/github/jabrena/juno/jdk/net/httpserver/HttpServer"))
+                .isEqualTo("com/sun/net/httpserver/HttpServer");
+        assertThat(aliases.apply("(Lio/github/jabrena/juno/jdk/net/httpserver/HttpExchange;)V"))
+                .isEqualTo("(Lcom/sun/net/httpserver/HttpExchange;)V");
+    }
 }

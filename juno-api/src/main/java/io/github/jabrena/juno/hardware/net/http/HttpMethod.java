@@ -1,7 +1,7 @@
 package io.github.jabrena.juno.hardware.net.http;
 
 /**
- * Named HTTP methods for matching against {@link HttpServer#method()}. Like {@link HttpStatus},
+ * Named HTTP methods for matching against {@code HttpExchange.getRequestMethod()}. Like {@link HttpStatus},
  * these are ordinary compile-time-constant fields, not a new intrinsic or type: a {@code static
  * final String} initialized from a literal is itself a Java compile-time constant, so {@code
  * javac} inlines it at every use site — {@code method.equals(HttpMethod.GET)} compiles to exactly

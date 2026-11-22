@@ -202,6 +202,11 @@ public final class ShimLibraries {
         return runtimeSource.load("thumb2/runtime-string-floating-appends.cpp");
     }
 
+    /** The registered-stream table every {@code InputStream} call goes through on {@link InputStreamRoute#STREAMS}. */
+    String inputStreamHelpers() {
+        return runtimeSource.load("common/streams.cpp");
+    }
+
     /**
      * {@code Json.rawText}: a byte range copied into a new arena {@code String} by {@link #runtimeStringHelpers()}'s
      * {@code juno_string_copy}, so it needs those helpers already declared.

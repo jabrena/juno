@@ -208,12 +208,13 @@ json.reset().beginObject()
         .name("temperature").value(21.4)
         .name("ok").value(true)
         .endObject();
-HttpServer.respond(HttpStatus.OK, "application/json", json.toString());
+HttpRequest request = HttpRequest.newBuilder(uri)
+        .POST(HttpRequest.BodyPublishers.ofString(json.toString())).build();
 ```
 
 `value` takes a `String`, a `char[]` with a length, an `int`, a `long`, a `double` (up to 15 significant digits, laid
 out as `Double.toString` does) or a `boolean`; `nullValue()` writes `null`. `toString()` copies the body into a
-`String` for `HttpServer.respond` or `HttpRequest.BodyPublishers.ofString`; `length()` gives its size in the buffer.
+`String` for a server's response or `HttpRequest.BodyPublishers.ofString`; `length()` gives its size in the buffer.
 
 Output that does not fit the buffer is dropped, and `overflowed()` turns `true`. It also turns `true` for a name
 outside an object, an unbalanced `end...` call, or a NaN or infinite `double`, which JSON cannot write.

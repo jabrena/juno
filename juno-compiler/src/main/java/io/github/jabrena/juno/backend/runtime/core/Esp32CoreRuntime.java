@@ -403,12 +403,6 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return runtimeSource.load("esp32/uuid-random.cpp");
     }
 
-    /** Streamed responses on the ESP32 transport: headers without a length, then parts written to the open client. */
-    @Override
-    public String httpStreamHelpers() {
-        return runtimeSource.load("esp32/http-stream.cpp");
-    }
-
     /** The AI Thinker ESP32-CAM's OV2640 driver, shipped with the core as {@code esp_camera}. */
     @Override
     public String cameraIncludes() {

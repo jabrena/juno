@@ -1,7 +1,8 @@
 package io.github.jabrena.juno.usecases.mailbox.server.services;
 
+import com.sun.net.httpserver.HttpsConfigurator;
+import com.sun.net.httpserver.HttpsServer;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
-import io.github.jabrena.juno.hardware.net.http.HttpServer;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.usecases.mailbox.server.commons.MailboxStartupState;
 import io.github.jabrena.juno.usecases.mailbox.server.commons.MailboxUiState;
@@ -10,9 +11,11 @@ import io.github.jabrena.juno.util.Delay;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.util.Properties;
+import javax.net.ssl.SSLContext;
 
-/** Performs blocking SD and TLS bootstrap away from the TFT task, then hands the same task to HTTPS serving. */
+/** Performs blocking SD and TLS bootstrap away from the TFT task, then starts the HTTPS server. */
 public final class MailboxStartupTask implements Runnable {
     private static final String APPLICATION_PROPERTIES = "application.properties";
     private static final int HTTPS_PORT = 443;
@@ -24,16 +27,16 @@ public final class MailboxStartupTask implements Runnable {
     private final MailboxSecurity security;
     private final MailboxStartupState state;
     private final MailboxUiState uiState;
-    private final MailboxServerTask serverTask;
+    private final MailboxController controller;
 
     public MailboxStartupTask(SdCard sdCard, MailboxModel model, MailboxSecurity security, MailboxStartupState state,
-                       MailboxUiState uiState, MailboxServerTask serverTask) {
+                       MailboxUiState uiState, MailboxController controller) {
         this.sdCard = sdCard;
         this.model = model;
         this.security = security;
         this.state = state;
         this.uiState = uiState;
-        this.serverTask = serverTask;
+        this.controller = controller;
     }
 
     @Override
@@ -51,21 +54,23 @@ public final class MailboxStartupTask implements Runnable {
         }
 
         Serial.println("Mailbox TLS bootstrap");
-        MailboxCredentials credentials = new MailboxCredentials(sdCard);
-        if (!credentials.load()) {
-            stop("server.crt or server.key is missing from the SD card");
+        SSLContext context = new MailboxCredentials(sdCard).load();
+        if (context == null) {
+            stop("server.crt or server.key is missing from the SD card or does not parse");
             return;
         }
-        if (!HttpServer.beginTls(HTTPS_PORT, credentials.certificate(), credentials.certificateLength(),
-                credentials.privateKey(), credentials.privateKeyLength())) {
-            stop("certificate or key did not parse");
+        try {
+            HttpsServer server = HttpsServer.create(new InetSocketAddress(HTTPS_PORT), 4);
+            server.setHttpsConfigurator(new HttpsConfigurator(context));
+            server.createContext("/", controller::handle);
+            server.start();
+        } catch (IOException | IllegalStateException exception) {
+            stop("the HTTPS server did not start: certificate or key did not parse");
             return;
         }
-        credentials.wipePrivateKey();
         state.ready();
         Serial.println("Mailbox listening on HTTPS port 443");
         Thread.startVirtualThread(new MailboxRestoreTask(model, uiState));
-        serverTask.run();
     }
 
     private boolean beginStorage() {
