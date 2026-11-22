@@ -69,14 +69,27 @@ public class HttpServer {
         Thread.startVirtualThread(this::serve);
     }
 
+    /**
+     * Serves requests one at a time for as long as the server runs. A handler's {@code IOException}, such as a write to
+     * a client that has hung up, ends only that exchange: its response is closed, which frees the connection, and the
+     * next request is served, as the JDK's server does.
+     */
     private void serve() {
         while (started) {
             try {
                 handleNext();
-                Delay.millis(10);
             } catch (IOException exception) {
-                started = false;
+                abandon();
             }
+            Delay.millis(10);
+        }
+    }
+
+    private void abandon() {
+        try {
+            exchange.getResponseBody().close();
+        } catch (IOException ignored) {
+            // The connection is already gone; closing only releases it.
         }
     }
 
