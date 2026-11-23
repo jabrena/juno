@@ -2,6 +2,7 @@ package io.github.jabrena.juno.language;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
@@ -20,7 +21,7 @@ import java.util.concurrent.StructuredTaskScope;
  * receiving the precision as a parameter. A nested binding can lower the precision for its own extent, but
  * {@code Math.min} against the outer value means it can never raise it above what its owner allows.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, ArduinoPortentaH7Board.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class})
 public final class ScopedValuesPrecision {
     private static final int MAX_DIGITS = 40;
     private static final int CONSTANTS = 3;

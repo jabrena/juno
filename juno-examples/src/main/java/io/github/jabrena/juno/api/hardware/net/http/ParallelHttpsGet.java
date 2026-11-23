@@ -2,6 +2,7 @@ package io.github.jabrena.juno.api.hardware.net.http;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
@@ -29,7 +30,7 @@ import java.util.concurrent.StructuredTaskScope;
  * request owns a JDK {@code java.net.http} client, so the two never share a response; only the status matters, so
  * the body is read with {@code ofByteArray()}, whose fixed buffer keeps the first bytes of a page of any size.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, AiThinkerEsp32CamBoard.class,
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, ArduinoPortentaH7Board.class, AiThinkerEsp32CamBoard.class,
         M5StackCardputerBoard.class})
 public final class ParallelHttpsGet {
     private static final Wifi WIFI = MCU.getWifi();

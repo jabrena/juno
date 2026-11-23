@@ -73,15 +73,21 @@ M4 that holds no Java code and runs the program's own code from the M7's flash f
 `juno:verify` compiles both images and `juno:flash` uploads the M4 image first. The cores share the runtime lock
 through the H7's hardware semaphores.
 
+A thread on the M4 can call anything a thread on the M7 can: `Serial`, the board clock, `Math`, Wi-Fi, HTTP and SD.
+The M4 runs none of the board's libraries, so each such call is handed to a worker thread on the M7, which makes the
+call and hands back its result; the scheduler, locks, atomics and strings run on the M4 itself. The M4 also has no
+double-precision floating-point unit, so its `double` arithmetic uses the compiler's software routines.
+
 The preview has these limits, which issue [#448](https://github.com/jabrena/juno/issues/448) tracks:
 
-- **`main` and every native call stay on the M7.** A thread placed on the M4 must not call hardware or the board
-  clock yet (`Serial`, `MCU.getClock()`, Wi-Fi, SD): only computation, locks, atomics and other threads.
+- **A native call from the M4 costs a round trip to the M7**, so code that calls the board in a tight loop runs
+  faster on the M7.
 - **The M7 runs with its data cache off**, so both cores see the same memory. Memory-heavy code on the M7 is slower
   than with one carrier.
-- **The M4 is slower than the M7**: it runs at half the clock and reads the program's code across the bus matrix
-  (through its ART accelerator). Work split into two equal halves finishes when the M4's half does.
+- **The M4 runs at half the M7's clock** and reads the program's code across the bus matrix (through its ART
+  accelerator), so its threads are somewhat slower than the M7's.
 
+## Wi-Fi with SecretStore
 
 Provision the SE050C2 with `wifi.ssid` and `wifi.password` (see [Secrets in a Secure
 Element](../../api/storage/secure-element)), then compile the example for Portenta:

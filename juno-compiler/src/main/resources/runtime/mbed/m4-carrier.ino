@@ -10,6 +10,9 @@ ${JUNO_M4_LINK}
 alignas(rtos::Semaphore) static uint8_t juno_baton_storage[JUNO_M4_SLOTS][sizeof(rtos::Semaphore)];
 alignas(rtos::Thread) static uint8_t juno_thread_storage[JUNO_M4_SLOTS][sizeof(rtos::Thread)];
 static rtos::Semaphore* juno_batons[JUNO_M4_SLOTS];
+// Where a thread waits while the M7 runs its native call.
+alignas(rtos::Semaphore) static uint8_t juno_call_storage[JUNO_M4_SLOTS][sizeof(rtos::Semaphore)];
+static rtos::Semaphore* juno_calls[JUNO_M4_SLOTS];
 static rtos::Thread* juno_threads[JUNO_M4_SLOTS];
 static osThreadId_t juno_thread_ids[JUNO_M4_SLOTS];
 static rtos::Semaphore* juno_service_wake = nullptr;
@@ -25,6 +28,10 @@ static bool juno_baton_try_take(uint32_t slot) {
 
 static void juno_baton_give(uint32_t slot) {
   juno_batons[slot]->release();
+}
+
+static void juno_call_wait(uint32_t slot) {
+  juno_calls[slot]->acquire();
 }
 
 static void juno_task_entry(void* argument) {
@@ -75,8 +82,11 @@ static void juno_service() {
     uint32_t item;
     while (juno_m4_ring_pop(juno_m4_link->toM4, &item)) {
       uint32_t slot = item & JUNO_M4_OP_SLOT;
-      if ((item & ~JUNO_M4_OP_SLOT) == JUNO_M4_OP_CREATE) {
+      uint32_t operation = item & ~JUNO_M4_OP_SLOT;
+      if (operation == JUNO_M4_OP_CREATE) {
         juno_create_task(slot);
+      } else if (operation == JUNO_M4_OP_CALL_DONE) {
+        juno_calls[slot]->release();
       } else {
         juno_baton_give(slot);
       }
@@ -103,6 +113,7 @@ static void juno_publish() {
   juno_m4_link->millis = juno_millis;
   juno_m4_link->sleepMillis = juno_sleep_millis;
   juno_m4_link->yield = juno_yield;
+  juno_m4_link->callWait = juno_call_wait;
   juno_m4_link->m4CoreHz = SystemCoreClock;
   __DMB();
   juno_m4_link->m4Ready = JUNO_M4_LINK_MAGIC;
@@ -122,6 +133,7 @@ void setup() {
   DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
   for (uint32_t slot = 0u; slot < JUNO_M4_SLOTS; slot++) {
     juno_batons[slot] = new (juno_baton_storage[slot]) rtos::Semaphore(0, 1);
+    juno_calls[slot] = new (juno_call_storage[slot]) rtos::Semaphore(0, 1);
   }
   juno_service_wake = new rtos::Semaphore(0, 1);
   auto* service = new rtos::Thread(osPriorityHigh, 1024u, nullptr, "juno-m4-link");
