@@ -78,7 +78,7 @@
 
     <profiles>
         <!-- On demand only: trains JUNO.BIN from the bundled facts and generates its Tny2ModelImage into
-             target/tny2; a default build never trains. CI runs it in its "Train TNY2 model" job.
+             target/tny2; a default build never trains. CI runs it in its "Publish TNY2 model" job.
              ./mvnw -pl juno-third-parties/juno-tny2 -Ptny2-model process-classes [-Dtny2.steps=3000]
              To release the result, copy target/tny2/JUNO.BIN to src/main/resources/tny2/ and
              target/tny2/Tny2ModelImage.java to src/main/java/io/github/jabrena/juno/thirdparty/tny2/. -->
