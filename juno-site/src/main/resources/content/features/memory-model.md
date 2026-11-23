@@ -201,7 +201,7 @@ can use, never what the program means. The [Maven Plugin](../juno-maven-plugin#j
 |---|---|---|---|
 | `juno.Xmx` | The arena | A size of at least 512 bytes, a multiple of 8, at most the board's maximum arena | A larger arena holds more objects, arrays and strings at once, and takes that much more RAM from the static data and the stacks. |
 | `juno.Xss` | The native stack of each carrier or task (on AVR, of each extra task) | A size of at least 512 bytes, a multiple of 8, at most the board's maximum stack | Each native carrier or task stack reserves this much RAM. In the default two-carrier ESP32 and Pico 2 W ports, a thread slot takes it from the run-time heap; single-carrier ports park extra continuations in arena chunks. |
-| `juno.carriers` | How many carriers run threads | `1` or `2`, at most the board's carriers | `1` runs every thread on one carrier. Use it only in test environments that cannot run both cores. On the Portenta H7, `2` enables the Cortex-M4 as a second carrier (preview; the default there is `1`). |
+| `juno.carriers` | How many carriers run threads | `1` or `2`, at most the board's carriers | `1` runs every thread on one carrier. Use it only in test environments that cannot run both cores. |
 | `juno.gcLog` | Garbage-collector output | `true` or `false` | Prints one `Serial` line per collection, with the arena's use before and after. |
 
 A size is written as the JVM writes `-Xmx`: bytes, or a number followed by `k`, `m` or `g`. An explicit value is an override
@@ -237,7 +237,7 @@ gives the limit each board applies.
 | AI Thinker ESP32-CAM | 16 slots on two carriers (the default); arena-bounded with `juno.carriers=1` | 8192 / 32768 bytes | Yes |
 | M5Stack Cardputer | 16 slots on two carriers (the default); arena-bounded with `juno.carriers=1` | 8192 / 32768 bytes | Yes |
 | Raspberry Pi Pico 2 W | 16 slots on two carriers (the default); no slot count with `juno.carriers=1` | 4096 / 16384 bytes | Yes |
-| Portenta H7 | No slot count: the arena bounds the threads; 16 slots with `juno.carriers=2` (preview: the Cortex-M4 as a second carrier) | 8192 / 32768 bytes | Yes |
+| Portenta H7 | 16 slots on two carriers, the Cortex-M7 and the Cortex-M4 (the default); no slot count with `juno.carriers=1` | 8192 / 32768 bytes | Yes |
 
 - On the UNO R3 the three extra threads take 1.5 KB of its 2 KB, which leaves little for the arena and the statics. The
   R3 is the board where threads cost the most RAM.
