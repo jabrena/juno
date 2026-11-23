@@ -18,6 +18,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 
@@ -136,6 +137,7 @@ public final class IntrinsicLowering {
     private final Set<Intrinsic> usedMath;
     private final InputStreamRoute inputStreamRoute;
     private final RuntimeLockBracket lockBracket;
+    private final Optional<String> nativeDispatcher;
     private final BoardModel boardModel;
 
     /**
@@ -162,6 +164,7 @@ public final class IntrinsicLowering {
         this.usedMath = usedMath;
         this.inputStreamRoute = inputStreamRoute;
         this.lockBracket = new RuntimeLockBracket(target, usesThreads && carrierCount > 1);
+        this.nativeDispatcher = usesThreads ? coreRuntime.nativeCallDispatcher(carrierCount) : Optional.empty();
         registerExceptions();
         registerGpio(coreRuntime, onboardSdChipSelect, usesThreads);
         registerThreads(usesThreads);
@@ -176,6 +179,7 @@ public final class IntrinsicLowering {
         registerConcurrency();
         registerSerial();
         registerStrings();
+        registerSystem();
         registerStorage();
         registerPeripherals();
         registerHttpClients();
@@ -210,6 +214,12 @@ public final class IntrinsicLowering {
         shim(Intrinsic.THROW_RAISE, "juno_throw_raise", Result.NONE, List.of(arg(0)), ShimFeature.EXCEPTIONS);
         shim(Intrinsic.THROW_PENDING, "juno_throw_pending", Result.WORD, List.of(), ShimFeature.EXCEPTIONS);
         shim(Intrinsic.THROW_CATCH, "juno_throw_catch", Result.WORD, List.of(arg(0)), ShimFeature.EXCEPTIONS);
+    }
+
+    /** Board-side {@code java.lang.System} methods supplied by Juno rather than the host JDK. */
+    private void registerSystem() {
+        shim(Intrinsic.SYSTEM_ARRAYCOPY_WORDS, "juno_system_arraycopy_words", Result.NONE,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4)), ShimFeature.SYSTEM_ARRAYCOPY);
     }
 
     /**
@@ -1057,7 +1067,7 @@ public final class IntrinsicLowering {
             words.add(operand.resolve(call));
         }
         lockBracket.enter(output, call.intrinsic());
-        target.emitShimCall(output, frame, shimCall.function(), words);
+        emitCall(output, frame, shimCall.function(), words, call.intrinsic().runsOnAnyCore());
         switch (shimCall.result()) {
             case NONE -> { }
             case WORD -> call.target().ifPresent(value -> target.storeResult(output, frame, value));
@@ -1088,7 +1098,7 @@ public final class IntrinsicLowering {
             }
         }
         lockBracket.enter(output);
-        target.emitShimCall(output, frame, mathRuntime.symbol(call.intrinsic()), words);
+        emitCall(output, frame, mathRuntime.symbol(call.intrinsic()), words, false);
         call.target().ifPresent(value -> storeTypedResult(output, frame, value));
         lockBracket.exit(output);
     }
@@ -1119,9 +1129,19 @@ public final class IntrinsicLowering {
             }
         }
         lockBracket.enter(output);
-        target.emitShimCall(output, frame, bigNumberMethods.shimSymbol(call.intrinsic()), words);
+        emitCall(output, frame, bigNumberMethods.shimSymbol(call.intrinsic()), words, false);
         call.target().ifPresent(value -> storeTypedResult(output, frame, value));
         lockBracket.exit(output);
+    }
+
+    /** A shim call, through the native-call dispatcher unless it {@code runsOnAnyCore} or there is none. */
+    private void emitCall(StringBuilder output, FrameLayout frame, String function, List<WordSource> words,
+                          boolean runsOnAnyCore) {
+        if (nativeDispatcher.isPresent() && !runsOnAnyCore) {
+            target.emitShimCallThrough(output, frame, nativeDispatcher.get(), function, words);
+        } else {
+            target.emitShimCall(output, frame, function, words);
+        }
     }
 
     private void storeTypedResult(StringBuilder output, FrameLayout frame, Value value) {

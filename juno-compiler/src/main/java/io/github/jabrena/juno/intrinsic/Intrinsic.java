@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.intrinsic;
 
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 /** Every hardware operation Juno understands, independent of its Java method signature or Arduino lowering. */
@@ -35,6 +36,7 @@ public enum Intrinsic {
     STRING_EQUALS,
     STRING_EQUALS_NULL_SAFE,
     STRING_HASH_CODE,
+    SYSTEM_ARRAYCOPY_WORDS,
     STRING_BUILDER_NEW,
     STRING_BUILDER_APPEND_CHAR,
     STRING_BUILDER_APPEND_STRING,
@@ -582,6 +584,38 @@ public enum Intrinsic {
     private static final Set<Intrinsic> PSRAM_OPERATIONS = EnumSet.of(PSRAM_AVAILABLE, PSRAM_NOMINAL_CAPACITY,
             PSRAM_TOTAL_BYTES, PSRAM_FREE_BYTES, PSRAM_LARGEST_FREE_BLOCK, PSRAM_ALLOCATE, PSRAM_CAPACITY,
             PSRAM_READ_BYTE, PSRAM_WRITE_BYTE, PSRAM_READ, PSRAM_WRITE, PSRAM_RELEASE);
+
+    /**
+     * The families that touch only Juno's own runtime: monitors, locks and the other {@code java.util.concurrent}
+     * primitives, atomics, threads, structured tasks, scoped values, exceptions, durations and strings. None reaches
+     * the board's libraries or a double-precision instruction, so the call may run on a core that has neither of its
+     * own, such as the Portenta H7's Cortex-M4. Number formatting is left out: it goes through the C library's
+     * floating point.
+     */
+    private static final List<String> RUNTIME_FAMILIES = List.of("MONITOR_", "REENTRANT_", "READ_WRITE_LOCK_",
+            "LOCK_", "CONDITION_", "LATCH_", "SEMAPHORE_", "BARRIER_", "PHASER_", "ATOMIC_", "THREAD_", "TASK_",
+            "SCOPED_", "THROW_", "THROWABLE_", "DURATION_", "STRING_");
+
+    private static final Set<Intrinsic> RUNTIME_OPERATIONS = runtimeOperations();
+
+    private static Set<Intrinsic> runtimeOperations() {
+        Set<Intrinsic> operations = EnumSet.noneOf(Intrinsic.class);
+        for (Intrinsic intrinsic : values()) {
+            String name = intrinsic.name();
+            boolean formatsNumber = name.contains("FLOAT") || name.contains("DOUBLE");
+            if (!formatsNumber && RUNTIME_FAMILIES.stream().anyMatch(name::startsWith)) operations.add(intrinsic);
+        }
+        return operations;
+    }
+
+    /**
+     * Whether a call to this intrinsic may run on any core of a board, including one that runs none of the board's
+     * libraries; otherwise a thread on such a core hands the call to the core that does (see
+     * {@code CoreRuntime.nativeCallDispatcher}).
+     */
+    public boolean runsOnAnyCore() {
+        return RUNTIME_OPERATIONS.contains(this);
+    }
 
     /** Whether this intrinsic ignores the object it is called on, so lowering need not keep that object alive. */
     public boolean ignoresReceiver() {

@@ -195,13 +195,14 @@ public final class Thumb2AsmBackend implements AsmBackend {
         CoreRuntime coreRuntime = coreRuntimes.of(board.core());
         int carrierCount = runtimeConfig.carrierCount();
         boolean dualCarrier = usesThreads && carrierCount > 1;
+        int imageCarriers = dualCarrier ? carrierCount : 1;
         ints = new IntArithmeticLowering(asm);
         wides = new WideArithmeticLowering(asm, features);
         arrays = new ArrayLowering(asm);
         terminators = new TerminatorLowering(asm, ints, usesThreads ? "juno_thread_backedge" : "yield");
         convention = new CallConvention(asm);
         fields = new FieldAccessLowering(asm, layout, usesThreads, dualCarrier,
-                coreRuntime.memoryBarrierInstruction());
+                coreRuntime.memoryBarrierInstruction(), coreRuntime.volatileLoadFence(imageCarriers));
         intrinsics = new IntrinsicLowering(new Thumb2IntrinsicTarget(asm, dualCarrier),
                 coreRuntime, board, board.onboardSdChipSelect(), features,
                 usedMath, usesThreads, inputStreamRoute, carrierCount);
@@ -226,8 +227,8 @@ public final class Thumb2AsmBackend implements AsmBackend {
                 layout.throwableClasses(), program.watchdogTimeoutMillis()).generate();
         return new GeneratedCode(assemblyPeepholeOptimizer.optimize(output.toString()), runtimeShim,
                 java.util.Objects.requireNonNull(functionLabels.get(entryPoint)),
-                coreRuntime.fqbnOptions(dualCarrier ? carrierCount : 1),
-                coreRuntime.mainLauncher(dualCarrier ? carrierCount : 1));
+                coreRuntime.fqbnOptions(imageCarriers), coreRuntime.mainLauncher(imageCarriers),
+                coreRuntime.coprocessorImage(imageCarriers));
     }
 
     private void emitMethod(StringBuilder output, IrMethod method) {

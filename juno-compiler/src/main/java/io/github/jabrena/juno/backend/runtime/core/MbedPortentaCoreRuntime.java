@@ -6,9 +6,13 @@ import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.SntpServer;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.CoprocessorImage;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
 import io.github.jabrena.juno.board.Architecture;
+import io.github.jabrena.juno.board.ArduinoCore;
+
+import java.util.Optional;
 
 /**
  * The Arduino Portenta H7 M7 variant of the Arduino Mbed core. Its standard Arduino delay and GPIO functions are real
@@ -464,6 +468,182 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
     @Override
     public String threadPort(ResolvedRuntimeConfig config) {
         return threadRuntime.mbedPort(config.threadStackBytes());
+    }
+
+    /** The Cortex-M7 and, with {@code -Djuno.carriers=2}, the Cortex-M4 running Juno's carrier image. */
+    @Override
+    public int carrierCount() {
+        return ArduinoCore.MBED_PORTENTA.carrierCount();
+    }
+
+    @Override
+    public String threadPort(ResolvedRuntimeConfig config, int carrierCount) {
+        return threadRuntime.mbedPort(config.threadStackBytes(), carrierCount);
+    }
+
+    /** With two carriers, safepoints ask the port: each core reads its own cycle counter, without the runtime lock. */
+    @Override
+    public boolean asksPortForSlices(int carrierCount) {
+        return carrierCount > 1;
+    }
+
+    /** With two carriers, a thread on the M4 hands every call to the board's libraries to the M7 through it. */
+    @Override
+    public Optional<String> nativeCallDispatcher(int carrierCount) {
+        return carrierCount > 1 ? Optional.of("juno_native_dispatch") : Optional.empty();
+    }
+
+    /** With two carriers, double arithmetic on the M4, which has no double-precision FPU, runs libgcc's routines. */
+    @Override
+    public Optional<String> doubleHelpers(int carrierCount) {
+        return carrierCount > 1 ? Optional.of(runtimeSource.load("mbed/double-dual.cpp")) : Optional.empty();
+    }
+
+    /** With two carriers, main's setup() starts the M4 carrier image before it runs main. */
+    @Override
+    public String mainLauncher(int carrierCount) {
+        return carrierCount > 1 ? "juno_launch_main" : "";
+    }
+
+    @Override
+    public Optional<CoprocessorImage> coprocessorImage(int carrierCount) {
+        return carrierCount > 1
+                ? Optional.of(new CoprocessorImage(threadRuntime.mbedM4Carrier(), ":target_core=cm4"))
+                : Optional.empty();
+    }
+
+    /**
+     * The link both carrier images share, the M7's cache acquire, and the stop-the-world flags placed in the link,
+     * which the M7 does not cache: emitted before every other dual-carrier part of the runtime.
+     */
+    @Override
+    public Optional<String> carrierGcState() {
+        return Optional.of(threadRuntime.mbedLink() + """
+
+                // The M7 caches RAM write-through and the M4 has no cache, so the M4 always reads what the M7 wrote, but
+                // the M7 may read a stale copy of what the M4 wrote. Wherever it may next read such data (taking the
+                // runtime lock from the M4, a volatile load, a wake-up, a collection) it drops every cached line. On
+                // the M4 this does nothing.
+                extern "C" void juno_cache_acquire() {
+                  if (juno_physical_core() == 0u) SCB_CleanInvalidateDCache();
+                }
+
+                // juno_cache_acquire for generated code before a volatile load, whose address is already in a
+                // register: it keeps every register and the flags.
+                __asm__(R"(
+                    .pushsection .text
+                    .syntax unified
+                    .thumb
+                    .global juno_cache_acquire_saving
+                    .type juno_cache_acquire_saving, %function
+                    .thumb_func
+                juno_cache_acquire_saving:
+                    push {r0, r1, r2, r3, r12, lr}
+                    mrs r0, apsr
+                    push {r0, r1}
+                    bl juno_cache_acquire
+                    pop {r0, r1}
+                    msr apsr_nzcvq, r0
+                    pop {r0, r1, r2, r3, r12, lr}
+                    bx lr
+                    .popsection
+                )");
+
+                #define juno_carrier_in_java (juno_m4_link->gcInJava)
+                #define juno_carrier_parked (juno_m4_link->gcParked)
+                #define juno_gc_stopping (juno_m4_link->gcStopping)""");
+    }
+
+    /** A collection on the M7 may scan objects the M4 changed: the M7 drops its cached copies once the M4 is stopped. */
+    @Override
+    public String worldStoppedStatement() {
+        return "\n  juno_cache_acquire();";
+    }
+
+    @Override
+    public String volatileLoadFence(int carrierCount) {
+        return carrierCount > 1 ? "bl juno_cache_acquire_saving" : "";
+    }
+
+    @Override
+    public String runtimeLock() {
+        return """
+                #include "rtx_os.h"
+
+                // The carrier the calling code runs for. The M4's threads are carrier 1, and so is an M7 worker while it
+                // runs a native call for one of them (thread-port-dual.cpp): the call then sees that thread's runtime
+                // state. RTX keeps the running thread's name pointer, so the check reads memory and makes no kernel call.
+                static const char juno_call_worker_name[] = "juno-m4-call";
+
+                extern "C" uint32_t juno_port_carrier_id() {
+                  if (juno_physical_core() != 0u) return 1u;
+                  const osRtxThread_t* running = osRtxInfo.thread.run.curr;
+                  return running != nullptr && running->name == juno_call_worker_name ? 1u : 0u;
+                }
+
+                // Recursive lock shared by the two carriers, on a hardware semaphore, its state in the link. A carrier
+                // owns it; the semaphore is taken and released by the core that runs the carrier at the time. The M7
+                // drops its cached copies when it takes the lock after the M4 last released it.
+                extern "C" bool juno_runtime_owned() {
+                  return juno_m4_link->runtimeOwner == juno_port_carrier_id() + 1u;
+                }
+
+                extern "C" void juno_runtime_enter() {
+                  uint32_t carrier = juno_port_carrier_id();
+                  if (juno_m4_link->runtimeOwner == carrier + 1u) {
+                    juno_m4_link->runtimeDepth = juno_m4_link->runtimeDepth + 1u;
+                    return;
+                  }
+                  uint32_t core = juno_physical_core();
+                  while (!juno_hsem_try(JUNO_HSEM_RUNTIME, core)) {
+                    juno_gc_lock_wait();
+                    // The holder may be another M7 thread: give it the core. Never on the M4, whose kernel is not
+                    // this image's.
+                    if (core == 0u) yield();
+                  }
+                  if (core == 0u && juno_m4_link->runtimeLastCore != 0u) juno_cache_acquire();
+                  juno_m4_link->runtimeCore = core;
+                  juno_m4_link->runtimeOwner = carrier + 1u;
+                  juno_m4_link->runtimeDepth = 1u;
+                }
+
+                extern "C" void juno_runtime_exit() {
+                  uint32_t carrier = juno_port_carrier_id();
+                  if (juno_m4_link->runtimeOwner == carrier + 1u && juno_m4_link->runtimeDepth != 0u) {
+                    juno_m4_link->runtimeDepth = juno_m4_link->runtimeDepth - 1u;
+                    if (juno_m4_link->runtimeDepth == 0u) {
+                      juno_m4_link->runtimeOwner = 0u;
+                      uint32_t core = juno_m4_link->runtimeCore;
+                      juno_m4_link->runtimeLastCore = core;
+                      juno_hsem_release(JUNO_HSEM_RUNTIME, core);
+                    }
+                  }
+                }
+                """;
+    }
+
+    @Override
+    public String memoryBarrierInstruction() {
+        return "dmb";
+    }
+
+    @Override
+    public String wideAccessHelpers() {
+        return """
+                extern "C" uint64_t juno_wide_load(const uint32_t* address) {
+                  juno_runtime_enter();
+                  uint64_t value = static_cast<uint64_t>(address[0]) | (static_cast<uint64_t>(address[1]) << 32);
+                  juno_runtime_exit();
+                  return value;
+                }
+
+                extern "C" void juno_wide_store(uint32_t* address, uint32_t low, uint32_t high) {
+                  juno_runtime_enter();
+                  address[0] = low;
+                  address[1] = high;
+                  juno_runtime_exit();
+                }
+                """;
     }
 
     @Override

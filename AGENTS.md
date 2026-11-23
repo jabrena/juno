@@ -59,7 +59,7 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   detailed guidance.
 - **`juno-api`, the generated `RcxFirmwareImage`, and `juno-examples` run on the board: write them for zero
   allocation.** The board has one fixed
-  arena (8 KiB, 1 KiB on AVR) and no `OutOfMemoryError`, so the API stays `final` classes of static intrinsics over
+  arena (8 KiB on the UNO R4, 1 KiB on AVR, 64 KiB on the ESP32, Pico 2 W and Portenta boards) and no `OutOfMemoryError`, so the API stays `final` classes of static intrinsics over
   primitives and caller-owned buffers (`Gpio`, `I2c`, `Mouse`, `LedMatrix`, `Wifi`, `Clock`, `BoardModel` and `BoardMemory` are the exception: interfaces whose
   board instances come from `Arduino.getGpio()`/`Arduino.getI2c()`/`Arduino.getMouse()`/`Arduino.getLedMatrix()`/`Arduino.getWifi()`/`Arduino.getClock()`/`Arduino.getBoardModel()`/`Arduino.getBoardMemory()`
   (on the UNO R3, which has no radio, `Wifi` comes from `new ArduinoWifiShield().getWifi()`), and `SdCard`, whose

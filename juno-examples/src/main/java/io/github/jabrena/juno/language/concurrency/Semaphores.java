@@ -4,9 +4,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * JVM-only example of a counting semaphore. A semaphore limits permits; unlike a monitor or a lock, it can allow
- * several workers into the protected region at once. Juno does not lower {@link Semaphore}, so board programs use a
- * concrete {@code ReentrantLock} and a small non-blocking protocol instead (see {@link BoundedBuffer}).
+ * A counting semaphore. A semaphore limits permits; unlike a monitor or a lock, it can allow several workers into the
+ * protected region at once. Runs on the JVM ({@code Jls17ExamplesTest}) and on the board alike.
  */
 public final class Semaphores {
     private static final int PERMITS = 2;
@@ -39,12 +38,15 @@ public final class Semaphores {
         try {
             semaphore.acquire();
         } catch (InterruptedException interrupted) {
-            Thread.currentThread().interrupt();
+            // Nothing interrupts the workers; one that were interrupted would leave without a permit.
             return;
         }
         try {
             int now = active.incrementAndGet();
-            maximum.accumulateAndGet(now, Math::max);
+            int seen = maximum.get();
+            while (now > seen && !maximum.compareAndSet(seen, now)) {
+                seen = maximum.get();
+            }
             Thread.yield();
             active.decrementAndGet();
             completed.incrementAndGet();

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -86,9 +87,15 @@ class ThreadsTest {
                 arguments("ArduinoPortentaH7Board", 4));
     }
 
+    private static final RuntimeConfig ONE_CARRIER = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1"));
+
     private CompilationResult compile(String board, String body) throws Exception {
+        return compile(board, body, RuntimeConfig.DEFAULT);
+    }
+
+    private CompilationResult compile(String board, String body, RuntimeConfig runtimeConfig) throws Exception {
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.Worker", program(board, body));
-        return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Worker");
+        return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.Worker", runtimeConfig);
     }
 
     @Test
@@ -137,9 +144,9 @@ class ThreadsTest {
     }
 
     @Test
-    @DisplayName("The Portenta runs Juno threads on Mbed RTOS threads passing a semaphore baton")
+    @DisplayName("The Portenta on one carrier runs Juno threads on Mbed RTOS threads passing a semaphore baton")
     void shouldRunPortentaThreadsOnMbedRtosThreads() throws Exception {
-        String shim = compile("ArduinoPortentaH7Board", START_AND_JOIN).runtimeShim();
+        String shim = compile("ArduinoPortentaH7Board", START_AND_JOIN, ONE_CARRIER).runtimeShim();
 
         assertThat(shim).contains("#include <mbed.h>", "Portenta H7 Mbed RTOS port", "rtos::Thread",
                         "rtos::Semaphore", "juno_mbed_main_baton", "juno_port_live_range")
@@ -338,6 +345,10 @@ class ThreadsTest {
     }
 
     private String parallelHttpsProgramShim(String board) throws Exception {
+        return parallelHttpsProgramShim(board, RuntimeConfig.DEFAULT);
+    }
+
+    private String parallelHttpsProgramShim(String board, RuntimeConfig runtimeConfig) throws Exception {
         String source = """
                 package demo;
                 import io.github.jabrena.juno.annotations.%1$s;
@@ -373,7 +384,7 @@ class ThreadsTest {
                 }
                 """.formatted(board);
         CompilerTestSupport.compileJavaWithPreview(temporaryDirectory, "demo.ParallelFetch", source);
-        return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ParallelFetch").runtimeShim();
+        return CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ParallelFetch", runtimeConfig).runtimeShim();
     }
 
     @ParameterizedTest(name = "two HTTPS subtasks respect the transport limit on {0}")
@@ -395,10 +406,10 @@ class ThreadsTest {
     }
 
     @Test
-    @DisplayName("On the Portenta a connect leaves the runtime, so a TLS handshake no longer holds up the other threads")
+    @DisplayName("On the Portenta's single carrier a connect leaves the runtime, so a TLS handshake no longer holds up the other threads")
     void shouldLeaveTheRuntimeForAConnectOnThePortenta() throws Exception {
         // Given
-        String portenta = parallelHttpsProgramShim("ArduinoPortentaH7Board");
+        String portenta = parallelHttpsProgramShim("ArduinoPortentaH7Board", ONE_CARRIER);
         String unoR4 = parallelHttpsProgramShim("ArduinoUnoR4WiFiBoard");
 
         // When & Then: the connect is bracketed on every core, but only the Portenta's threads have stacks of their own

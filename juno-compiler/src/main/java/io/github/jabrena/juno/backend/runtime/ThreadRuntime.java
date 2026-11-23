@@ -110,6 +110,28 @@ public final class ThreadRuntime {
     }
 
     /**
+     * The Portenta H7 port selected for a single or dual carrier runtime. With two carriers the Cortex-M4 runs Juno's
+     * carrier image ({@link #mbedM4Carrier}) and executes this image's code for the threads placed on it; the
+     * {@link #mbedLink link} both images share comes with the runtime lock, which is emitted before the port.
+     */
+    public String mbedPort(int stackBytes, int carrierCount) {
+        if (carrierCount == 1) return mbedPort(stackBytes);
+        return runtimeSource.load("mbed/thread-port-dual.cpp")
+                .replace("${JUNO_THREAD_STACK_BYTES}", Integer.toString(stackBytes));
+    }
+
+    /** The block, hardware semaphores and request rings the Portenta H7's two carrier images share. */
+    public String mbedLink() {
+        return runtimeSource.load("mbed/m4-link.h")
+                .replace("${JUNO_DUAL_CARRIER_SLOTS}", Integer.toString(RuntimeLimits.MAX_DUAL_CARRIER_THREADS));
+    }
+
+    /** The Portenta H7's Cortex-M4 carrier image: the M4 kernel's services for the program image, and no Java. */
+    public String mbedM4Carrier() {
+        return runtimeSource.load("mbed/m4-carrier.ino").replace("${JUNO_M4_LINK}", mbedLink());
+    }
+
+    /**
      * The Nano ESP32's port: like the Portenta H7's, every Juno thread is an RTOS task (here FreeRTOS, which the
      * {@code arduino:esp32} core already runs) parked on its own baton semaphore, so only the baton holder runs Java
      * code. There is no asynchronous tick: the backend emits safepoints, as on AVR.

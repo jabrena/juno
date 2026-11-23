@@ -37,6 +37,12 @@ record Thumb2IntrinsicTarget(AsmEmitter asm, boolean memoryBarrier) implements I
     }
 
     @Override
+    public void emitShimCallThrough(StringBuilder output, FrameLayout frame, String dispatcher, String function,
+                                    List<WordSource> words) {
+        asm.emitShimCallThrough(output, frame, dispatcher, function, words);
+    }
+
+    @Override
     public void storeResult(StringBuilder output, FrameLayout frame, Value target) {
         asm.store(output, frame, "r0", target);
     }

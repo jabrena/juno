@@ -36,6 +36,19 @@ record DfuUploadPattern(String tool, String pattern) {
     }
 
     /**
+     * The same recipe without dfu-util's {@code :leave}: the board stays in its bootloader after this upload, so a
+     * second image can follow before either one runs.
+     */
+    DfuUploadPattern staying() {
+        return new DfuUploadPattern(tool, pattern.replace(":leave", ""));
+    }
+
+    /** The {@code --upload-property} value that runs this recipe as it is. */
+    String asProperty() {
+        return "upload.pattern=" + pattern;
+    }
+
+    /**
      * The {@code --upload-property} value that makes the upload pick the DFU device with USB serial {@code serial}. It
      * overrides {@code upload.pattern}, the key arduino-cli runs once it has merged the tool's properties in (an
      * override of {@code tools.<tool>.upload.pattern} is ignored, as arduino-cli 1.5.1 shows).
@@ -45,6 +58,6 @@ record DfuUploadPattern(String tool, String pattern) {
             throw new ArduinoCliException("-Djuno.dfuSerial must be a USB serial number (letters, digits, '.', '_' or "
                     + "'-'), not '" + serial + "'");
         }
-        return "upload.pattern=" + pattern + " -S \"" + serial + "\"";
+        return asProperty() + " -S \"" + serial + "\"";
     }
 }

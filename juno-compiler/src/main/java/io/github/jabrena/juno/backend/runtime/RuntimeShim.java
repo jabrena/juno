@@ -155,7 +155,7 @@ public final class RuntimeShim {
         }
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER,
                 ShimFeature.RUNTIME_STRINGS, ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3,
-                ShimFeature.SD, ShimFeature.FLOAT, ShimFeature.DOUBLE)) {
+                ShimFeature.SD, ShimFeature.FLOAT, ShimFeature.DOUBLE, ShimFeature.SYSTEM_ARRAYCOPY)) {
             shim.append("#include <string.h>\n");
         }
         if (usesAny(ShimFeature.FLOAT, ShimFeature.DOUBLE, ShimFeature.RUNTIME_STRINGS,
@@ -296,6 +296,8 @@ public final class RuntimeShim {
         appendPeripheralHelpers(shim);
         ShimFeatureBlock.appendUsed(shim, features, List.of(
                 new ShimFeatureBlock(ShimFeature.MEMORY, shimLibraries::memoryHelpers),
+                new ShimFeatureBlock(ShimFeature.SYSTEM_ARRAYCOPY,
+                        () -> runtimeSource.load("common/system-arraycopy.cpp")),
                 new ShimFeatureBlock(ShimFeature.FLASH, core::flashHelpers),
                 new ShimFeatureBlock(ShimFeature.RANDOM, shimLibraries::randomHelpers),
                 new ShimFeatureBlock(ShimFeature.WIFI, core::wifiHelpers),
@@ -305,7 +307,8 @@ public final class RuntimeShim {
                 new ShimFeatureBlock(ShimFeature.SD_CAPACITY, shimLibraries::sdCapacityHelpers),
                 new ShimFeatureBlock(ShimFeature.LONG, shimLibraries::longHelpers),
                 new ShimFeatureBlock(ShimFeature.FLOAT, shimLibraries::floatHelpers),
-                new ShimFeatureBlock(ShimFeature.DOUBLE, shimLibraries::doubleHelpers)));
+                new ShimFeatureBlock(ShimFeature.DOUBLE,
+                        () -> core.doubleHelpers(carrierCount).orElseGet(shimLibraries::doubleHelpers))));
         if (!usedMath.isEmpty()) {
             shim.append(mathRuntime.helpers(usedMath));
         }
@@ -392,7 +395,7 @@ public final class RuntimeShim {
             shim.append(core.carrierRuntime(carrierCount));
             shim.append(core.threadPort(config, carrierCount));
             shim.append(threadRuntime.scheduler(core.preemptsAsynchronously() ? ThreadRuntime.Preemption.TICK
-                            : core.asksPortForSlices() ? ThreadRuntime.Preemption.SAFEPOINT_PORT
+                            : core.asksPortForSlices(carrierCount) ? ThreadRuntime.Preemption.SAFEPOINT_PORT
                             : ThreadRuntime.Preemption.SAFEPOINT_CLOCK,
                     core.maxConcurrentHttpRequests(), core.delayMillisFunction(), "juno_gc_scan_range",
                     uses(ShimFeature.EXCEPTIONS),

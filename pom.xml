@@ -69,7 +69,7 @@
         <testcontainers.version>2.0.5</testcontainers.version>
         <logback.version>1.6.7</logback.version>
         <slf4j.version>2.0.20</slf4j.version>
-        <maven.version>3.10.1</maven.version>
+        <maven.version>3.10.2</maven.version>
         <maven.version.range>[3.9.16,4.0.0)</maven.version.range>
         <maven-plugin-tools.version>3.16.0</maven-plugin-tools.version>
         <maven-plugin-clean.version>3.5.0</maven-plugin-clean.version>
@@ -97,7 +97,7 @@
         <coverage.level>80</coverage.level>
         <maven-plugin-dependency.version>3.11.0</maven-plugin-dependency.version>
         <!-- Release versioning: ./mvnw versions:set -DnewVersion=<version> updates the parent and every module. -->
-        <maven-plugin-versions.version>2.21.0</maven-plugin-versions.version>
+        <maven-plugin-versions.version>2.25.2</maven-plugin-versions.version>
         <maven-plugin-pitest.version>1.30.2</maven-plugin-pitest.version>
         <!-- PIT parallelism per module; a mutant's test run is slow, so the default single thread takes hours. -->
         <pitest.threads>4</pitest.threads>

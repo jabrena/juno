@@ -25,14 +25,14 @@ class CoreRuntimeTest {
     private final CoreRuntimes coreRuntimes = new CoreRuntimes();
 
     @Test
-    @DisplayName("dual-core ports expose two carriers and all other cores expose one")
+    @DisplayName("dual-core ports, the Portenta H7 included, expose two carriers and all other cores expose one")
     void shouldReportCarrierCountFromTheCoreRuntime() {
         assertThat(coreRuntimes.of(ArduinoCore.ESP32).carrierCount()).isEqualTo(2);
         assertThat(coreRuntimes.of(ArduinoCore.ESP32_CAM).carrierCount()).isEqualTo(2);
         assertThat(coreRuntimes.of(ArduinoCore.M5STACK_ESP32).carrierCount()).isEqualTo(2);
         assertThat(coreRuntimes.of(ArduinoCore.RP2350).carrierCount()).isEqualTo(2);
         assertThat(coreRuntimes.of(ArduinoCore.RENESAS_UNO).carrierCount()).isEqualTo(1);
-        assertThat(coreRuntimes.of(ArduinoCore.MBED_PORTENTA).carrierCount()).isEqualTo(1);
+        assertThat(coreRuntimes.of(ArduinoCore.MBED_PORTENTA).carrierCount()).isEqualTo(2);
         assertThat(coreRuntimes.of(ArduinoCore.CLASSIC_AVR).carrierCount()).isEqualTo(1);
     }
 

@@ -36,16 +36,17 @@
  *   <li>{@link io.github.jabrena.juno.language.concurrency.Semaphores},
  *       {@link io.github.jabrena.juno.language.concurrency.CountDownLatchExample},
  *       {@link io.github.jabrena.juno.language.concurrency.PhaserExample},
- *       {@link io.github.jabrena.juno.language.concurrency.CyclicBarrierExample},
- *       {@link io.github.jabrena.juno.language.concurrency.ExchangerExample},
- *       {@link io.github.jabrena.juno.language.concurrency.ReadWriteLockExample} and
- *       {@link io.github.jabrena.juno.language.concurrency.BlockingQueueExample} — JVM-only examples of higher-level
- *       {@code java.util.concurrent} coordination objects that Juno intentionally does not lower.</li>
+ *       {@link io.github.jabrena.juno.language.concurrency.CyclicBarrierExample} and
+ *       {@link io.github.jabrena.juno.language.concurrency.ReadWriteLockExample} — higher-level
+ *       {@code java.util.concurrent} coordination objects, each a {@code run()} that returns its total, called by
+ *       {@code Jls17ExamplesTest} on the JVM and by a board program alike.</li>
+ *   <li>{@link io.github.jabrena.juno.language.concurrency.ExchangerExample} and
+ *       {@link io.github.jabrena.juno.language.concurrency.BlockingQueueExample} — JVM-only: Juno does not lower
+ *       {@code Exchanger} or {@code BlockingQueue}.</li>
  * </ul>
  *
  * <p>Each board entry point writes its results to USB serial at 115200 baud, and each total can be checked against the
- * value printed beside it. The board entry points use no {@code wait}/{@code notify}, interruption, semaphores or
- * latches, since Juno does not lower them; the JVM-only classes above make those APIs explicit and testable without
- * pretending they are available on a board.
+ * value printed beside it. The board entry points use no {@code wait}/{@code notify} or interruption; the JVM-only
+ * classes above make those APIs explicit and testable without pretending they are available on a board.
  */
 package io.github.jabrena.juno.language.concurrency;

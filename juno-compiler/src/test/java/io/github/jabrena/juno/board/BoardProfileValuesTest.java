@@ -19,13 +19,13 @@ class BoardProfileValuesTest {
         return Stream.of(
                 arguments(Board.UNO_R3, 2048, 1024, 1024, 512, 512, MemoryAuthority.LINKER, 1),
                 arguments(Board.UNO_R4_WIFI, 32768, 8192, 25736, 2048, 8192, MemoryAuthority.LINKER, 1),
-                arguments(Board.NANO_ESP32, 327680, 8192, 296840, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, 2),
-                arguments(Board.AI_THINKER_ESP32_CAM, 327680, 8192, 305216, 8192, 32768, MemoryAuthority.RUNTIME_HEAP,
+                arguments(Board.NANO_ESP32, 327680, 65536, 296840, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, 2),
+                arguments(Board.AI_THINKER_ESP32_CAM, 327680, 65536, 305216, 8192, 32768, MemoryAuthority.RUNTIME_HEAP,
                         2),
-                arguments(Board.M5_CARDPUTER, 327680, 8192, 273408, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, 2),
-                arguments(Board.PICO_2_W, 524288, 8192, 436176, 4096, 16384, MemoryAuthority.RUNTIME_HEAP, 2),
+                arguments(Board.M5_CARDPUTER, 327680, 65536, 273408, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, 2),
+                arguments(Board.PICO_2_W, 524288, 65536, 436176, 4096, 16384, MemoryAuthority.RUNTIME_HEAP, 2),
                 arguments(Board.PORTENTA_H7, 1024 * 1024, 65536, 917504, 8192, 32768,
-                        MemoryAuthority.RUNTIME_HEAP, 1));
+                        MemoryAuthority.RUNTIME_HEAP, 2));
     }
 
     @ParameterizedTest(name = "{0}")
