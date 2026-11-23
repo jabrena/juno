@@ -183,17 +183,32 @@ class JunoSiteTest {
     }
 
     @Test
-    void blogPageListsOnlyBlogVisibleArticlesWithoutImagesAndWithPagination() {
+    void blogPageListsFiveArticlesPerPageWithoutImagesOrProjects() {
         RestAssured.given().when().get("/blog/").then().statusCode(200)
                 .body(containsString("juno-subnav"))
                 .body(containsString("/blog/2026-11-23-juno-memory-model-design/"))
-                .body(containsString("/blog/2026-11-30-juno-secretstore-secrets/"))
                 .body(containsString("Juno Internals: how the memory model works in Juno"))
+                .body(not(containsString("/blog/2026-11-30-juno-secretstore-secrets/")))
                 .body(not(containsString("/blog/2026-11-14-gladiator/")))
                 .body(not(containsString("/blog/2026-11-14-lichess/")))
                 .body(not(containsString("Supabase: publish Grove temperatures to the cloud")))
                 .body(not(containsString("post-thumbnail")))
-                .body(not(containsString("/posts/page2/")));
+                .body(containsString("/posts/page2/"));
+    }
+
+    @Test
+    void blogSecondPageListsTheRemainingArticles() {
+        RestAssured.given().when().get("/posts/page2/").then().statusCode(200)
+                .body(containsString("/blog/2026-11-30-juno-secretstore-secrets/"))
+                .body(not(containsString("/blog/2026-11-23-juno-memory-model-design/")))
+                .body(not(containsString("/blog/2026-11-14-mailbox/")))
+                .body(not(containsString("/posts/page3/")));
+    }
+
+    @Test
+    void projectWriteUpsKeepTheirBlogLinks() {
+        RestAssured.given().when().get("/blog/2026-11-14-gladiator/").then().statusCode(200)
+                .body(containsString("Gladiator: a network arena game"));
     }
 
     @Test

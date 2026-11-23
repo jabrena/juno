@@ -4,7 +4,7 @@ description: "Articles about building practical Java applications for Arduino an
 layout: blog
 paginate:
   collection: posts
-  size: 100
+  size: 5
 featured: 0
 ---
 
