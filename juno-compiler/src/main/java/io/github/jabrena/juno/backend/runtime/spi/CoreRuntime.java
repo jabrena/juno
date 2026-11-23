@@ -455,6 +455,11 @@ public interface CoreRuntime {
         throw new IllegalStateException("This core has no supported PSRAM service; the linker should have rejected it");
     }
 
+    /** The TNY2 language-model engine over the PSRAM service; only ESP32-family cores provide it. */
+    default String languageModelHelpers() {
+        throw new IllegalStateException("This core has no PSRAM for a language model; the linker should have rejected it");
+    }
+
     /** Core-specific headers of the BLE central. */
     default String bleIncludes() {
         return "#include <ArduinoBLE.h>\n";

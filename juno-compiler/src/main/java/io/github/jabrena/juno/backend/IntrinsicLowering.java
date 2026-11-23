@@ -408,6 +408,22 @@ public final class IntrinsicLowering {
         shim(Intrinsic.PSRAM_WRITE, "juno_psram_write", Result.WORD,
                 List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5)), ShimFeature.PSRAM);
         shim(Intrinsic.PSRAM_RELEASE, "juno_psram_release", Result.WORD, List.of(arg(0)), ShimFeature.PSRAM);
+        shim(Intrinsic.LANGUAGE_MODEL_LOAD, "juno_language_model_load", Result.WORD, List.of(arg(0)),
+                ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_IS_LOADED, "juno_language_model_is_loaded", Result.WORD, List.of(),
+                ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_WIDTH, "juno_language_model_width", Result.WORD, List.of(),
+                ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_LAYERS, "juno_language_model_layers", Result.WORD, List.of(),
+                ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_ASK, "juno_language_model_ask", Result.WORD, List.of(arg(0), arg(1)),
+                ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_ASK_BYTES, "juno_language_model_ask_bytes", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_NEXT_CHAR, "juno_language_model_next_char", Result.WORD, List.of(),
+                ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_RELEASE, "juno_language_model_release", Result.WORD, List.of(),
+                ShimFeature.LANGUAGE_MODEL);
     }
 
     /**
@@ -635,6 +651,7 @@ public final class IntrinsicLowering {
         shim(Intrinsic.SERIAL_BEGIN, "juno_serial_begin", Result.NONE, List.of(arg(0)));
         shim(Intrinsic.SERIAL_AVAILABLE, "juno_serial_available", Result.WORD, List.of());
         shim(Intrinsic.SERIAL_READ, "juno_serial_read", Result.WORD, List.of());
+        shim(Intrinsic.SERIAL_WRITE, "juno_serial_write", Result.NONE, List.of(arg(0)), ShimFeature.SERIAL_WRITE);
         shim(Intrinsic.SERIAL_PRINT, "juno_serial_print", Result.NONE, List.of(arg(0)));
         shim(Intrinsic.SERIAL_PRINTLN, "juno_serial_println", Result.NONE, List.of(arg(0)));
         shim(Intrinsic.SERIAL_PRINT_LONG, "juno_serial_print_long", Result.NONE, wide(0));

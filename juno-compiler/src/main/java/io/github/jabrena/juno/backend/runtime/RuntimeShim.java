@@ -111,7 +111,7 @@ public final class RuntimeShim {
         if (uses(ShimFeature.CAMERA)) {
             shim.append(core.cameraIncludes());
         }
-        if (uses(ShimFeature.PSRAM)) {
+        if (usesAny(ShimFeature.PSRAM, ShimFeature.LANGUAGE_MODEL)) {
             shim.append("#include <esp_heap_caps.h>\n");
         }
         // ArduinoBLE is another optional library (arduino-cli lib install ArduinoBLE), like Mouse above.
@@ -260,8 +260,19 @@ public final class RuntimeShim {
         if (uses(ShimFeature.CAMERA)) {
             shim.append(core.cameraHelpers());
         }
-        if (uses(ShimFeature.PSRAM)) {
+        if (usesAny(ShimFeature.PSRAM, ShimFeature.LANGUAGE_MODEL)) {
             shim.append(core.psramHelpers());
+        }
+        if (uses(ShimFeature.LANGUAGE_MODEL)) {
+            shim.append(core.languageModelHelpers());
+        }
+        if (uses(ShimFeature.SERIAL_WRITE)) {
+            shim.append("""
+
+                    extern "C" void juno_serial_write(int32_t value) {
+                      Serial.write(static_cast<uint8_t>(value));
+                    }
+                    """);
         }
         if (uses(ShimFeature.PARALLEL_BUS)) {
             shim.append(core.parallelBusHelpers());

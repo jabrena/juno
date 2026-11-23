@@ -129,5 +129,9 @@ public enum ShimFeature {
     /** AVR only: {@code int} multiply, divide, remainder and variable shifts, which have no 32-bit instruction there. */
     AVR_INT_HELPERS,
     /** {@code HttpServer.beginTls}: the HTTP server's connections wrapped in a TLS server session. */
-    HTTPS_SERVER
+    HTTPS_SERVER,
+    /** {@code MCU.getLanguageModel()}: the TNY2 engine, which keeps its model in PSRAM through the PSRAM service. */
+    LANGUAGE_MODEL,
+    /** {@code Serial.write(int)}: one raw byte, emitted only for a program that writes bytes. */
+    SERIAL_WRITE
 }

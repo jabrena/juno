@@ -431,6 +431,12 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return runtimeSource.load("esp32/psram.cpp");
     }
 
+    /** The TNY2 engine of TINY 2.1, its weights and attention cache in PSRAM. */
+    @Override
+    public String languageModelHelpers() {
+        return runtimeSource.load("esp32/language-model.cpp");
+    }
+
     private void requireCamera() {
         if (core != ArduinoCore.ESP32_CAM) {
             throw new IllegalStateException("Only the AI Thinker ESP32-CAM has a camera on the ESP32 core");

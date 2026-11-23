@@ -38,6 +38,14 @@ public final class Serial {
     public static native int read();
 
     /**
+     * Writes one byte as is, such as a character {@code 'A'}, without converting it to its decimal digits the way
+     * {@link #print(int)} does.
+     *
+     * @param value the byte to send; only its low eight bits are written
+     */
+    public static native void write(int value);
+
+    /**
      * Prints a boolean as {@code true} or {@code false} without a trailing line ending.
      *
      * @param value the boolean to print

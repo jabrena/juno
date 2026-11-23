@@ -274,6 +274,15 @@ public enum Intrinsic {
     PSRAM_READ,
     PSRAM_WRITE,
     PSRAM_RELEASE,
+    LANGUAGE_MODEL_LOAD,
+    LANGUAGE_MODEL_IS_LOADED,
+    LANGUAGE_MODEL_WIDTH,
+    LANGUAGE_MODEL_LAYERS,
+    LANGUAGE_MODEL_ASK,
+    LANGUAGE_MODEL_ASK_BYTES,
+    LANGUAGE_MODEL_NEXT_CHAR,
+    LANGUAGE_MODEL_RELEASE,
+    SERIAL_WRITE,
     SMTP_SEND,
     SMTP_SEND_TLS,
     POP3_MESSAGE_COUNT,
@@ -585,6 +594,11 @@ public enum Intrinsic {
             PSRAM_TOTAL_BYTES, PSRAM_FREE_BYTES, PSRAM_LARGEST_FREE_BLOCK, PSRAM_ALLOCATE, PSRAM_CAPACITY,
             PSRAM_READ_BYTE, PSRAM_WRITE_BYTE, PSRAM_READ, PSRAM_WRITE, PSRAM_RELEASE);
 
+    /** The TNY2 engine calls behind {@code NativeLanguageModel}: one model per program, so they ignore their receiver. */
+    private static final Set<Intrinsic> LANGUAGE_MODEL_OPERATIONS = EnumSet.of(LANGUAGE_MODEL_LOAD,
+            LANGUAGE_MODEL_IS_LOADED, LANGUAGE_MODEL_WIDTH, LANGUAGE_MODEL_LAYERS, LANGUAGE_MODEL_ASK,
+            LANGUAGE_MODEL_ASK_BYTES, LANGUAGE_MODEL_NEXT_CHAR, LANGUAGE_MODEL_RELEASE);
+
     /**
      * The families that touch only Juno's own runtime: monitors, locks and the other {@code java.util.concurrent}
      * primitives, atomics, threads, structured tasks, scoped values, exceptions, durations and strings. None reaches
@@ -620,6 +634,7 @@ public enum Intrinsic {
     /** Whether this intrinsic ignores the object it is called on, so lowering need not keep that object alive. */
     public boolean ignoresReceiver() {
         return PORT_OPERATIONS.contains(this) || WIFI_OPERATIONS.contains(this)
-                || SD_CARD_OPERATIONS.contains(this) || CAMERA_OPERATIONS.contains(this) || PSRAM_OPERATIONS.contains(this);
+                || SD_CARD_OPERATIONS.contains(this) || CAMERA_OPERATIONS.contains(this) || PSRAM_OPERATIONS.contains(this)
+                || LANGUAGE_MODEL_OPERATIONS.contains(this);
     }
 }

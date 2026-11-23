@@ -114,7 +114,10 @@ final class CapabilityRequirements {
         require(required, Capability.PSRAM, Intrinsic.PSRAM_AVAILABLE, Intrinsic.PSRAM_NOMINAL_CAPACITY,
                 Intrinsic.PSRAM_TOTAL_BYTES, Intrinsic.PSRAM_FREE_BYTES, Intrinsic.PSRAM_LARGEST_FREE_BLOCK,
                 Intrinsic.PSRAM_ALLOCATE, Intrinsic.PSRAM_CAPACITY, Intrinsic.PSRAM_READ_BYTE,
-                Intrinsic.PSRAM_WRITE_BYTE, Intrinsic.PSRAM_READ, Intrinsic.PSRAM_WRITE, Intrinsic.PSRAM_RELEASE);
+                Intrinsic.PSRAM_WRITE_BYTE, Intrinsic.PSRAM_READ, Intrinsic.PSRAM_WRITE, Intrinsic.PSRAM_RELEASE,
+                Intrinsic.LANGUAGE_MODEL_LOAD, Intrinsic.LANGUAGE_MODEL_IS_LOADED, Intrinsic.LANGUAGE_MODEL_WIDTH,
+                Intrinsic.LANGUAGE_MODEL_LAYERS, Intrinsic.LANGUAGE_MODEL_ASK, Intrinsic.LANGUAGE_MODEL_ASK_BYTES,
+                Intrinsic.LANGUAGE_MODEL_NEXT_CHAR, Intrinsic.LANGUAGE_MODEL_RELEASE);
         require(required, Capability.BLUETOOTH_LE, Intrinsic.BLE_CONNECT, Intrinsic.BLE_IS_CONNECTED,
                 Intrinsic.BLE_WRITE, Intrinsic.BLE_READ, Intrinsic.BLE_DISCONNECT);
         return Collections.unmodifiableMap(required);

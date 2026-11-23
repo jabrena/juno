@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.hardware;
 
+import io.github.jabrena.juno.hardware.ai.LanguageModel;
 import io.github.jabrena.juno.hardware.audio.Audio;
 import io.github.jabrena.juno.hardware.device.camera.Camera;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
@@ -18,6 +19,7 @@ import io.github.jabrena.juno.hardware.internal.NativeDisplay;
 import io.github.jabrena.juno.hardware.internal.NativeGpio;
 import io.github.jabrena.juno.hardware.internal.NativeI2c;
 import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
+import io.github.jabrena.juno.hardware.internal.NativeLanguageModel;
 import io.github.jabrena.juno.hardware.internal.NativeLedMatrix;
 import io.github.jabrena.juno.hardware.internal.NativeMouse;
 import io.github.jabrena.juno.hardware.internal.NativeOnboardSdCard;
@@ -90,6 +92,11 @@ public final class MCU {
     /** The selected board's onboard camera. */
     public static Camera getCamera() {
         return NativeCamera.camera();
+    }
+
+    /** The board's TNY2 language-model engine, which runs a model from PSRAM. */
+    public static LanguageModel getLanguageModel() {
+        return NativeLanguageModel.languageModel();
     }
 
     /** The card in the selected board's onboard SD socket. */
