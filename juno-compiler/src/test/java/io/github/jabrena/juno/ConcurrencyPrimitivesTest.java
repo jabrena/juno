@@ -411,12 +411,16 @@ class ConcurrencyPrimitivesTest {
                         "static JunoM4Link* const juno_m4_link = reinterpret_cast<JunoM4Link*>(0x38000000u);",
                         "while (!juno_hsem_try(JUNO_HSEM_RUNTIME, core)) {",
                         "extern \"C\" void juno_m4_forward(JunoM4Call* call) {",
-                        "SCB_DisableDCache();",
+                        "juno_mpu_region(MPU_REGION_NUMBER12, 0x24000000u, MPU_REGION_SIZE_512KB, true);",
+                        "if (core == 0u && juno_m4_link->runtimeLastCore != 0u) juno_cache_acquire();",
+                        "#define juno_gc_stopping (juno_m4_link->gcStopping)",
+                        "__sync_synchronize();\n  juno_cache_acquire();\n}",
                         "bootM4();",
                         "#define millis juno_carrier_millis",
                         "static uint32_t juno_current_slots[2] = {};",
                         "juno_carrier_vacate(uint32_t slot) {")
-                .doesNotContain("__atomic_compare_exchange_n", "juno_mbed_main_baton");
+                .doesNotContain("__atomic_compare_exchange_n", "juno_mbed_main_baton", "SCB_DisableDCache",
+                        "static volatile bool juno_gc_stopping");
         assertThat(result.assembly()).contains("bl juno_java_leave", "bl juno_java_return");
         assertThat(result.assembly())
                 .as("a thread's Serial call goes through the dispatcher; the scheduler's join is called directly")
@@ -446,7 +450,8 @@ class ConcurrencyPrimitivesTest {
 
         CompilationResult dual = compile("ArduinoPortentaH7Board", body,
                 RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("2")));
-        CompilationResult single = compile("ArduinoPortentaH7Board", body);
+        CompilationResult single = compile("ArduinoPortentaH7Board", body,
+                RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1")));
 
         assertThat(dual.runtimeShim()).contains("static JUNO_DOUBLE_FPU double juno_fpu_dmul(double a, double b)",
                 "__aeabi_dmul(a, b)", "static double juno_soft_fmod(double x, double y)");
@@ -455,9 +460,10 @@ class ConcurrencyPrimitivesTest {
     }
 
     @Test
-    @DisplayName("Portenta H7 programs stay on the M7's single carrier unless the M4 carrier is requested")
-    void shouldKeepPortentaProgramsOnOneCarrierByDefault() throws Exception {
-        CompilationResult result = compile("ArduinoPortentaH7Board", "Thread.startVirtualThread(new Job()).join();");
+    @DisplayName("Portenta H7 programs built with -Djuno.carriers=1 stay on the M7's single carrier")
+    void shouldKeepPortentaProgramsOnOneCarrierWhenAsked() throws Exception {
+        CompilationResult result = compile("ArduinoPortentaH7Board", "Thread.startVirtualThread(new Job()).join();",
+                RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1")));
 
         assertThat(result.coprocessor()).isEmpty();
         assertThat(result.sketchWrapper().source()).doesNotContain("juno_launch_main");
@@ -528,6 +534,29 @@ class ConcurrencyPrimitivesTest {
         assertThat(result.assembly()).contains("    addi a10, a8, 4\n    call8 juno_wide_store\n",
                 "    addi a10, a8, 4\n    call8 juno_wide_load\n");
         assertThat(result.runtimeShim()).contains("juno_wide_load", "juno_wide_store");
+    }
+
+    @Test
+    @DisplayName("Portenta H7 volatile loads drop the M7's cached copies first; plain loads and the M7-only build do not")
+    void shouldFencePortentaVolatileLoads() throws Exception {
+        String body = """
+                class Cell {
+                    static volatile int flag;
+                    static int plain;
+                }
+                Cell.flag = 1;
+                Cell.plain = 2;
+                Serial.println(Cell.flag + Cell.plain);
+                Thread.startVirtualThread(new Job()).join();
+                """;
+
+        CompilationResult dual = compile("ArduinoPortentaH7Board", body);
+        CompilationResult single = compile("ArduinoPortentaH7Board", body,
+                RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1")));
+
+        assertThat(dual.assembly()).containsOnlyOnce("    bl juno_cache_acquire_saving\n    ldr r1, [r0, #0]");
+        assertThat(dual.runtimeShim()).contains("juno_cache_acquire_saving:", "msr apsr_nzcvq, r0");
+        assertThat(single.assembly()).doesNotContain("juno_cache_acquire_saving");
     }
 
     @Test

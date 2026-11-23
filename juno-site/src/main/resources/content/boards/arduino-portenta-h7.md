@@ -5,8 +5,8 @@ layout: page
 ---
 
 The Arduino Portenta H7 is a dual-core STM32H747 board. Juno targets its Cortex-M7 core through Arduino's Mbed
-Portenta core; the Cortex-M4 can run Java threads as a second carrier, a preview enabled with `-Djuno.carriers=2`
-(see [Two carriers](#two-carriers-preview)). The M7 runs at up to 480 MHz and has a
+Portenta core, and the Cortex-M4 runs Java threads too, as a second carrier (see [Two carriers](#two-carriers)). The
+M7 runs at up to 480 MHz and has a
 double-precision floating-point unit, while the board provides 2 MB of internal flash, 1 MB of internal RAM, external
 flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.
 
@@ -18,7 +18,7 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.
 |---|---:|
 | Main microcontroller | STMicroelectronics STM32H747XI |
 | Juno target core | 32-bit Arm Cortex-M7 at 480 MHz |
-| Companion core | Arm Cortex-M4 at 240 MHz: a second carrier for Java threads with `-Djuno.carriers=2` (preview) |
+| Companion core | Arm Cortex-M4 at 240 MHz: a second carrier for Java threads |
 | Program flash | 2 MB internal, plus 16 MB NOR flash |
 | SRAM | 1 MB internal, plus 8 MB SDRAM |
 | Logic and operating voltage | 3.3 V |
@@ -56,17 +56,10 @@ Thumb-2 assembly independent of C++ overload mangling while leaving the regular 
 and `delay` calls on the core's native symbols. Optional networking, BLE, HID, watchdog, UUID and double-math helpers
 are selected by reachability, so a GPIO-only sketch does not pull them into the image.
 
-## Two carriers (preview)
+## Two carriers
 
-By default every Java thread runs on the Cortex-M7. Build with `-Djuno.carriers=2` and the threads that `main` starts
-run on both cores, so two of them compute at the same time:
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:flash \
-  -Djuno.main=io.github.jabrena.juno.language.concurrency.LostUpdates \
-  -Djuno.board=arduino-portenta-h7 \
-  -Djuno.carriers=2
-```
+`main` runs on the Cortex-M7, and the threads it starts run on both cores, so two of them compute at the same time.
+Build with `-Djuno.carriers=1` to keep every thread on the M7.
 
 The two cores run separate Mbed OS kernels, so Juno builds a second image next to the program: a small sketch for the
 M4 that holds no Java code and runs the program's own code from the M7's flash for the threads placed on it.
@@ -78,12 +71,13 @@ The M4 runs none of the board's libraries, so each such call is handed to a work
 call and hands back its result; the scheduler, locks, atomics and strings run on the M4 itself. The M4 also has no
 double-precision floating-point unit, so its `double` arithmetic uses the compiler's software routines.
 
-The preview has these limits, which issue [#448](https://github.com/jabrena/juno/issues/448) tracks:
+The M7 caches RAM write-through and the M4 has no data cache, so the M4 always reads what the M7 wrote. The M7 drops
+its cached copies wherever it may next read what the M4 wrote: when it takes the runtime lock from the M4, before a
+`volatile` load, when a thread wakes or polls, and before it collects. The RAM only the cores' coordination uses, and
+the M4's own stacks, are not cached at all.
 
 - **A native call from the M4 costs a round trip to the M7**, so code that calls the board in a tight loop runs
   faster on the M7.
-- **The M7 runs with its data cache off**, so both cores see the same memory. Memory-heavy code on the M7 is slower
-  than with one carrier.
 - **The M4 runs at half the M7's clock** and reads the program's code across the bus matrix (through its ART
   accelerator), so its threads are somewhat slower than the M7's.
 

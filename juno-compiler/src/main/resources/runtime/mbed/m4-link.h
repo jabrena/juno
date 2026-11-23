@@ -3,10 +3,12 @@
 // which executes the same Java code and runtime from the M7 image's flash. The two cores run separate Mbed OS
 // kernels, so a core never calls the other's kernel: what one core needs from the other goes through this block.
 // It sits at the start of D3 SRAM, below the Mbed core's OpenAMP region at 0x38000400, where both images find it
-// without exchanging an address. The M7 runs with its data cache off, so every shared word is seen by both cores.
+// without exchanging an address. The M7 does not cache D3 SRAM, so every word here is seen by both cores at once:
+// it also holds the runtime state the two cores read without the runtime lock. The rest of RAM is write-through cached
+// on the M7, which drops its cached copies wherever it may next read what the M4 wrote (juno_cache_acquire).
 // The cores' exclusive monitors do not see each other's LDREX/STREX, so every lock between them is a hardware
 // semaphore (HSEM), taken and released with a barrier on both sides.
-static constexpr uint32_t JUNO_M4_LINK_MAGIC = 0x4A4D3403u;  // "JM4", layout version 3
+static constexpr uint32_t JUNO_M4_LINK_MAGIC = 0x4A4D3404u;  // "JM4", layout version 4
 static constexpr uint32_t JUNO_M4_SLOTS = ${JUNO_DUAL_CARRIER_SLOTS}u;
 static constexpr uint32_t JUNO_M4_RING_SIZE = 32u;
 static constexpr uint32_t JUNO_M4_OP_CREATE = 1u << 16;
@@ -58,10 +60,25 @@ struct JunoM4Link {
   void (*volatile yield)();
   void (*volatile callWait)(uint32_t slot);  // Parks the calling M4 thread until its native call returns.
   volatile uint32_t calls[JUNO_M4_SLOTS];    // The JunoM4Call each M4 slot hands to the M7, as both cores see it.
+  // Read by both cores without the runtime lock.
+  volatile uint32_t gcInJava[2];             // carrier-gc.cpp: a carrier runs Java.
+  volatile uint32_t gcParked[2];             // carrier-gc.cpp: a carrier is parked for a collection.
+  volatile uint32_t gcStopping;              // carrier-gc.cpp: a collection stops the other carrier.
+  volatile uint32_t runtimeOwner;            // The carrier holding the runtime lock, plus one; 0 when free.
+  volatile uint32_t runtimeDepth;
+  volatile uint32_t runtimeCore;             // The core holding the lock's hardware semaphore.
+  volatile uint32_t runtimeLastCore;         // The core that last released it.
+  volatile uint32_t slotCores[JUNO_M4_SLOTS];      // The carrier each slot's task is pinned to.
+  volatile uint32_t slotCreated[JUNO_M4_SLOTS];
+  volatile uint32_t slotKilled[JUNO_M4_SLOTS];
+  volatile uint32_t slotDelegated[JUNO_M4_SLOTS];  // An M7 worker runs the slot's native call.
+  volatile uint32_t killsPending;
   volatile uint32_t stacks[JUNO_M4_SLOTS];  // The stack of each slot's task, taken from the arena by the runtime.
   JunoM4Ring toM4;
   JunoM4Ring toM7;
 };
+
+static_assert(sizeof(JunoM4Link) <= 0x400u, "the link must stay below the Mbed core's OpenAMP region");
 
 static JunoM4Link* const juno_m4_link = reinterpret_cast<JunoM4Link*>(0x38000000u);
 

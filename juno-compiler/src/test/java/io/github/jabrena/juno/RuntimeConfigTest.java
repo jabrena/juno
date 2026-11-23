@@ -152,12 +152,12 @@ class RuntimeConfigTest {
     }
 
     @Test
-    @DisplayName("The Portenta H7 runs one carrier by default and its M4 carrier only on request")
-    void shouldOptIntoThePortentaSecondCarrier() {
-        RuntimeConfig twoCarriers = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("2"));
+    @DisplayName("The Portenta H7 runs its M4 carrier by default and one carrier on request")
+    void shouldRunThePortentaSecondCarrierByDefault() {
+        RuntimeConfig oneCarrier = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1"));
 
-        assertThat(RuntimeConfig.DEFAULT.resolveFor(Board.PORTENTA_H7).carrierCount()).isEqualTo(1);
-        assertThat(twoCarriers.resolveFor(Board.PORTENTA_H7).carrierCount()).isEqualTo(2);
+        assertThat(RuntimeConfig.DEFAULT.resolveFor(Board.PORTENTA_H7).carrierCount()).isEqualTo(2);
+        assertThat(oneCarrier.resolveFor(Board.PORTENTA_H7).carrierCount()).isEqualTo(1);
     }
 
     @Test

@@ -39,7 +39,9 @@ static void juno_carrier_vacate(uint32_t slot);
 static void juno_gc_scan_range(const uint8_t* from, const uint8_t* to);
 
 // The clock, the delay and the yield the runtime uses, from the kernel of the core the caller runs on: on the M4 the
-// M4 kernel's, through the link.
+// M4 kernel's, through the link. Every wait of the runtime that polls (an idle carrier, a join, a sleep, a spin with
+// Thread.yield) goes through the delay or the yield: on the M7 they end by dropping the cache, so the next poll reads
+// what the M4 wrote meanwhile.
 extern "C" unsigned long juno_carrier_millis(void) {
   return juno_physical_core() == 0u ? millis() : juno_m4_link->millis();
 }
@@ -47,6 +49,7 @@ extern "C" unsigned long juno_carrier_millis(void) {
 extern "C" void juno_carrier_delay(unsigned long millisToSleep) {
   if (juno_physical_core() == 0u) {
     delay(millisToSleep);
+    juno_cache_acquire();
   } else {
     juno_m4_link->sleepMillis(millisToSleep);
   }
@@ -55,6 +58,7 @@ extern "C" void juno_carrier_delay(unsigned long millisToSleep) {
 extern "C" void juno_carrier_yield(void) {
   if (juno_physical_core() == 0u) {
     yield();
+    juno_cache_acquire();
   } else {
     juno_m4_link->yield();
   }
@@ -64,16 +68,16 @@ extern "C" void juno_carrier_yield(void) {
 #define delay juno_carrier_delay
 #define yield juno_carrier_yield
 
-// The slot table never moves: the other carrier reads it without the runtime lock.
-static uint32_t juno_dual_cores[JUNO_INITIAL_SLOTS];
-static volatile bool juno_dual_created[JUNO_INITIAL_SLOTS];
-// A cancelled thread's task stops at its next safepoint or wake-up and restarts from its entry; until then its slot
-// cannot take a new thread.
-static volatile bool juno_dual_killed[JUNO_INITIAL_SLOTS];
-static volatile uint32_t juno_dual_kills_pending = 0u;
+// The slot table never moves, and the other carrier reads it without the runtime lock: it is in the link, which the M7
+// does not cache. A cancelled thread's task stops at its next safepoint or wake-up and restarts from its entry; until
+// then its slot cannot take a new thread. A delegated slot is an M4 slot whose native call an M7 worker runs: its
+// baton is the M7's while the call lasts.
+#define juno_dual_cores (juno_m4_link->slotCores)
+#define juno_dual_created (juno_m4_link->slotCreated)
+#define juno_dual_killed (juno_m4_link->slotKilled)
+#define juno_dual_kills_pending (juno_m4_link->killsPending)
+#define juno_dual_delegated (juno_m4_link->slotDelegated)
 static jmp_buf juno_dual_restart[JUNO_INITIAL_SLOTS];
-// An M4 slot whose native call an M7 worker runs: its baton is the M7's while the call lasts.
-static volatile bool juno_dual_delegated[JUNO_INITIAL_SLOTS];
 
 // The M7's kernel objects, never in the arena: main's baton (slot 0), every M7 slot's thread and baton, and the baton
 // of an M4 slot while its call runs on the M7.
@@ -121,10 +125,12 @@ static void juno_port_start(uint32_t slot) {
   }
 }
 
-// Parks the caller, a task of the core it runs on (or an M4 slot's call worker), until its baton is given.
+// Parks the caller, a task of the core it runs on (or an M4 slot's call worker), until its baton is given. Woken on
+// the M7, it may next read what the M4 wrote.
 static void juno_port_wait(uint32_t slot) {
   if (juno_physical_core() == 0u) {
     juno_m7_batons[slot]->acquire();
+    juno_cache_acquire();
   } else {
     juno_m4_link->batonWait(slot);
   }
@@ -366,6 +372,8 @@ static void juno_call_worker(void* argument) {
   uint32_t slot = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(argument));
   for (;;) {
     juno_call_wakes[slot]->acquire();
+    // The call's arguments may be arrays the M4 just filled.
+    juno_cache_acquire();
     // Read again after a longjmp, so not kept in a register setjmp may not restore.
     JunoM4Call* volatile call = reinterpret_cast<JunoM4Call*>(juno_m4_link->calls[slot]);
     if (setjmp(juno_call_restart[slot]) == 0) {
@@ -529,10 +537,45 @@ static void juno_slice_counter_start() {
   DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
-// main's setup(): turns the M7's data cache off so both cores see every shared word, starts the M4 carrier image,
-// waits until its services are in place, and then runs main on this, the M7's main Mbed thread.
+static void juno_mpu_region(uint8_t number, uint32_t base, uint8_t size, bool writeThrough) {
+  MPU_Region_InitTypeDef region = {};
+  region.Enable = MPU_REGION_ENABLE;
+  region.Number = number;
+  region.BaseAddress = base;
+  region.Size = size;
+  region.AccessPermission = MPU_REGION_FULL_ACCESS;
+  region.IsShareable = MPU_ACCESS_NOT_SHAREABLE;
+  region.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
+  region.IsCacheable = writeThrough ? MPU_ACCESS_CACHEABLE : MPU_ACCESS_NOT_CACHEABLE;
+  region.TypeExtField = writeThrough ? MPU_TEX_LEVEL0 : MPU_TEX_LEVEL1;
+  region.SubRegionDisable = 0x00;
+  region.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
+  HAL_MPU_ConfigRegion(&region);
+}
+
+// The M7's view of the RAM both cores share: AXI SRAM (the arena, the statics, the M7's stacks) write-through, so every
+// store reaches RAM at once; D2 SRAM (the M4's stacks and calls) and D3 SRAM (the link) not cached at all. Regions 12-14
+// are above the ones the Mbed core and its libraries use.
+// With interrupts off, so no handler runs while the attributes change: the USB stack's interrupts are already live.
+static void juno_cache_configure() {
+  uint32_t interrupts = __get_PRIMASK();
+  __disable_irq();
+  SCB_CleanDCache();
+  HAL_MPU_Disable();
+  juno_mpu_region(MPU_REGION_NUMBER12, 0x24000000u, MPU_REGION_SIZE_512KB, true);
+  juno_mpu_region(MPU_REGION_NUMBER13, 0x30000000u, MPU_REGION_SIZE_512KB, false);
+  juno_mpu_region(MPU_REGION_NUMBER14, 0x38000000u, MPU_REGION_SIZE_64KB, false);
+  HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+  SCB_CleanInvalidateDCache();
+  // Some CMSIS versions invalidate the cache, without cleaning it, when enabling an enabled one.
+  if ((SCB->CCR & SCB_CCR_DC_Msk) == 0u) SCB_EnableDCache();
+  __set_PRIMASK(interrupts);
+}
+
+// main's setup(): makes the M7's cache coherent enough for two cores, starts the M4 carrier image, waits until its
+// services are in place, and then runs main on this, the M7's main Mbed thread.
 extern "C" void juno_launch_main(void (*entry)()) {
-  SCB_DisableDCache();
+  juno_cache_configure();
   juno_slice_counter_start();
   juno_slice_lengths[0] = SystemCoreClock / 1000u * JUNO_TIME_SLICE_MILLIS;
   auto* self = static_cast<osRtxThread_t*>(rtos::ThisThread::get_id());
@@ -556,8 +599,14 @@ extern "C" void juno_launch_main(void (*entry)()) {
   uint32_t started = static_cast<uint32_t>(millis());
   while (juno_m4_link->m4Ready != JUNO_M4_LINK_MAGIC) {
     if (static_cast<uint32_t>(millis()) - started > JUNO_M4_START_MILLIS) {
-      Serial.println("[juno-thread] the Portenta H7's M4 carrier did not start: flash this program with juno:flash");
-      juno_panic();
+      // main has not opened Serial yet: open it and repeat the reason, so a monitor attached later still sees it.
+      Serial.begin(115200);
+      for (;;) {
+        Serial.print("[juno-thread] the Portenta H7's M4 carrier did not start (ready=0x");
+        Serial.print(juno_m4_link->m4Ready, HEX);
+        Serial.println("): flash this program with juno:flash");
+        delay(1000);
+      }
     }
     delay(1);
   }

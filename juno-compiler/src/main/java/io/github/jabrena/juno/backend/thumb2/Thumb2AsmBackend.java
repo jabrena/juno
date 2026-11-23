@@ -202,7 +202,7 @@ public final class Thumb2AsmBackend implements AsmBackend {
         terminators = new TerminatorLowering(asm, ints, usesThreads ? "juno_thread_backedge" : "yield");
         convention = new CallConvention(asm);
         fields = new FieldAccessLowering(asm, layout, usesThreads, dualCarrier,
-                coreRuntime.memoryBarrierInstruction());
+                coreRuntime.memoryBarrierInstruction(), coreRuntime.volatileLoadFence(imageCarriers));
         intrinsics = new IntrinsicLowering(new Thumb2IntrinsicTarget(asm, dualCarrier),
                 coreRuntime, board, board.onboardSdChipSelect(), features,
                 usedMath, usesThreads, inputStreamRoute, carrierCount);

@@ -98,6 +98,11 @@ public final class CompilerTestSupport {
         return new JunoCompiler().compile(classpath(classes), mainClass, false, requestedBoard(classes, mainClass));
     }
 
+    public static CompilationResult compileJuno(Path classes, String mainClass, RuntimeConfig runtimeConfig) {
+        return new JunoCompiler().compile(new CompilationRequest(classpath(classes), mainClass, false,
+                requestedBoard(classes, mainClass), runtimeConfig));
+    }
+
     public static Program link(Path classes, String mainClass) {
         return link(classes, mainClass, requestedBoard(classes, mainClass));
     }

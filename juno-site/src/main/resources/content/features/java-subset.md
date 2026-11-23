@@ -204,10 +204,10 @@ blink.run();
 - `Thread.startVirtualThread(Runnable)`, `join()`, `isAlive()`, `Thread.sleep` and `Thread.yield()`.
 - `interrupt()` and `isInterrupted()` on a virtual thread. An interrupt ends a `sleep`, `wait`, `await` or `acquire` that
   the thread is blocked in with `InterruptedException`, as on the JDK.
-- On the UNO R3, at most four scheduler slots exist, including `main`. On the UNO R4 WiFi and
-  Portenta H7, the single-carrier slot table grows in the arena. The Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer and
-  Raspberry Pi Pico 2 W use dual-carrier tables with at most 16 slots, including `main`; a `juno.carriers=1` build uses
-  the single-carrier table instead.
+- On the UNO R3, at most four scheduler slots exist, including `main`. On the UNO R4 WiFi, the single-carrier slot
+  table grows in the arena. The Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer, Raspberry Pi Pico 2 W and
+  Portenta H7 use dual-carrier tables with at most 16 slots, including `main`; a `juno.carriers=1` build uses the
+  single-carrier table instead.
 
 ### Structured concurrency
 

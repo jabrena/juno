@@ -82,6 +82,28 @@ public interface CoreRuntime {
     }
 
     /**
+     * Where the stop-the-world handshake keeps each carrier's in-Java and parked flags and the stopping flag, in place
+     * of plain statics, for a core whose carriers do not share a coherent view of ordinary RAM (the Portenta H7, whose
+     * M7 caches it and whose M4 does not). The text may declare what the runtime emitted after it needs first.
+     */
+    default Optional<String> carrierGcState() {
+        return Optional.empty();
+    }
+
+    /** A statement, starting with a newline, run by a collector once every other carrier is stopped; none by default. */
+    default String worldStoppedStatement() {
+        return "";
+    }
+
+    /**
+     * The instruction emitted before every load of a {@code volatile} field when threads run on {@code carrierCount}
+     * carriers, so the load sees what another carrier stored before its volatile store; none by default.
+     */
+    default String volatileLoadFence(int carrierCount) {
+        return "";
+    }
+
+    /**
      * The {@code double} helpers generated code calls when threads run on {@code carrierCount} carriers, in place of
      * the architecture's own, for a core whose carriers do not all have a double-precision FPU (the Portenta H7's
      * Cortex-M4); absent by default.
