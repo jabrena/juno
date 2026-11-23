@@ -3,8 +3,8 @@ package io.github.jabrena.juno.language.concurrency;
 import java.util.concurrent.CountDownLatch;
 
 /**
- * JVM-only one-shot gate. Two workers publish a value and count down; the coordinator proceeds only after the count
- * reaches zero. A {@link CountDownLatch} cannot be reset, and Juno does not lower it.
+ * A one-shot gate. Two workers publish a value and count down; the coordinator proceeds only after the count reaches
+ * zero. A {@link CountDownLatch} cannot be reset. Runs on the JVM ({@code Jls17ExamplesTest}) and on the board alike.
  */
 public final class CountDownLatchExample {
     private CountDownLatchExample() {}

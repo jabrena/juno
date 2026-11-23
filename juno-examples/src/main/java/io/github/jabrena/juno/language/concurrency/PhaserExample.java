@@ -2,7 +2,7 @@ package io.github.jabrena.juno.language.concurrency;
 
 import java.util.concurrent.Phaser;
 
-/** JVM-only reusable phase barrier; Juno does not lower {@link Phaser}. */
+/** A reusable phase barrier with a {@link Phaser}, run on the JVM and on the board alike. */
 public final class PhaserExample {
     private static final int PARTICIPANTS = 2;
     private static final int PHASES = 2;
@@ -22,7 +22,8 @@ public final class PhaserExample {
 
     private static void participate(Phaser phaser, int[] completed, int index) {
         for (int phase = 0; phase < PHASES; phase++) {
-            completed[index]++;
+            // Not completed[index]++, which compiles to dup2, outside Juno's bytecode subset.
+            completed[index] = completed[index] + 1;
             phaser.arriveAndAwaitAdvance();
         }
     }
