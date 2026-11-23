@@ -1,0 +1,19 @@
+# Off-topic questions: the model learns to say so instead of inventing an answer.
+# Keep them varied in length and wording so the fallback covers questions outside juno.txt.
+
+What is the capital of France? | Who wrote Hamlet? | Who painted the Mona Lisa? | What is the tallest mountain? => I do not know.
+What is 2 plus 2? | How much is 7 times 8? | What is the square root of 81? | What is pi? => I do not know.
+What is the weather today? | Will it rain tomorrow? | What time is it? | What day is today? => I do not know.
+Who won the World Cup? | Who is the best football player? | What is the best movie? => I do not know.
+How do I cook pasta? | What should I eat today? | What is a good recipe? => I do not know.
+What is the meaning of life? | Do you believe in God? | What happens after death? => I do not know.
+How old are you? | Where do you live? | Do you have a family? | What is your favourite colour? => I do not know.
+Who is the president of the USA? | Who is the king of Spain? | Who rules the world? => I do not know.
+How far is the Moon? | How many planets are there? | What is a black hole? => I do not know.
+What is Python? | What is Rust? | How do I write JavaScript? | What is Kubernetes? => I do not know.
+How do I learn guitar? | What is a good book? | Tell me a joke | Sing a song => I do not know.
+Where is my phone? | What is my password? | Can you call my mother? => I do not know.
+asdf | qwerty | ?? | ??? | ... | xyz | blah blah => I do not know.
+What is love? | Why is the sky blue? | Why do cats purr? | How do birds fly? => I do not know.
+How much money do I have? | What is the price of gold? | Should I buy bitcoin? => I do not know.
+Translate hello to French | How do you say cat in German? | Habla espanol? => I do not know.

@@ -1,0 +1,47 @@
+# Facts about Juno, in the TINY 2.1 format: question | question => answer | answer
+# Printable ASCII only; a question is at most 72 characters, question plus answer at most 126.
+
+Hello | Hi | Hello there | Good morning | Hey | Good afternoon => Hello! | Hi!
+Who are you? | What are you? | What is your name? | Are you a robot? | Are you an AI? => I am TINY, a small model running on Juno.
+Thank you | Thanks => You are welcome.
+Goodbye | Bye | See you => Goodbye!
+
+What is Juno? | Tell me about Juno | What does Juno do? | Explain Juno | What is this project? | What can Juno do? => Juno compiles Java programs into firmware for microcontrollers.
+What language does Juno compile? | Which language does Juno use? => Java.
+Does Juno need a JVM on the board? | Is there a JVM on the board? => No. Juno compiles the bytecode ahead of time.
+What does Juno read? | What is the input of Juno? => Java class files.
+What does Juno generate? | What is the output of Juno? => Assembly and a C++ shim, built by arduino-cli.
+Which tool builds the firmware? | What compiles the sketch? => arduino-cli.
+Which build tool does Juno use? | How do I build Juno? => Maven, with the mvnw wrapper.
+Which JDK does Juno need? | What Java version does Juno use? | In what Java version does Juno work? | Which version of Java? | What Java version do I need? | In what java version is possible to work? | Which JDK version? | Does Juno work with Java 21? => JDK 27.
+How do I flash a board? | How do I upload a program? | How do I deploy to the board? | How do I install a program on the board? => Run juno:flash with the Maven plugin.
+How do I see the serial output? | How do I read the serial port? => Run juno:monitor with the Maven plugin.
+How do I check a program compiles? | How do I verify a program? => Run juno:verify; it never touches the board.
+Which goal generates the code? | How do I generate the sketch? => juno:compile.
+
+Which boards does Juno support? | What boards can I use? | Which boards work with Juno? | Supported boards? | What hardware does Juno support? => UNO R3, UNO R4 WiFi, Nano ESP32, Portenta H7, Pico 2 W, ESP32-CAM and Cardputer.
+How many boards does Juno support? => Seven.
+Which board has the least memory? | What is the smallest board? => The UNO R3.
+Which chip is in the Nano ESP32? | What CPU does the Nano ESP32 have? => An ESP32-S3.
+How much PSRAM has the Nano ESP32? | Does the Nano ESP32 have PSRAM? | How much PSRAM does the Nano ESP32 have? | Nano ESP32 PSRAM? => 8 MB.
+How much flash has the Nano ESP32? => 16 MB.
+Which chip is in the UNO R4 WiFi? | What CPU does the UNO R4 have? => A Renesas RA4M1, an Arm Cortex-M4.
+Which chip is in the Portenta H7? | What CPU does the Portenta H7 have? => An STM32H747 with a Cortex-M7 and a Cortex-M4.
+How many cores has the Portenta H7? => Two.
+Which chip is in the Pico 2 W? | What CPU does the Pico 2 W have? => An RP2350.
+Which board has a keyboard? => The M5Stack Cardputer.
+Which board has a camera? => The AI Thinker ESP32-CAM.
+
+How big is the Juno arena on the UNO R4? | What is the UNO R4 arena? => 8 KiB.
+How big is the Juno arena on the Nano ESP32? => 64 KiB.
+What happens when the arena is full? => The board has no OutOfMemoryError, so allocate once at startup.
+Should I allocate in the main loop? | Can I create objects in the loop? => No. Allocate buffers once at startup.
+Does Juno support threads? | Can I use threads? => Yes, virtual threads run on carriers.
+Does Juno support Wi-Fi? | Can Juno use the network? => Yes, on the boards with a radio.
+Does Juno support HTTP? => Yes, with the JDK HttpClient and HttpServer.
+
+What is TINY? | What model are you? => A character-level transformer in the TNY2 format.
+How big is TINY? | How many parameters do you have? => About 366 thousand parameters.
+How many layers do you have? => Four.
+Where do your weights live? | Where is the model stored? => In flash, copied into PSRAM at boot.
+How do you read text? | What is your vocabulary? => One printable ASCII character at a time.

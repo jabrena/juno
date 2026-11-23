@@ -13,11 +13,11 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 - **Architecture rules:** ArchUnit (test scope). `ApiArchitectureTest` keeps `juno-api` free of compiler and
   third-party code; `ExamplesArchitectureTest` keeps `juno-examples` on board-side artifacts and the JDK only;
   `RcxFirmwareArchitectureTest` keeps the RCX generator independent of `juno-api` and `juno-compiler`.
-- **Nullness:** JSpecify (`provided` scope). Every `juno-api`, `juno-compiler`, `juno-third-parties/juno-rcx-firmware` and
-  `juno-maven-plugin` package is `@NullMarked`; mark a value that can legitimately be absent `@Nullable`, and use
+- **Nullness:** JSpecify (`provided` scope). Every `juno-api`, `juno-compiler`, `juno-third-parties/juno-rcx-firmware`,
+  `juno-third-parties/juno-tny2` and `juno-maven-plugin` package is `@NullMarked`; mark a value that can legitimately be absent `@Nullable`, and use
   `Objects.requireNonNull` for a
   lookup that must succeed by construction. NullAway (Error Prone, configured in the root `pom.xml`) enforces this at
-  compile time in those four modules and fails the build on a nullness error.
+  compile time in those five modules and fails the build on a nullness error.
 - **Build checks:** Spotless (formatting: imports as project/third-party, `java.*`, then static), the Maven
   Enforcer (JDK/Maven versions, dependency convergence) and `dependency:analyze-only` (no undeclared or unused
   dependencies) run on every `verify`; documented exceptions live in the poms.
@@ -36,6 +36,9 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   fake process executor and never touch hardware.
 - `juno-third-parties/juno-rcx-firmware/` – the independent H8/300 RCX firmware generator, its generated S-record and its generated
   Java image; it depends on neither `juno-api` nor `juno-compiler`.
+- `juno-third-parties/juno-tny2/` – the independent TNY2 model builder: trains a TINY 2.1-compatible character-level
+  transformer from facts files in pure Java, quantizes and writes the TNY2 file, runs it exactly as the board engine
+  does, and generates its flash image (`Tny2ModelImage`); it depends on neither `juno-api` nor `juno-compiler`.
 - `juno-examples/` – example programs buildable with `arduino-cli`, including the RCX firmware downloader; depends
   on `juno-api` and the generated image from `juno-third-parties/juno-rcx-firmware`.
 - `juno-site/` – documentation site: edit prose in `src/main/resources/content/`, never hand-edit `docs/`. Images
@@ -46,7 +49,7 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 
 ## Code style
 
-- **`juno-compiler`, the generator in `juno-third-parties/juno-rcx-firmware`, and `juno-maven-plugin` run on the build machine: write
+- **`juno-compiler`, the generators in `juno-third-parties/juno-rcx-firmware` and `juno-third-parties/juno-tny2`, and `juno-maven-plugin` run on the build machine: write
   them object-oriented.** Behavior lives
   on objects that hold their collaborators as `final` fields, not in static utility classes (`lowering` is the
   reference: `MethodContext`, `OperandStack`, one lowerer per opcode group registered on an `OpcodeTable`). Prefer
@@ -95,6 +98,12 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 # Regenerate the tracked RCX S-record and Java image on demand (run from the repository root)
 ./mvnw -pl juno-third-parties/juno-rcx-firmware compile
 java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.juno.backend.h8300.RcxRemoteFirmware
+
+# Train a TNY2 model from facts, ask it, and generate its flash image (run from the repository root)
+./mvnw -pl juno-third-parties/juno-tny2 compile
+java -cp juno-third-parties/juno-tny2/target/classes io.github.jabrena.juno.tny2.cli.Tny2Builder \
+  train juno-third-parties/juno-tny2/src/main/resources/tny2/facts target/tny2/TINY.BIN --steps 1500
+java -cp juno-third-parties/juno-tny2/target/classes io.github.jabrena.juno.tny2.cli.Tny2Builder ask target/tny2/TINY.BIN "What is Juno?"
 
 # Generate Blink. The plugin has no default program: always pass -Djuno.main.
 ./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-uno-r4-wifi

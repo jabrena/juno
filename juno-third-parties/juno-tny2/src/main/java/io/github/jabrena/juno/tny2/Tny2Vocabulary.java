@@ -1,0 +1,64 @@
+package io.github.jabrena.juno.tny2;
+
+/**
+ * The 97 TNY2 tokens: {@link #PAD}, {@link #END} (the separator after a question and the end of an answer), and the
+ * printable ASCII characters {@code ' '} to {@code '~'} as {@code character - 30}.
+ */
+public final class Tny2Vocabulary {
+    public static final int SIZE = 97;
+    public static final int PAD = 0;
+    public static final int END = 1;
+    /** Longest question the board engine reads; longer text is cut. */
+    public static final int MAX_QUESTION = 72;
+    public static final Tny2Vocabulary ASCII = new Tny2Vocabulary();
+
+    private static final int OFFSET = 30;
+    private static final char FIRST = ' ';
+    private static final char LAST = '~';
+
+    private Tny2Vocabulary() {
+    }
+
+    /** The token of a character; anything outside printable ASCII becomes a space, as on the board. */
+    public int token(char character) {
+        return (isPrintable(character) ? character : FIRST) - OFFSET;
+    }
+
+    /** The character of a token from 2 to 96. */
+    public char character(int token) {
+        if (token <= END || token >= SIZE) {
+            throw new Tny2FormatException("token %d is not a character".formatted(token));
+        }
+        return (char) (token + OFFSET);
+    }
+
+    public boolean isPrintable(char character) {
+        return character >= FIRST && character <= LAST;
+    }
+
+    /**
+     * Normalizes a question the way the board engine does: non-printable characters become spaces, the text is cut
+     * to {@link #MAX_QUESTION} characters, and trailing spaces are dropped.
+     */
+    public String question(String text) {
+        StringBuilder cleaned = new StringBuilder(Math.min(text.length(), MAX_QUESTION));
+        for (int i = 0; i < text.length() && i < MAX_QUESTION; i++) {
+            char character = text.charAt(i);
+            cleaned.append(isPrintable(character) ? character : FIRST);
+        }
+        int end = cleaned.length();
+        while (end > 0 && cleaned.charAt(end - 1) == FIRST) {
+            end--;
+        }
+        return cleaned.substring(0, end);
+    }
+
+    /** The tokens of a text, one per character. */
+    public int[] tokens(String text) {
+        int[] tokens = new int[text.length()];
+        for (int i = 0; i < tokens.length; i++) {
+            tokens[i] = token(text.charAt(i));
+        }
+        return tokens;
+    }
+}
