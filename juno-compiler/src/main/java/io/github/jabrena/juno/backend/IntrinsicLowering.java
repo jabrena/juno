@@ -176,6 +176,7 @@ public final class IntrinsicLowering {
         registerConcurrency();
         registerSerial();
         registerStrings();
+        registerSystem();
         registerStorage();
         registerPeripherals();
         registerHttpClients();
@@ -210,6 +211,12 @@ public final class IntrinsicLowering {
         shim(Intrinsic.THROW_RAISE, "juno_throw_raise", Result.NONE, List.of(arg(0)), ShimFeature.EXCEPTIONS);
         shim(Intrinsic.THROW_PENDING, "juno_throw_pending", Result.WORD, List.of(), ShimFeature.EXCEPTIONS);
         shim(Intrinsic.THROW_CATCH, "juno_throw_catch", Result.WORD, List.of(arg(0)), ShimFeature.EXCEPTIONS);
+    }
+
+    /** Board-side {@code java.lang.System} methods supplied by Juno rather than the host JDK. */
+    private void registerSystem() {
+        shim(Intrinsic.SYSTEM_ARRAYCOPY_WORDS, "juno_system_arraycopy_words", Result.NONE,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4)), ShimFeature.SYSTEM_ARRAYCOPY);
     }
 
     /**

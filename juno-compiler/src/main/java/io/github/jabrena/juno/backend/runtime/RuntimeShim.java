@@ -155,7 +155,7 @@ public final class RuntimeShim {
         }
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER,
                 ShimFeature.RUNTIME_STRINGS, ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3,
-                ShimFeature.SD, ShimFeature.FLOAT, ShimFeature.DOUBLE)) {
+                ShimFeature.SD, ShimFeature.FLOAT, ShimFeature.DOUBLE, ShimFeature.SYSTEM_ARRAYCOPY)) {
             shim.append("#include <string.h>\n");
         }
         if (usesAny(ShimFeature.FLOAT, ShimFeature.DOUBLE, ShimFeature.RUNTIME_STRINGS,
@@ -296,6 +296,8 @@ public final class RuntimeShim {
         appendPeripheralHelpers(shim);
         ShimFeatureBlock.appendUsed(shim, features, List.of(
                 new ShimFeatureBlock(ShimFeature.MEMORY, shimLibraries::memoryHelpers),
+                new ShimFeatureBlock(ShimFeature.SYSTEM_ARRAYCOPY,
+                        () -> runtimeSource.load("common/system-arraycopy.cpp")),
                 new ShimFeatureBlock(ShimFeature.FLASH, core::flashHelpers),
                 new ShimFeatureBlock(ShimFeature.RANDOM, shimLibraries::randomHelpers),
                 new ShimFeatureBlock(ShimFeature.WIFI, core::wifiHelpers),

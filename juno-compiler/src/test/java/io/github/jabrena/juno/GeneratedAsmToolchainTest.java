@@ -1701,6 +1701,30 @@ class GeneratedAsmToolchainTest {
     }
 
     @Test
+    @DisplayName("A fixed primitive arraycopy program emits its board-side System shim")
+    void shouldEmitTheSystemArraycopyShim() throws Exception {
+        // Given
+        String source = """
+                package demo;
+                public final class AsmSystemArraycopy {
+                    public static void main(String[] args) {
+                        int[] source = {1, 2, 3};
+                        int[] destination = {0, 0, 0};
+                        java.lang.System.arraycopy(source, 0, destination, 0, source.length);
+                    }
+                }
+                """;
+        CompilerTestSupport.compileJava(temporaryDirectory, "demo.AsmSystemArraycopy", source);
+
+        // When
+        CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.AsmSystemArraycopy");
+
+        // Then
+        assertThat(result.runtimeShim()).contains("#include <string.h>", "juno_system_arraycopy_words");
+        assertThat(result.assembly()).contains("juno_system_arraycopy_words");
+    }
+
+    @Test
     @DisplayName("A string-concat program assembles and its shim is valid C++")
     void shouldAssembleAStringConcatProgramAndCompileItsShim() throws Exception {
         // Given

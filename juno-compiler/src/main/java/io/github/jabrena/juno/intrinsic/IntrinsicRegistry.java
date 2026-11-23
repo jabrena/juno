@@ -180,6 +180,8 @@ public final class IntrinsicRegistry {
                     Intrinsic.STRING_CHAR_AT),
             Map.entry(new MethodRef("java/lang/String", "equals", "(Ljava/lang/Object;)Z"),
                     Intrinsic.STRING_EQUALS),
+            Map.entry(new MethodRef("java/lang/System", "arraycopy",
+                    "(Ljava/lang/Object;ILjava/lang/Object;II)V"), Intrinsic.SYSTEM_ARRAYCOPY_WORDS),
             Map.entry(new MethodRef("java/lang/StringBuilder", "<init>", "(I)V"),
                     Intrinsic.STRING_BUILDER_NEW),
             Map.entry(new MethodRef("java/lang/StringBuilder", "append", "(C)Ljava/lang/StringBuilder;"),

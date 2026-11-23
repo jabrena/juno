@@ -47,6 +47,7 @@ class ExamplesArchitectureTest {
         return type.isPrimitive() || type.getPackageName().startsWith("java.")
                 || type.getPackageName().startsWith("com.sun.net.httpserver")
                 || type.getPackageName().equals("javax.net.ssl")
+                || type.getPackageName().startsWith("org.eclipse.collections.")
                 || isKotlinAnnotation(type) || isScalaSerializationProxy(type) || isClojureRuntime(type)
                 || isGroovyRuntime(type)
                 || apiNames.contains(type.getName()) || rcxFirmwareNames.contains(type.getName())
