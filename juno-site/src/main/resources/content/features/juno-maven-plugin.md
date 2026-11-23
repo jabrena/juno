@@ -189,7 +189,7 @@ The first analysis slice reports:
 | `JUNO-RISK-011` | A thread body reaches a recursive cycle, or its estimated stack exceeds the smallest thread stack (2 KiB on the UNO R4 WiFi). |
 | `JUNO-RISK-012` | (info) A `static final` constant-initialized array stays in the arena instead of flash, because a read passes it on, stores it, writes it or selects it across a branch. |
 
-The 8 KiB arena capacity and the count of bounds-checked array accesses (checked at run time, or proved safe
+The arena capacity and the count of bounds-checked array accesses (checked at run time, or proved safe
 at compile time) are exact compiler facts. Arena,
 static-RAM, and stack figures are conservative source-level estimates: alignment is overestimated,
 branch feasibility is not modeled, and the downstream C++ compiler may optimize stack locals. The
