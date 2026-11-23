@@ -87,7 +87,8 @@ only for the photo: it is bright and gets hot when left lit.
 serves four paths: `GET /` is a page with the live view, `GET /stream` is a 160×120 MJPEG stream, `GET /capture`
 takes one fresh 640×480 photo on every request, and `GET /capture/flash` takes it with the flash lit. It reads
 `wifi.ssid` and `wifi.password` from the board's secret store (provision them once with `juno:secret`), and its 48 KB
-frame buffer needs a larger arena:
+frame buffer, the camera driver, Wi-Fi and the HTTP server leave too little static DRAM for the default 64 KB
+arena, so build it with a smaller one:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:flash -Djuno.board=ai-thinker-esp32-cam -Djuno.port=<PORT> \

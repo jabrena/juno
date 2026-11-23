@@ -137,10 +137,10 @@ upper limits. Every board uses its default arena unless `juno.Xmx` says otherwis
 |---|---|---|---|
 | UNO R3 | 1 KB | 2 | 1 |
 | UNO R4 WiFi | 8 KB | 20 | 8 |
-| Nano ESP32 | 8 KB | 20 | 8 |
-| AI Thinker ESP32-CAM | 8 KB | 20 | 8 |
-| M5Stack Cardputer | 8 KB | 20 | 8 |
-| Raspberry Pi Pico 2 W | 8 KB | 20 | 8 |
+| Nano ESP32 | 64 KB | 160 | 65 |
+| AI Thinker ESP32-CAM | 64 KB | 160 | 65 |
+| M5Stack Cardputer | 64 KB | 160 | 65 |
+| Raspberry Pi Pico 2 W | 64 KB | 160 | 65 |
 
 Flash holds the program's code as well as its constant tables, so the room left for `static final` tables is smaller than
 the board's flash. The board pages describe each board's flash, and the linker report shows what a build uses.
@@ -154,10 +154,10 @@ with, and the largest sizes it accepts. The build checks every explicit `juno.Xm
 |---|---|---|---|---|---|---|
 | UNO R3 | 2 KB | 1024 / 1024 bytes | 512 / 512 bytes | 1 | The linker | None |
 | UNO R4 WiFi | 32 KB | 8192 / 25736 bytes | 2048 / 8192 bytes | 1 | The linker | None |
-| Nano ESP32 | 320 KB | 8192 / 296840 bytes | 8192 / 32768 bytes | 2 | The run-time heap | 8 MB, explicit `Psram` buffers only |
-| AI Thinker ESP32-CAM | 320 KB | 8192 / 305216 bytes | 8192 / 32768 bytes | 2 | The run-time heap | 4 MB; camera driver buffers plus explicit `Psram` buffers |
-| M5Stack Cardputer | 320 KB | 8192 / 273408 bytes | 8192 / 32768 bytes | 2 | The run-time heap | Not recorded; explicit API unavailable |
-| Raspberry Pi Pico 2 W | 512 KB | 8192 / 436176 bytes | 4096 / 16384 bytes | 2 | The run-time heap | None |
+| Nano ESP32 | 320 KB | 65536 / 296840 bytes | 8192 / 32768 bytes | 2 | The run-time heap | 8 MB, explicit `Psram` buffers only |
+| AI Thinker ESP32-CAM | 320 KB | 65536 / 305216 bytes | 8192 / 32768 bytes | 2 | The run-time heap | 4 MB; camera driver buffers plus explicit `Psram` buffers |
+| M5Stack Cardputer | 320 KB | 65536 / 273408 bytes | 8192 / 32768 bytes | 2 | The run-time heap | Not recorded; explicit API unavailable |
+| Raspberry Pi Pico 2 W | 512 KB | 65536 / 436176 bytes | 4096 / 16384 bytes | 2 | The run-time heap | None |
 
 - **Usable RAM** is the limit the Arduino toolchain reports for a sketch's static data and arena. It is smaller than the
   chip's total RAM: the core, its radio and networking libraries, and the runtime keep the rest. The Portenta H7, for example,

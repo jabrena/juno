@@ -43,7 +43,7 @@ public enum Board {
      * USB port with the serial console; the other optional capabilities are not wired to its core yet.
      */
     NANO_ESP32("io/github/jabrena/juno/annotations/ArduinoNanoEsp32Board", "arduino-nano-esp32", "Nano ESP32",
-            "arduino:esp32:nano_nora", ArduinoCore.ESP32, NanoFamily.NANO_ESP32, new BoardMemoryProfile(327680, 8192, 296840, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, OptionalInt.of(8 * 1024 * 1024)), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.WIFI_ACCESS_POINT,
+            "arduino:esp32:nano_nora", ArduinoCore.ESP32, NanoFamily.NANO_ESP32, new BoardMemoryProfile(327680, 65536, 296840, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, OptionalInt.of(8 * 1024 * 1024)), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.ONBOARD_WIFI, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.JSON, Capability.JDK_HTTP_CLIENT, Capability.HTTP_SERVER,
                     Capability.HTTPS_SERVER, Capability.TLS_EMAIL, Capability.SMTP_STARTTLS, Capability.BLUETOOTH_LE,
                     Capability.BIG_NUMBERS, Capability.DOUBLE_MATH, Capability.STRUCTURED_CONCURRENCY,
@@ -55,7 +55,7 @@ public enum Board {
      * The ESP32 hardware TLS, task watchdog, random-number generator and double-precision libm are also available.
      */
     AI_THINKER_ESP32_CAM("io/github/jabrena/juno/annotations/AiThinkerEsp32CamBoard", "ai-thinker-esp32-cam",
-            "AI Thinker ESP32-CAM", "esp32:esp32:esp32cam", ArduinoCore.ESP32_CAM, Esp32Family.AI_THINKER_ESP32_CAM, new BoardMemoryProfile(327680, 8192, 305216, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, OptionalInt.of(4 * 1024 * 1024)), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
+            "AI Thinker ESP32-CAM", "esp32:esp32:esp32cam", ArduinoCore.ESP32_CAM, Esp32Family.AI_THINKER_ESP32_CAM, new BoardMemoryProfile(327680, 65536, 305216, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, OptionalInt.of(4 * 1024 * 1024)), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
                     Capability.BLUETOOTH_LE, Capability.CAMERA, Capability.PSRAM, Capability.HTTP_SERVER,
                     Capability.STRUCTURED_CONCURRENCY, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.JSON, Capability.JDK_HTTP_CLIENT,
                     Capability.WIFI_ACCESS_POINT, Capability.HTTPS_SERVER, Capability.TLS_EMAIL, Capability.SMTP_STARTTLS,
@@ -68,7 +68,7 @@ public enum Board {
      */
     M5_CARDPUTER("io/github/jabrena/juno/annotations/M5StackCardputerBoard", "m5stack-cardputer", "M5Stack Cardputer",
             "m5stack:esp32:m5stack_cardputer:USBMode=default,CDCOnBoot=cdc,UploadMode=cdc", ArduinoCore.M5STACK_ESP32,
-            M5StackFamily.CARDPUTER_ADV, new BoardMemoryProfile(327680, 8192, 273408, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
+            M5StackFamily.CARDPUTER_ADV, new BoardMemoryProfile(327680, 65536, 273408, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.UUID_RANDOM, Capability.SECURE_ENTROPY, Capability.WIFI, Capability.ONBOARD_WIFI, Capability.WIFI_ACCESS_POINT,
                     Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.JSON, Capability.JDK_HTTP_CLIENT, Capability.HTTP_SERVER, Capability.HTTPS_SERVER,
                     Capability.BIG_NUMBERS, Capability.DISPLAY, Capability.M5_DISPLAY, Capability.M5_KEYBOARD, Capability.M5_AUDIO,
                     Capability.M5_BATTERY, Capability.WATCHDOG, Capability.STRUCTURED_CONCURRENCY, Capability.DOUBLE_MATH, Capability.BLUETOOTH_LE,
@@ -82,7 +82,7 @@ public enum Board {
      * UART/SPI socket map.
      */
     PICO_2_W("io/github/jabrena/juno/annotations/RaspberryPico2WifiBoard", "raspberry-pi-pico-2-w",
-            "Raspberry Pi Pico 2 W", "rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble", ArduinoCore.RP2350, PicoFamily.PICO_2, new BoardMemoryProfile(524288, 8192, 436176, 4096, 16384, MemoryAuthority.RUNTIME_HEAP, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
+            "Raspberry Pi Pico 2 W", "rp2040:rp2040:rpipico2w:ipbtstack=ipv4btcble", ArduinoCore.RP2350, PicoFamily.PICO_2, new BoardMemoryProfile(524288, 65536, 436176, 4096, 16384, MemoryAuthority.RUNTIME_HEAP, OptionalInt.empty()), EnumSet.of(Capability.CLASS_INHERITANCE, Capability.BIG_NUMBERS, Capability.WIFI, Capability.ONBOARD_WIFI,
                     Capability.WIFI_ACCESS_POINT, Capability.HTTP_CLIENT, Capability.HTTPS_CLIENT, Capability.JSON, Capability.JDK_HTTP_CLIENT, Capability.TLS_EMAIL,
                     Capability.HTTP_SERVER, Capability.HTTPS_SERVER, Capability.BLUETOOTH_LE, Capability.WATCHDOG,
                     Capability.USB_HID, Capability.STRUCTURED_CONCURRENCY, Capability.DOUBLE_MATH, Capability.UUID_RANDOM)),

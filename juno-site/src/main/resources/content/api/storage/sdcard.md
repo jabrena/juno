@@ -155,7 +155,7 @@ Limits:
 - `seek` past the end of the file throws `IOException` (the JDK allows it).
 - `RandomAccessFile` and `SdCard.open()` share the card's four open-file slots.
 
-Every byte array, like any other `new` object, lives in Juno's garbage-collected arena, 8 KB by default. A program
+Every byte array, like any other `new` object, lives in Juno's garbage-collected arena, whose default size depends on the board (8 KB on the UNO R4 WiFi, 64 KB on the Nano ESP32). A program
 that keeps large tables in RAM, such as data loaded from a file at startup, can raise it with the Maven plugin's
 JVM-style `-Djuno.Xmx` (for example `-Djuno.Xmx=32k`), and check the room left at run time with
 `MCU.getBoardMemory().arenaCapacityBytes() - MCU.getBoardMemory().arenaUsedBytes()`. `-Djuno.Xss` sets each extra task's stack the same way.
