@@ -5,6 +5,7 @@ date: 2026-11-23
 layout: post
 link: /blog/2026-11-23-juno-memory-model-design/
 tags: [memory, education, concurrency]
+blogVisible: true
 ---
 
 On a laptop, a Java developer rarely thinks about memory. The JVM starts with hundreds of megabytes, the heap grows when
@@ -30,8 +31,8 @@ A microcontroller has two memories, and they behave very differently:
 | Survives a reset | Yes | No |
 | Holds | Code and constants | Everything that changes |
 
-The rule that follows is simple: **anything that never changes should live in flash, because flash is the larger
-memory**. Juno follows that rule wherever it can.
+The rule that follows is simple: **anything that never changes should live in flash where the board and linker allow
+it**. That preserves scarce RAM, although flash has its own capacity limit. Juno follows that rule wherever it can.
 
 ## 2. How the program is stored
 
@@ -83,8 +84,9 @@ When the board powers on:
 
 ## 4. The heap that is not a heap: the arena
 
-On the JVM, `new` takes memory from a heap that can grow up to `-Xmx`. On the board, Juno reserves **one fixed block of
-RAM** at build time, called the **arena**. Every `new` takes its memory from it.
+On the JVM, `new` takes memory from a heap that can grow up to `-Xmx`. On the board, Juno configures one fixed-size block
+of RAM, called the **arena**, for Java allocations. Its size is selected and validated at build time, then reserved by
+the generated firmware when it runs. Every `new` takes its memory from it.
 
 | Board | Default arena | Maximum (`juno.Xmx`) |
 |---|---|---|
@@ -92,7 +94,11 @@ RAM** at build time, called the **arena**. Every `new` takes its memory from it.
 | UNO R4 WiFi | 8 KB | ~25 KB |
 | Nano ESP32, ESP32-CAM, Cardputer | 64 KB | ~270–300 KB |
 | Raspberry Pi Pico 2 W | 64 KB | ~425 KB |
-| Portenta H7 | 64 KB | 896 KB |
+| Portenta H7 | 64 KB | 896 KiB |
+
+These maxima are build-time ceilings, not promises that an application can use that much RAM. Static data, native
+libraries, network buffers, carrier/task stacks and board-specific runtime services consume RAM outside the arena and
+reduce the usable budget.
 
 The arena never grows. If you need more, you set it at build time, as you would set `-Xmx` on the JVM:
 
@@ -116,13 +122,15 @@ The arena is a chain of blocks. Each block starts with a **4-byte header** that 
    4 B              4 B        4 B
 ```
 
-`new` looks for a free block that is large enough. If there is none, the garbage collector runs first.
+`new` looks for a free contiguous block that is large enough. If there is none, the garbage collector runs first;
+fragmentation can prevent a large allocation even when the total free space would appear sufficient.
 
 ### The garbage collector
 
 Juno uses a **conservative mark-and-sweep** collector:
 
-1. **Roots.** It scans the stack of every live thread and the static fields that hold references.
+1. **Roots.** It scans active carrier stacks, saved continuations, scheduler metadata and reference-valued static
+   fields.
 2. **Mark.** Every 4-byte word it finds is treated as a *possible* pointer. If the word points at the start of an
    arena block, that block is alive, and it is scanned in turn.
 3. **Sweep.** Every unmarked block goes back to the free list.
@@ -144,12 +152,14 @@ That is why Juno programs follow one rule: **allocate at startup, reuse in the l
 ## 5. The stack
 
 Each method call pushes a **frame** on the stack: its local variables, the values it is computing, and the return
-address. The frame disappears when the method returns, so local variables of primitive types cost nothing once the
-method finishes, and they never touch the arena.
+address. Primitive locals use stack slots or registers while the method is active. They do not become arena
+allocations, and their stack space is released when the frame returns.
 
-The stack has a fixed size per carrier, set with `juno.Xss`:
+The carrier/task stack has a fixed size, set with `juno.Xss`. On a single-carrier board, virtual threads share the Juno
+carrier stack while `main` retains its native Arduino stack. On a dual-carrier board, each active task slot gets a native
+stack from the board's heap.
 
-| Board | Stack per carrier (default) |
+| Board | Carrier/task stack (default) |
 |---|---|
 | UNO R3 | 512 bytes |
 | UNO R4 WiFi | 2 KB |
@@ -174,8 +184,10 @@ your Java code is small.
 
 ## 7. What things cost
 
-Now the practical part. All the numbers below come from the compiler's layout rules. A *word* is 4 bytes on every board
-Juno supports.
+Now the practical part. All the numbers below describe Juno's compiler layout rules, not the complete firmware
+footprint. They are useful for budgeting Java allocations, but the Arduino core, native libraries, buffers, stacks,
+alignment and linker report determine whether the complete program fits. A *word* is 4 bytes on every board Juno
+supports.
 
 ### Primitive types
 
@@ -240,10 +252,10 @@ record Point(int x, int y) {} // 4 (block) + 4 + 4 = 12 bytes
 
 An 8 KB arena could hold about 680 `Point` objects if nothing else used it, and a 64 KB arena about 5,400.
 
-Records have one advantage: they are small, immutable and often short-lived, and that is exactly what Juno's optimizer
-looks for. When an object never *escapes* the method that creates it (it is not stored, passed to a call, returned or
-captured), the optimizer applies **scalar replacement**: the fields become local variables and the allocation
-disappears.
+Records have one advantage: they are small, final-field objects, and that is exactly what Juno's optimizer looks for.
+When Juno can prove that an object never *escapes* the method that creates it (it is not stored, passed to a call,
+returned or captured), it may apply **scalar replacement**: the fields become local variables and the allocation
+disappears. This is an optimization to confirm in the compiler output, not a guarantee for every record.
 
 ```java
 for (int i = 0; i < 100; i++) {
@@ -267,9 +279,10 @@ The code still reads like normal Java, but the loop does not allocate and the co
 | String | Where | Cost |
 |---|---|---|
 | Literal `"Hello"` | Flash | 0 bytes of RAM |
-| Built at run time: `"T=" + t`, `String.valueOf(x)`, `sb.toString()` | Arena | 4 (block) + one byte per character + 1, rounded up to 4 |
+| Built at run time: `"T=" + t`, `String.valueOf(x)`, `sb.toString()` | Arena | 4-byte block header + stored runtime bytes + terminator, rounded by the allocator |
 
-Runtime strings are stored as compact bytes, not as UTF-16 `char` arrays. Even so, a concatenation inside the main loop
+Runtime strings are stored as compact bytes, not as UTF-16 `char` arrays. Their cost is one byte per stored runtime byte,
+plus the terminator and allocator overhead, rounded by the allocator. Even so, a concatenation inside the main loop
 allocates every time, so prefer a `StringBuilder` created once at startup, or print the parts one by one.
 
 ## 8. Virtual threads and structured concurrency
@@ -282,26 +295,32 @@ each one. The design depends on the board.
 A **carrier** is a native execution context with its own stack. A virtual thread *mounts* on a carrier to run, and
 *unmounts* when it blocks (`sleep`, waiting on a lock, waiting for a subtask…).
 
-- **Single-carrier boards** (UNO R4 WiFi, and any board built with `juno.carriers=1`): every thread shares one native
-  stack. When a thread parks, the runtime **copies its live frames into a continuation chunk in the arena**, and the next
-  thread runs on the same stack. A parked thread therefore costs only the stack it actually used, not a full reserved
-  stack.
-- **Dual-carrier boards** (Nano ESP32, ESP32-CAM, Cardputer, Pico 2 W): threads run on both cores, up to 16 slots, and
-  each slot's native stack is taken from the board's heap the first time a thread uses that slot.
+- **Single-carrier boards** (UNO R4 WiFi, and any board built with `juno.carriers=1`): virtual threads take turns on one
+  Juno carrier stack; `main` retains its native Arduino stack. When a virtual thread parks, the runtime **copies its live
+  frames into a continuation chunk in the arena**, and the next thread runs on the carrier. A parked thread therefore
+  costs only the stack it actually used, not a full reserved stack.
+- **Dual-carrier boards** (Nano ESP32, ESP32-CAM, Cardputer, Pico 2 W): threads can run concurrently on both cores, up
+  to 16 slots, and each used slot's native stack is taken from the board's heap.
 - **UNO R3**: four fixed slots including `main`, 512 bytes of stack each. Three extra threads take 1.5 KB of its 2 KB.
-- **Portenta H7**: the chip has two cores, a Cortex-M7 and a Cortex-M4, but today Juno builds only the M7 image, so
-  every thread runs on the M7 with one carrier, as on the UNO R4 WiFi. Using the M4 as a second carrier is possible
-  future work: unlike the two ESP32 cores, the Portenta's cores do not share one runtime, so they would have to
-  exchange messages.
+- **Portenta H7**: `main` runs on the Cortex-M7. With its default two-carrier runtime, new thread slots are placed on the least-loaded M7
+  or M4 carrier and remain pinned there, so eligible workloads can execute concurrently on both cores. Juno builds a
+  second M4 carrier image beside the M7 sketch; it supplies M4-side Mbed services while Java code and the shared
+  runtime remain in the M7 program image's flash. The cores coordinate through hardware semaphores and request rings.
+  M4 threads can execute Java and supported local runtime operations, while calls requiring M7-owned Arduino/Mbed
+  libraries are forwarded to an M7 worker. M4 `double` arithmetic uses software routines because the M4 has no
+  double-precision FPU.
 
 ### What a thread costs
 
-| Item | Arena bytes |
+| Item | Runtime payload bytes |
 |---|---|
 | Thread handle (state, result, failure) | 28 |
 | `StructuredTaskScope` and its task table | 40 |
 | A parked thread's continuation (single carrier) | The frames it had on the stack when it parked |
 | A thread slot's native stack (dual carrier) | `juno.Xss` from the board heap, not the arena |
+
+The thread and scope figures are payload estimates. Add the arena's 4-byte block header, then account for captured
+runnables, task tables, continuations, alignment and any native task resources.
 
 A concrete consequence: on the UNO R4 WiFi, a thread that parks deep inside an HTTP call parks with a large stack
 picture, and that copy lives in the arena until the thread resumes. Programs that do network I/O on virtual threads may
@@ -310,7 +329,8 @@ need a larger carrier stack (`-Djuno.Xss`) and a carefully balanced arena.
 ### Structured concurrency is a memory feature too
 
 `StructuredTaskScope` is more than a nicer API. Because every subtask must finish before the scope closes, the
-subtasks' handles and continuations have a clear end of life, and the next garbage collection can free them. With
+subtasks' handles and continuations have a clear end of life. When the scope closes and the program retains no
+references to its tasks, captures or results, those arena objects become eligible for the next collection. With
 unstructured threads, a forgotten thread keeps its handle and its stack alive for the rest of the program.
 
 ```java
@@ -319,7 +339,7 @@ try (var scope = StructuredTaskScope.open()) {        // 40 bytes
     var humidity    = scope.fork(() -> hygro.read());  // 28 bytes + continuation while parked
     scope.join();
     show(temperature.get(), humidity.get());
-}                                                       // all of it becomes garbage here
+}                                                       // eligible for the next collection when unreachable
 ```
 
 ## 9. Checking your program before it reaches the board
@@ -346,5 +366,5 @@ At run time, `-Djuno.gcLog=true` prints one serial line per collection, with the
 | `byte` fields are compact | Every field is a word; use arrays for compact data |
 | One OS thread per platform thread | Virtual threads on one or two carriers; parked frames saved in the arena |
 
-Memory on a microcontroller is small but predictable. When you know where each value lives, you can write Java that fits
-in 8 KB and keeps running for months.
+Memory on a microcontroller is small but predictable. When you know where each value lives, you can size a Juno program
+for its selected board and arena, and keep it running for months.
