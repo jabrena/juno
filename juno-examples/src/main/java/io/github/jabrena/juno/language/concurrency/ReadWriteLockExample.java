@@ -2,7 +2,7 @@ package io.github.jabrena.juno.language.concurrency;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-/** JVM-only read/write locking example; Juno lowers {@code ReentrantLock}, not {@link ReentrantReadWriteLock}. */
+/** Read/write locking with a {@link ReentrantReadWriteLock}, run on the JVM and on the board alike. */
 public final class ReadWriteLockExample {
     private ReadWriteLockExample() {}
 
