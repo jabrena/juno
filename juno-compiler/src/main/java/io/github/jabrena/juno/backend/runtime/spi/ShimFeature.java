@@ -83,6 +83,8 @@ public enum ShimFeature {
     RUNTIME_STRINGS,
     STRING_FROM_BYTES,
     STRING_BUILDER,
+    /** The board-side {@code java.lang.System.arraycopy} subset used by primitive collections. */
+    SYSTEM_ARRAYCOPY,
     MEMORY,
     /** {@code BoardMemory.flashUsedBytes()}/{@code flashCapacityBytes()}, answered by each core's linker layout. */
     FLASH,

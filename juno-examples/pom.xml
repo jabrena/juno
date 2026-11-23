@@ -28,6 +28,7 @@
         <clojure.version>1.12.6</clojure.version>
         <groovy.version>6.0.0</groovy.version>
         <exec-maven-plugin.version>3.7.0</exec-maven-plugin.version>
+        <eclipse-collections.version>13.0.0</eclipse-collections.version>
     </properties>
 
     <dependencies>
@@ -38,6 +39,19 @@
         <dependency>
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-rcx-firmware</artifactId>
+        </dependency>
+        <!-- Eclipse Collections is present while compiling and linking examples, but is not a board runtime dependency. -->
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+            <version>${eclipse-collections.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+            <version>${eclipse-collections.version}</version>
+            <scope>provided</scope>
         </dependency>
         <!-- Kotlin examples compile against the Juno API only; the stdlib is needed at build time, never on the board. -->
         <dependency>
