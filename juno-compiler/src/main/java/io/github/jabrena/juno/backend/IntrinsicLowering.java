@@ -18,6 +18,7 @@ import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 
@@ -136,6 +137,7 @@ public final class IntrinsicLowering {
     private final Set<Intrinsic> usedMath;
     private final InputStreamRoute inputStreamRoute;
     private final RuntimeLockBracket lockBracket;
+    private final Optional<String> nativeDispatcher;
     private final BoardModel boardModel;
 
     /**
@@ -162,6 +164,7 @@ public final class IntrinsicLowering {
         this.usedMath = usedMath;
         this.inputStreamRoute = inputStreamRoute;
         this.lockBracket = new RuntimeLockBracket(target, usesThreads && carrierCount > 1);
+        this.nativeDispatcher = usesThreads ? coreRuntime.nativeCallDispatcher(carrierCount) : Optional.empty();
         registerExceptions();
         registerGpio(coreRuntime, onboardSdChipSelect, usesThreads);
         registerThreads(usesThreads);
@@ -1064,7 +1067,7 @@ public final class IntrinsicLowering {
             words.add(operand.resolve(call));
         }
         lockBracket.enter(output, call.intrinsic());
-        target.emitShimCall(output, frame, shimCall.function(), words);
+        emitCall(output, frame, shimCall.function(), words, call.intrinsic().runsOnAnyCore());
         switch (shimCall.result()) {
             case NONE -> { }
             case WORD -> call.target().ifPresent(value -> target.storeResult(output, frame, value));
@@ -1095,7 +1098,7 @@ public final class IntrinsicLowering {
             }
         }
         lockBracket.enter(output);
-        target.emitShimCall(output, frame, mathRuntime.symbol(call.intrinsic()), words);
+        emitCall(output, frame, mathRuntime.symbol(call.intrinsic()), words, false);
         call.target().ifPresent(value -> storeTypedResult(output, frame, value));
         lockBracket.exit(output);
     }
@@ -1126,9 +1129,19 @@ public final class IntrinsicLowering {
             }
         }
         lockBracket.enter(output);
-        target.emitShimCall(output, frame, bigNumberMethods.shimSymbol(call.intrinsic()), words);
+        emitCall(output, frame, bigNumberMethods.shimSymbol(call.intrinsic()), words, false);
         call.target().ifPresent(value -> storeTypedResult(output, frame, value));
         lockBracket.exit(output);
+    }
+
+    /** A shim call, through the native-call dispatcher unless it {@code runsOnAnyCore} or there is none. */
+    private void emitCall(StringBuilder output, FrameLayout frame, String function, List<WordSource> words,
+                          boolean runsOnAnyCore) {
+        if (nativeDispatcher.isPresent() && !runsOnAnyCore) {
+            target.emitShimCallThrough(output, frame, nativeDispatcher.get(), function, words);
+        } else {
+            target.emitShimCall(output, frame, function, words);
+        }
     }
 
     private void storeTypedResult(StringBuilder output, FrameLayout frame, Value value) {

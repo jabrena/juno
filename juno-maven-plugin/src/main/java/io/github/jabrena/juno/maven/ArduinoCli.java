@@ -99,6 +99,19 @@ final class ArduinoCli {
         run(captured(arguments.toArray(String[]::new)));
     }
 
+    /**
+     * {@link #upload(String, String, Path, String)}, leaving the board in its DFU bootloader afterwards, so that the
+     * next upload, of the board's other image, starts before either image runs.
+     */
+    void uploadStaying(String fqbn, String port, Path sketchDirectory, @Nullable String dfuSerial) {
+        String requiredFqbn = requireText(fqbn, "FQBN");
+        DfuUploadPattern staying = dfuUploadPattern(requiredFqbn, sketchDirectory).staying();
+        String property = dfuSerial != null && !dfuSerial.isBlank()
+                ? staying.selecting(dfuSerial.trim()) : staying.asProperty();
+        run(captured("upload", "--port", requireText(port, "port"), "--fqbn", requiredFqbn, "--upload-property",
+                property, absolute(sketchDirectory)));
+    }
+
     private List<String> uploadArguments(String fqbn, String port, Path sketchDirectory, @Nullable String dfuSerial) {
         String requiredFqbn = requireText(fqbn, "FQBN");
         List<String> arguments = new ArrayList<>(List.of("upload", "--port", requireText(port, "port"), "--fqbn",

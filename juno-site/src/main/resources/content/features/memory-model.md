@@ -237,6 +237,7 @@ gives the limit each board applies.
 | AI Thinker ESP32-CAM | 16 slots on two carriers (the default); arena-bounded with `juno.carriers=1` | 8192 / 32768 bytes | Yes |
 | M5Stack Cardputer | 16 slots on two carriers (the default); arena-bounded with `juno.carriers=1` | 8192 / 32768 bytes | Yes |
 | Raspberry Pi Pico 2 W | 16 slots on two carriers (the default); no slot count with `juno.carriers=1` | 4096 / 16384 bytes | Yes |
+| Portenta H7 | 16 slots on two carriers, the Cortex-M7 and the Cortex-M4 (the default); no slot count with `juno.carriers=1` | 8192 / 32768 bytes | Yes |
 
 - On the UNO R3 the three extra threads take 1.5 KB of its 2 KB, which leaves little for the arena and the statics. The
   R3 is the board where threads cost the most RAM.

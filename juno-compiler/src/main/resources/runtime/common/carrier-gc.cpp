@@ -10,9 +10,7 @@ extern "C" void juno_runtime_enter();
 extern "C" void juno_runtime_exit();
 extern "C" bool juno_runtime_owned();
 
-static volatile uint32_t juno_carrier_in_java[${JUNO_CARRIER_COUNT}];
-static volatile uint32_t juno_carrier_parked[${JUNO_CARRIER_COUNT}];
-static volatile bool juno_gc_stopping = false;
+${JUNO_CARRIER_GC_STATE}
 
 static void juno_carrier_park() {
   ${JUNO_REGISTER_SPILL}
@@ -95,7 +93,7 @@ static void juno_gc_stop_world() {
       __sync_synchronize();
     }
   }
-  __sync_synchronize();
+  __sync_synchronize();${JUNO_WORLD_STOPPED}
 }
 
 static void juno_gc_resume_world() {

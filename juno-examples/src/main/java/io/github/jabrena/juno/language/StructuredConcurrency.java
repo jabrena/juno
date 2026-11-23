@@ -2,6 +2,7 @@ package io.github.jabrena.juno.language;
 
 import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.annotations.M5StackCardputerBoard;
@@ -20,7 +21,7 @@ import java.util.concurrent.StructuredTaskScope;
  * and leaving the block closes the scope. Each subtask writes only its own slot of {@code counts}, so the owner needs
  * no locks to read them.
  */
-@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class})
+@Board({ArduinoUnoR4WiFiBoard.class, ArduinoNanoEsp32Board.class, ArduinoPortentaH7Board.class, RaspberryPico2WifiBoard.class, AiThinkerEsp32CamBoard.class, M5StackCardputerBoard.class})
 public final class StructuredConcurrency {
     private static final int LIMIT = 300;
     private static final int SLICES = 3;

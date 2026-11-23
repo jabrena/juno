@@ -62,6 +62,89 @@ class FlashMojoTest extends AbstractMojoTestCase {
     }
 
     @Test
+    @DisplayName("Builds the Portenta H7's M4 carrier image with the program and flashes it first")
+    void shouldBuildAndFlashTheM4CarrierImageFirst() throws Exception {
+        // Given
+        FlashMojo mojo = portentaMojo("flash-portenta");
+        FakeExecutor executor = new FakeExecutor()
+                .respond(0, "M4 image uses 1234 bytes")
+                .respond(0, "Sketch uses 1234 bytes")
+                .respond(0, PORTENTA_PORTS)
+                .respond(0, DfuUploadPatternTest.PORTENTA)
+                .respond(0, "M4 upload complete")
+                .respond(0, "upload complete");
+        mojo.useExecutor(executor);
+
+        // When
+        mojo.execute();
+
+        // Then
+        Path output = Path.of("target/juno-mojo-test/flash-portenta").toAbsolutePath().normalize();
+        assertThat(output.resolve("PortentaThreadProgramAsmM4/PortentaThreadProgramAsmM4.ino")).exists();
+        assertThat(executor.invocations()).hasSize(6);
+        assertThat(executor.invocations().get(0).arguments()).contains("compile", "--fqbn",
+                "arduino:mbed_portenta:envie_m7:target_core=cm4",
+                output.resolve("PortentaThreadProgramAsmM4").toString());
+        assertThat(executor.invocations().get(1).arguments()).contains("compile", "--fqbn",
+                "arduino:mbed_portenta:envie_m7", output.resolve("PortentaThreadProgramAsm").toString());
+        assertThat(executor.invocations().get(4).arguments()).contains("upload", "--fqbn",
+                "arduino:mbed_portenta:envie_m7:target_core=cm4").anySatisfy(argument -> assertThat(argument)
+                .startsWith("upload.pattern=").doesNotContain(":leave"));
+        assertThat(executor.invocations().get(5).arguments()).contains("upload", "--fqbn",
+                "arduino:mbed_portenta:envie_m7", output.resolve("PortentaThreadProgramAsm").toString())
+                .doesNotContain("--upload-property");
+    }
+
+    @Test
+    @DisplayName("Retries a Portenta H7 upload once when the board was not yet in DFU mode")
+    void shouldRetryAFailedPortentaUploadOnce() throws Exception {
+        // Given
+        FlashMojo mojo = portentaMojo("flash-portenta-retry");
+        FakeExecutor executor = new FakeExecutor()
+                .respond(0, "M4 image uses 1234 bytes")
+                .respond(0, "Sketch uses 1234 bytes")
+                .respond(0, PORTENTA_PORTS)
+                .respond(0, DfuUploadPatternTest.PORTENTA)
+                .respond(1, "dfu-util: No DFU capable USB device available")
+                .respond(0, DfuUploadPatternTest.PORTENTA)
+                .respond(0, "M4 upload complete")
+                .respond(0, "upload complete");
+        mojo.useExecutor(executor);
+
+        // When
+        mojo.execute();
+
+        // Then
+        assertThat(executor.invocations()).hasSize(8);
+        assertThat(executor.invocations().get(6).arguments()).contains("upload", "--fqbn",
+                "arduino:mbed_portenta:envie_m7:target_core=cm4");
+    }
+
+    private static final String PORTENTA_PORTS = """
+            {
+              "detected_ports": [
+                {
+                  "matching_boards": [{"name": "Portenta H7", "fqbn": "arduino:mbed_portenta:envie_m7"}],
+                  "port": {"address": "/dev/cu.usbmodem1201"}
+                }
+              ]
+            }""";
+
+    private FlashMojo portentaMojo(String outputName) throws Exception {
+        FlashMojo mojo = lookupEmptyMojo("flash", new File("."));
+        mojo = configureMojo(mojo, configuration()
+                .set("arduinoCli", "arduino-cli")
+                .set("mainClass", "io.github.jabrena.juno.maven.fixture.PortentaThreadProgram")
+                .set("board", "arduino-portenta-h7")
+                .set("carrierCount", "2")
+                .set("outputDirectory", "target/juno-mojo-test/" + outputName)
+                .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
+                .build());
+        mojo.setLog(new RecordingLog());
+        return mojo;
+    }
+
+    @Test
     @DisplayName("Builds a Pico 2 W secret-store program with the secure firmware in its boot slot, then uploads that")
     void shouldInstallThePicoSecureFirmwareBeforeUploading() throws Exception {
         // Given: arduino-cli is faked, so the UF2 it would build is put where it would leave it

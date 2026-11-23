@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.backend.thumb2;
 
+import io.github.jabrena.juno.CompileException;
 import io.github.jabrena.juno.backend.FrameLayout;
 import io.github.jabrena.juno.backend.ProgramLayout;
 import io.github.jabrena.juno.backend.WordSource;
@@ -17,6 +18,8 @@ import java.util.Map;
  */
 public final class AsmEmitter {
     public static final int WORD = FrameLayout.WORD;
+    /** Stack argument words a native-call dispatcher copies to another core (see the Portenta H7 dual-carrier port). */
+    static final int DISPATCHED_STACK_WORDS = 16;
     /** Bytes {@code push {r4-r11, lr}} reserves — every prologue/epilogue is built around this. */
     static final int PUSH_BYTES = FrameLayout.PUSH_BYTES;
 
@@ -130,6 +133,24 @@ public final class AsmEmitter {
      * high-word source).
      */
     void emitShimCall(StringBuilder output, FrameLayout frame, String functionName, List<WordSource> words) {
+        emitShimCall(output, frame, words, "    bl " + functionName + "\n");
+    }
+
+    /**
+     * A shim call made through {@code dispatcher}: the arguments as for a direct call, the function's address in
+     * {@code r12} (scratch at every call), and a call to the dispatcher, which may copy at most
+     * {@value #DISPATCHED_STACK_WORDS} stack words to another core.
+     */
+    void emitShimCallThrough(StringBuilder output, FrameLayout frame, String dispatcher, String functionName,
+                             List<WordSource> words) {
+        if (words.size() - 4 > DISPATCHED_STACK_WORDS) {
+            throw new CompileException("Native call " + functionName + " takes " + words.size()
+                    + " argument words; a call handed to another core takes at most " + (4 + DISPATCHED_STACK_WORDS));
+        }
+        emitShimCall(output, frame, words, "    ldr r12, =" + functionName + "\n    bl " + dispatcher + "\n");
+    }
+
+    private void emitShimCall(StringBuilder output, FrameLayout frame, List<WordSource> words, String call) {
         int total = words.size();
         int extra = Math.max(0, total - 4);
         int reserved = alignStack(extra * WORD);
@@ -143,7 +164,7 @@ public final class AsmEmitter {
         for (int i = 0; i < Math.min(4, total); i++) {
             loadWord(output, frame, words.get(i), "r" + i, reserved);
         }
-        output.append("    bl ").append(functionName).append('\n');
+        output.append(call);
         if (reserved > 0) {
             output.append("    add sp, sp, #").append(reserved).append('\n');
         }
