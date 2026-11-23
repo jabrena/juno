@@ -19,10 +19,10 @@
 
   <!-- SEO TITLE -->
   
-  <title>Blog - Juno: Java for Arduino</title>
+  <title>Blog - Juno: Java for Microcontrollers</title>
   <meta property="og:title" content="Blog" />
   <meta name="twitter:title" content="Blog">
-  <meta property="og:site_name" content="Juno: Java for Arduino">
+  <meta property="og:site_name" content="Juno: Java for Microcontrollers">
   <!-- SEO DESCRIPTION -->
   <meta name="description" content="Articles about building practical Java applications for Arduino and other embedded boards.">
   <meta property="og:description" content="Articles about building practical Java applications for Arduino and other embedded boards." />
@@ -33,16 +33,18 @@
   <meta property="og:url" content="https://jabrena.github.io/juno/blog/" />
   <meta name="twitter:url" content="https://jabrena.github.io/juno/blog/">
 
+
   <!-- SEO TYPE -->
   <meta property="og:type" content="website" />
 
   <!-- SEO IMAGE -->
   <meta name="twitter:card" content="summary">
   <!-- SEO PAGINATOR -->
+  <link rel="next" href="https://jabrena.github.io/juno/posts/page2/"/>
   <!-- SEO LOCALE -->
   <meta property="og:locale" content="es_ES" />
   <!-- SEO GENERATOR -->
-  <meta name="generator" content="Quarkus Roq v2.2.0" />
+  <meta name="generator" content="Quarkus Roq v2.2.1" />
 
 <!-- Favicon -->
 
@@ -55,8 +57,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
 
 
-    <script type="module" src="/juno/static/bundle/app-RFOX3XST.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-AOEEMNED.css" />
+    <script type="module" src="/juno/static/bundle/app-P5LY5ZJW.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-K4K7IZCN.css" />
 
 </head>
 <body>
@@ -311,21 +313,50 @@ the hardware and APIs behind them, and the lessons learned while bringing Java p
 
 
 <ul class="blog-simple-list">
-  <li>
-    <a href="/juno/blog/2026-11-14-gladiator/">Gladiator: a network arena game</a>
-    <time class="blog-simple-date">nov 14, 2026</time>
+  <li class="blog-simple-item">
+    <div class="blog-simple-meta">
+      <time class="blog-simple-date">nov 23, 2026</time>
+      <span class="blog-simple-tags"><span class="blog-simple-tag">concurrency</span><span class="blog-simple-tag">virtual-threads</span><span class="blog-simple-tag">http</span></span>
+    </div>
+    <h2 class="blog-simple-title"><a href="/juno/blog/2026-11-23-juno-concurrency-virtual-threads/">Juno concurrency: virtual threads, structured concurrency and real limits</a></h2>
+    <p class="blog-simple-description">How Juno runs virtual threads on small boards, what StructuredTaskScope adds, and how to bound concurrent HttpClient requests without exhausting the board.</p>
+    <span class="blog-simple-more" aria-hidden="true">Read article →</span>
   </li>
-  <li>
-    <a href="/juno/blog/2026-11-14-lichess/">Lichess Daily Challenges: a chess tactics trainer</a>
-    <time class="blog-simple-date">nov 14, 2026</time>
+  <li class="blog-simple-item">
+    <div class="blog-simple-meta">
+      <time class="blog-simple-date">nov 23, 2026</time>
+      <span class="blog-simple-tags"><span class="blog-simple-tag">memory</span><span class="blog-simple-tag">education</span><span class="blog-simple-tag">concurrency</span></span>
+    </div>
+    <h2 class="blog-simple-title"><a href="/juno/blog/2026-11-23-juno-memory-model-design/">Juno Internals: how the memory model works in Juno</a></h2>
+    <p class="blog-simple-description">An educational tour of how a Juno program uses flash and RAM: the arena, the stack, the runtime, and what primitives, classes, records and virtual threads really cost.</p>
+    <span class="blog-simple-more" aria-hidden="true">Read article →</span>
   </li>
-  <li>
-    <a href="/juno/blog/2026-11-14-mailbox/">Mailbox: remote messaging for Claude</a>
-    <time class="blog-simple-date">nov 14, 2026</time>
+  <li class="blog-simple-item">
+    <div class="blog-simple-meta">
+      <time class="blog-simple-date">nov 23, 2026</time>
+      <span class="blog-simple-tags"><span class="blog-simple-tag">compiler</span><span class="blog-simple-tag">internals</span><span class="blog-simple-tag">toolchain</span></span>
+    </div>
+    <h2 class="blog-simple-title"><a href="/juno/blog/2026-11-24-juno-java-to-firmware/">From Java source to Arduino firmware: how Juno compiles a program</a></h2>
+    <p class="blog-simple-description">Follow a Juno program from javac through class-file analysis, generated assembly, native shims and the Arduino toolchain.</p>
+    <span class="blog-simple-more" aria-hidden="true">Read article →</span>
   </li>
-  <li>
-    <a href="/juno/blog/2026-11-14-supabase/">Supabase: publish Grove temperatures to the cloud</a>
-    <time class="blog-simple-date">nov 14, 2026</time>
+  <li class="blog-simple-item">
+    <div class="blog-simple-meta">
+      <time class="blog-simple-date">nov 23, 2026</time>
+      <span class="blog-simple-tags"><span class="blog-simple-tag">http</span><span class="blog-simple-tag">networking</span><span class="blog-simple-tag">memory</span></span>
+    </div>
+    <h2 class="blog-simple-title"><a href="/juno/blog/2026-11-25-juno-http-on-constrained-boards/">HTTP on constrained boards: making Juno HttpClient predictable</a></h2>
+    <p class="blog-simple-description">Understand Juno&#39;s HttpClient transport leases, reusable buffers, response limits and safe batching on small boards.</p>
+    <span class="blog-simple-more" aria-hidden="true">Read article →</span>
+  </li>
+  <li class="blog-simple-item">
+    <div class="blog-simple-meta">
+      <time class="blog-simple-date">nov 23, 2026</time>
+      <span class="blog-simple-tags"><span class="blog-simple-tag">memory</span><span class="blog-simple-tag">embedded</span><span class="blog-simple-tag">performance</span></span>
+    </div>
+    <h2 class="blog-simple-title"><a href="/juno/blog/2026-11-26-juno-zero-allocation/">Zero-allocation Java patterns for Arduino with Juno</a></h2>
+    <p class="blog-simple-description">Design Juno programs that allocate at startup, reuse buffers and keep the main loop predictable on tiny boards.</p>
+    <span class="blog-simple-more" aria-hidden="true">Read article →</span>
   </li>
 </ul>
 
@@ -335,7 +366,9 @@ the hardware and APIs behind them, and the lessons learned while bringing Java p
   <nav class="pagination" role="navigation">
     <ul>
 
+      <p><span class="page-number">Page 1 of 2</span></p>
 
+      <p><a class="older-posts" href="/juno/posts/page2/"><i class="fa fa-long-arrow-right" aria-hidden="true"></i></a></p>
     </ul>
   </nav>
 
