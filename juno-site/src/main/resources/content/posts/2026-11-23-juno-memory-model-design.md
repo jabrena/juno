@@ -90,14 +90,17 @@ RAM** at build time, called the **arena**. Every `new` takes its memory from it.
 |---|---|---|
 | UNO R3 | 1 KB | 1 KB |
 | UNO R4 WiFi | 8 KB | ~25 KB |
-| Nano ESP32, ESP32-CAM, Cardputer | 8 KB | ~270–300 KB |
-| Raspberry Pi Pico 2 W | 8 KB | ~425 KB |
+| Nano ESP32, ESP32-CAM, Cardputer | 64 KB | ~270–300 KB |
+| Raspberry Pi Pico 2 W | 64 KB | ~425 KB |
 | Portenta H7 | 64 KB | 896 KB |
 
 The arena never grows. If you need more, you set it at build time, as you would set `-Xmx` on the JVM:
 
 ```bash
-./mvnw -f juno-examples/pom.xml compile juno:verify -Djuno.main=... -Djuno.board=arduino-uno-r4-wifi -Djuno.Xmx=12k
+./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=... \
+  -Djuno.board=arduino-uno-r4-wifi \
+  -Djuno.Xmx=12k
 ```
 
 ### How allocation works
@@ -202,7 +205,8 @@ An array costs a 4-byte block header, a 4-byte length word, and its elements rou
 | `new int[100]` | 4 + 4 + 400 = **408** |
 | `new long[100]` | 4 + 4 + 800 = **808** |
 
-The default 8 KB arena holds about twenty `int[100]` arrays, and nothing else.
+The UNO R4 WiFi's default 8 KB arena holds about twenty `int[100]` arrays and nothing else; the 64 KB arena of the
+ESP32, Pico 2 W and Portenta boards holds about 160.
 
 ### Classes
 
@@ -234,7 +238,7 @@ A record is a final class with final fields, so it follows the same rules:
 record Point(int x, int y) {} // 4 (block) + 4 + 4 = 12 bytes
 ```
 
-The 8 KB arena could hold about 680 `Point` objects if nothing else used it.
+An 8 KB arena could hold about 680 `Point` objects if nothing else used it, and a 64 KB arena about 5,400.
 
 Records have one advantage: they are small, immutable and often short-lived, and that is exactly what Juno's optimizer
 looks for. When an object never *escapes* the method that creates it (it is not stored, passed to a call, returned or
@@ -278,13 +282,17 @@ each one. The design depends on the board.
 A **carrier** is a native execution context with its own stack. A virtual thread *mounts* on a carrier to run, and
 *unmounts* when it blocks (`sleep`, waiting on a lock, waiting for a subtask…).
 
-- **Single-carrier boards** (UNO R4 WiFi, Portenta H7, and any board built with `juno.carriers=1`): every thread shares one native
+- **Single-carrier boards** (UNO R4 WiFi, and any board built with `juno.carriers=1`): every thread shares one native
   stack. When a thread parks, the runtime **copies its live frames into a continuation chunk in the arena**, and the next
   thread runs on the same stack. A parked thread therefore costs only the stack it actually used, not a full reserved
   stack.
 - **Dual-carrier boards** (Nano ESP32, ESP32-CAM, Cardputer, Pico 2 W): threads run on both cores, up to 16 slots, and
   each slot's native stack is taken from the board's heap the first time a thread uses that slot.
 - **UNO R3**: four fixed slots including `main`, 512 bytes of stack each. Three extra threads take 1.5 KB of its 2 KB.
+- **Portenta H7**: the chip has two cores, a Cortex-M7 and a Cortex-M4, but today Juno builds only the M7 image, so
+  every thread runs on the M7 with one carrier, as on the UNO R4 WiFi. Using the M4 as a second carrier is possible
+  future work: unlike the two ESP32 cores, the Portenta's cores do not share one runtime, so they would have to
+  exchange messages.
 
 ### What a thread costs
 
