@@ -31,19 +31,105 @@ MCU.getWifi().begin(ssid, password);
 ```
 
 Read secrets once during startup. `getString()` allocates one Java `String`; the allocation-free alternative is
-`read(name, buffer)`, which copies the value into a caller-owned byte array.
+`read(name, buffer)`, which copies the value into a caller-owned byte array. A name that was never stored comes back as
+`null`, so the program can say what is missing instead of failing later.
 
-Provisioning is performed over USB by the Maven plugin, with the value entered at a hidden prompt:
+## Setting the secrets with the Maven plugin
+
+The values reach the board through the `juno:secret` goal of the Juno Maven plugin, over USB. You never write them in
+Java, in `pom.xml`, on the command line or on an SD card.
+
+### 1. Find the board's port
+
+Plug the board in over USB and list the connected boards:
+
+```bash
+./mvnw -f juno-examples/pom.xml juno:boards
+```
+
+Use the serial port it reports, such as `/dev/cu.usbmodem1101` on macOS. Always provision over USB serial: a network
+address the list may also show needs credentials the goal cannot type.
+
+### 2. Store each name
+
+Run the goal once per name. It asks for the value at a hidden prompt, so nothing you type is echoed or logged:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:secret \
-  -Djuno.board=arduino-portenta-h7 \
-  -Djuno.port=<PORT> \
-  -Djuno.secret.key=wifi.password
+  -Djuno.board=arduino-nano-esp32 \
+  -Djuno.port=/dev/cu.usbmodem1101 \
+  -Djuno.secret.key=wifi.ssid
 ```
 
-The program and provisioning command only need to agree on the name. The store supports up to 16 names, and each record
-has a maximum size determined by the 63-byte record limit and the name length.
+```text
+Value for wifi.ssid (hidden):
+[INFO] Uploading the secret provisioning program
+[INFO] Stored wifi.ssid in the chip
+```
+
+Then repeat it with `-Djuno.secret.key=wifi.password`, and with any other name your program reads, such as an API
+token. Storing a name again replaces its value.
+
+Behind that one command, the goal:
+
+1. Checks the name and the value before touching the board. If either is invalid it stops with "Nothing was uploaded or
+   written".
+2. Uploads the plugin's own provisioning program, `SecretProvisioner`, which replaces whatever was on the board.
+3. Sends the value to that program over USB serial, as hex. The program writes it into the board's store under the name
+   and answers `OK`.
+
+### 3. Check what is stored
+
+Pass the names to check. The goal reports each one as `written` or `missing`, never its value:
+
+```bash
+./mvnw -f juno-examples/pom.xml juno:secret \
+  -Djuno.board=arduino-nano-esp32 \
+  -Djuno.port=/dev/cu.usbmodem1101 \
+  -Djuno.secret.list=wifi.ssid,wifi.password
+```
+
+```text
+[INFO] STATE wifi.ssid written
+[INFO] STATE wifi.password written
+```
+
+The store cannot enumerate what it holds, so you always name the keys you ask about.
+
+### 4. Upload your program again
+
+The provisioning program is still on the board, so flash your own program back. The secrets stay in the store:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:flash \
+  -Djuno.main=com.example.MyProgram \
+  -Djuno.board=arduino-nano-esp32 \
+  -Djuno.port=/dev/cu.usbmodem1101
+./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32
+```
+
+Watch the serial output to confirm the program found its credentials. Provisioning is a one-time step per board: a new
+firmware upload does not erase the store.
+
+### Rules for names and values
+
+- **Names** are 1 to 31 printable ASCII characters with no spaces, such as `wifi.ssid` or `api.token`. Every name is
+  yours: the plugin and the store know no names of their own, so the provisioning command and the program only have to
+  agree on the spelling.
+- **Values** are printable ASCII. Each name shares a 63-byte record with its value, so a value can be up to
+  `62 - name length` bytes: 53 bytes for `wifi.ssid`, for example.
+- The store holds up to **16 names**.
+- The goal needs a real terminal for the hidden prompt, so run it from a shell, not from a CI job or an IDE run without
+  a console.
+- Use exactly one of `-Djuno.secret.key`, `-Djuno.secret.list` and `-Djuno.secret.clear` per run.
+
+To decommission a board, `-Djuno.secret.clear=true` empties every slot of the store, including names other programs
+wrote. It asks you to type `CLEAR` before it uploads anything.
+
+On the Raspberry Pi Pico 2 W, the plugin also installs Juno's TrustZone secure firmware while it builds the provisioning
+program, so there is no extra step. The bundled provisioning program targets the Portenta H7, Nano ESP32, Pico 2 W,
+Cardputer, ESP32-CAM and UNO R4 WiFi. On any other board, `-Djuno.main` can name your own program that speaks the
+same protocol. The [SecretStore reference](../../api/storage/secure-element) has the full details.
 
 ## What protection means on each board
 
