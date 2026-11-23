@@ -29,6 +29,16 @@ public interface IntrinsicTarget {
     /** Calls the runtime function {@code function} with {@code words}; the result, if any, waits in the result register(s). */
     void emitShimCall(StringBuilder output, FrameLayout frame, String function, List<WordSource> words);
 
+    /**
+     * {@link #emitShimCall}, made through {@code dispatcher}, which runs {@code function} on the core that runs the
+     * board's libraries when the calling thread is on another one. Only targets whose core runtime names a dispatcher
+     * are asked for this.
+     */
+    default void emitShimCallThrough(StringBuilder output, FrameLayout frame, String dispatcher, String function,
+                                     List<WordSource> words) {
+        throw new IllegalStateException("This target has no native-call dispatcher");
+    }
+
     /** Stores the one-word result of the last call into {@code target}. */
     void storeResult(StringBuilder output, FrameLayout frame, Value target);
 

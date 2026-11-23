@@ -409,7 +409,8 @@ class ConcurrencyPrimitivesTest {
         assertThat(result.sketchWrapper().source()).contains("juno_launch_main(" + result.entryPointSymbol() + ");");
         assertThat(result.runtimeShim()).contains(
                         "static JunoM4Link* const juno_m4_link = reinterpret_cast<JunoM4Link*>(0x38000000u);",
-                        "while (!juno_hsem_try(JUNO_HSEM_RUNTIME, carrier)) {",
+                        "while (!juno_hsem_try(JUNO_HSEM_RUNTIME, core)) {",
+                        "extern \"C\" void juno_m4_forward(JunoM4Call* call) {",
                         "SCB_DisableDCache();",
                         "bootM4();",
                         "#define millis juno_carrier_millis",
@@ -417,13 +418,40 @@ class ConcurrencyPrimitivesTest {
                         "juno_carrier_vacate(uint32_t slot) {")
                 .doesNotContain("__atomic_compare_exchange_n", "juno_mbed_main_baton");
         assertThat(result.assembly()).contains("bl juno_java_leave", "bl juno_java_return");
+        assertThat(result.assembly())
+                .as("a thread's Serial call goes through the dispatcher; the scheduler's join is called directly")
+                .contains("ldr r12, =juno_serial_println", "bl juno_native_dispatch", "bl juno_thread_join")
+                .doesNotContain("ldr r12, =juno_thread_join");
         assertThat(result.coprocessor()).hasValueSatisfying(image -> assertThat(image.sketch()).contains(
                         "void setup() {",
                         "juno_m4_link->taskEntry(",
                         "__HAL_ART_CONFIG_BASE_ADDRESS(0x08000000UL);",
-                        "juno_m4_link->m4Ready = JUNO_M4_LINK_MAGIC;")
+                        "juno_m4_link->m4Ready = JUNO_M4_LINK_MAGIC;",
+                        "juno_calls[slot]->release();")
                 .doesNotContain("${"));
         assertThat(result.report().runtimeRisks().carrierCount()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("Portenta H7 double arithmetic uses the FPU on the M7 and libgcc's integer routines on the M4")
+    void shouldGivePortentaDoubleArithmeticAPathForEachCore() throws Exception {
+        String body = """
+                double half = 0.5;
+                for (int i = 0; i < 3; i++) {
+                    half = half * 1.5;
+                }
+                Serial.println((int) (half * 4.0));
+                Thread.startVirtualThread(new Job()).join();
+                """;
+
+        CompilationResult dual = compile("ArduinoPortentaH7Board", body,
+                RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("2")));
+        CompilationResult single = compile("ArduinoPortentaH7Board", body);
+
+        assertThat(dual.runtimeShim()).contains("static JUNO_DOUBLE_FPU double juno_fpu_dmul(double a, double b)",
+                "__aeabi_dmul(a, b)", "static double juno_soft_fmod(double x, double y)");
+        assertThat(single.runtimeShim()).contains("double juno_dmul(double a, double b) { return a * b; }")
+                .doesNotContain("__aeabi_dmul");
     }
 
     @Test
@@ -435,6 +463,7 @@ class ConcurrencyPrimitivesTest {
         assertThat(result.sketchWrapper().source()).doesNotContain("juno_launch_main");
         assertThat(result.runtimeShim()).contains("juno_mbed_main_baton", "static uint32_t juno_current_slot = 0u;")
                 .doesNotContain("JunoM4Link", "juno_runtime_owner");
+        assertThat(result.assembly()).doesNotContain("juno_native_dispatch");
         assertThat(result.report().runtimeRisks().carrierCount()).isEqualTo(1);
     }
 

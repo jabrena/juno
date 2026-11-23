@@ -73,6 +73,24 @@ public interface CoreRuntime {
     }
 
     /**
+     * The function a call to the board's libraries goes through when threads run on {@code carrierCount} carriers and
+     * one of them is a core without those libraries (the Portenta H7's Cortex-M4): it runs the call on the core that
+     * has them. Absent by default: every carrier calls the libraries directly.
+     */
+    default Optional<String> nativeCallDispatcher(int carrierCount) {
+        return Optional.empty();
+    }
+
+    /**
+     * The {@code double} helpers generated code calls when threads run on {@code carrierCount} carriers, in place of
+     * the architecture's own, for a core whose carriers do not all have a double-precision FPU (the Portenta H7's
+     * Cortex-M4); absent by default.
+     */
+    default Optional<String> doubleHelpers(int carrierCount) {
+        return Optional.empty();
+    }
+
+    /**
      * Whether safepoints ask the port for the end of a time slice when threads run on {@code carrierCount} carriers;
      * the default is {@link #asksPortForSlices()} on any number.
      */

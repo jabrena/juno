@@ -305,7 +305,8 @@ public final class RuntimeShim {
                 new ShimFeatureBlock(ShimFeature.SD_CAPACITY, shimLibraries::sdCapacityHelpers),
                 new ShimFeatureBlock(ShimFeature.LONG, shimLibraries::longHelpers),
                 new ShimFeatureBlock(ShimFeature.FLOAT, shimLibraries::floatHelpers),
-                new ShimFeatureBlock(ShimFeature.DOUBLE, shimLibraries::doubleHelpers)));
+                new ShimFeatureBlock(ShimFeature.DOUBLE,
+                        () -> core.doubleHelpers(carrierCount).orElseGet(shimLibraries::doubleHelpers))));
         if (!usedMath.isEmpty()) {
             shim.append(mathRuntime.helpers(usedMath));
         }

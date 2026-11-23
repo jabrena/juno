@@ -487,6 +487,18 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
         return carrierCount > 1;
     }
 
+    /** With two carriers, a thread on the M4 hands every call to the board's libraries to the M7 through it. */
+    @Override
+    public Optional<String> nativeCallDispatcher(int carrierCount) {
+        return carrierCount > 1 ? Optional.of("juno_native_dispatch") : Optional.empty();
+    }
+
+    /** With two carriers, double arithmetic on the M4, which has no double-precision FPU, runs libgcc's routines. */
+    @Override
+    public Optional<String> doubleHelpers(int carrierCount) {
+        return carrierCount > 1 ? Optional.of(runtimeSource.load("mbed/double-dual.cpp")) : Optional.empty();
+    }
+
     /** With two carriers, main's setup() starts the M4 carrier image before it runs main. */
     @Override
     public String mainLauncher(int carrierCount) {
@@ -503,9 +515,24 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
     @Override
     public String runtimeLock() {
         return threadRuntime.mbedLink() + """
-                // Recursive lock shared by the two carriers, on a hardware semaphore.
+                #include "rtx_os.h"
+
+                // The carrier the calling code runs for. The M4's threads are carrier 1, and so is an M7 worker while it
+                // runs a native call for one of them (thread-port-dual.cpp): the call then sees that thread's runtime
+                // state. RTX keeps the running thread's name pointer, so the check reads memory and makes no kernel call.
+                static const char juno_call_worker_name[] = "juno-m4-call";
+
+                extern "C" uint32_t juno_port_carrier_id() {
+                  if (juno_physical_core() != 0u) return 1u;
+                  const osRtxThread_t* running = osRtxInfo.thread.run.curr;
+                  return running != nullptr && running->name == juno_call_worker_name ? 1u : 0u;
+                }
+
+                // Recursive lock shared by the two carriers, on a hardware semaphore. A carrier owns it; the semaphore
+                // is taken and released by the core that runs the carrier at the time.
                 static volatile uint32_t juno_runtime_owner = 0u;
                 static volatile uint32_t juno_runtime_depth = 0u;
+                static volatile uint32_t juno_runtime_core = 0u;
 
                 extern "C" bool juno_runtime_owned() {
                   return juno_runtime_owner == juno_port_carrier_id() + 1u;
@@ -517,9 +544,14 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
                     juno_runtime_depth++;
                     return;
                   }
-                  while (!juno_hsem_try(JUNO_HSEM_RUNTIME, carrier)) {
+                  uint32_t core = juno_physical_core();
+                  while (!juno_hsem_try(JUNO_HSEM_RUNTIME, core)) {
                     juno_gc_lock_wait();
+                    // The holder may be another M7 thread: give it the core. Never on the M4, whose kernel is not
+                    // this image's.
+                    if (core == 0u) yield();
                   }
+                  juno_runtime_core = core;
                   juno_runtime_owner = carrier + 1u;
                   juno_runtime_depth = 1u;
                 }
@@ -528,7 +560,7 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
                   uint32_t carrier = juno_port_carrier_id();
                   if (juno_runtime_owner == carrier + 1u && juno_runtime_depth != 0u && --juno_runtime_depth == 0u) {
                     juno_runtime_owner = 0u;
-                    juno_hsem_release(JUNO_HSEM_RUNTIME, carrier);
+                    juno_hsem_release(JUNO_HSEM_RUNTIME, juno_runtime_core);
                   }
                 }
                 """;

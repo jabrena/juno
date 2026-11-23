@@ -6,11 +6,13 @@
 // without exchanging an address. The M7 runs with its data cache off, so every shared word is seen by both cores.
 // The cores' exclusive monitors do not see each other's LDREX/STREX, so every lock between them is a hardware
 // semaphore (HSEM), taken and released with a barrier on both sides.
-static constexpr uint32_t JUNO_M4_LINK_MAGIC = 0x4A4D3401u;  // "JM4", layout version 1
+static constexpr uint32_t JUNO_M4_LINK_MAGIC = 0x4A4D3403u;  // "JM4", layout version 3
 static constexpr uint32_t JUNO_M4_SLOTS = ${JUNO_DUAL_CARRIER_SLOTS}u;
 static constexpr uint32_t JUNO_M4_RING_SIZE = 32u;
 static constexpr uint32_t JUNO_M4_OP_CREATE = 1u << 16;
 static constexpr uint32_t JUNO_M4_OP_GIVE = 2u << 16;
+static constexpr uint32_t JUNO_M4_OP_CALL = 3u << 16;       // To the M7: run the native call of an M4 thread.
+static constexpr uint32_t JUNO_M4_OP_CALL_DONE = 4u << 16;  // To the M4: that call returned.
 static constexpr uint32_t JUNO_M4_OP_SLOT = 0xFFFFu;
 // Hardware semaphores Juno owns; the HAL and the Mbed core use the low ones.
 static constexpr uint32_t JUNO_HSEM_NOTIFY_M4 = 29u;  // Released by the M7 to interrupt the M4.
@@ -22,6 +24,20 @@ struct JunoM4Ring {
   volatile uint32_t head;
   volatile uint32_t tail;
   volatile uint32_t items[JUNO_M4_RING_SIZE];
+};
+
+// A native call an M4 thread hands to the M7: the function and its AAPCS argument words, as the generated code set them
+// up for a direct call, and its one- or two-word result. It lives on the calling thread's stack.
+static constexpr uint32_t JUNO_NATIVE_STACK_WORDS = 16u;
+
+struct JunoM4Call {
+  uint32_t function;
+  uint32_t registers[4];
+  uint32_t stack[JUNO_NATIVE_STACK_WORDS];
+  uint32_t result[2];
+  uint32_t depth;             // The runtime lock depth the calling thread held, handed to the M7 for the call.
+  volatile uint32_t killed;   // The thread was cancelled while its call ran.
+  uint32_t padding;
 };
 
 struct JunoM4Link {
@@ -40,6 +56,8 @@ struct JunoM4Link {
   unsigned long (*volatile millis)();
   void (*volatile sleepMillis)(unsigned long millisToSleep);
   void (*volatile yield)();
+  void (*volatile callWait)(uint32_t slot);  // Parks the calling M4 thread until its native call returns.
+  volatile uint32_t calls[JUNO_M4_SLOTS];    // The JunoM4Call each M4 slot hands to the M7, as both cores see it.
   volatile uint32_t stacks[JUNO_M4_SLOTS];  // The stack of each slot's task, taken from the arena by the runtime.
   JunoM4Ring toM4;
   JunoM4Ring toM7;
@@ -47,35 +65,42 @@ struct JunoM4Link {
 
 static JunoM4Link* const juno_m4_link = reinterpret_cast<JunoM4Link*>(0x38000000u);
 
-// Carrier 0 is the Cortex-M7, carrier 1 the Cortex-M4: the same code asks the core it runs on.
-extern "C" uint32_t juno_port_carrier_id() {
+// The core the calling code runs on: 0 is the Cortex-M7, 1 the Cortex-M4. The same code asks the core it runs on. A
+// core's kernel, clock and hardware semaphores go by this; the runtime's carrier (juno_port_carrier_id) may differ.
+static inline uint32_t juno_physical_core() {
   return ((SCB->CPUID >> SCB_CPUID_PARTNO_Pos) & 0xFFFu) == 0xC24u ? 1u : 0u;
 }
 
-// The HSEM's id of the core running a carrier. Not the HAL's HSEM_CR_COREID_CURRENT: that is fixed when a file is
-// compiled, and the M7 image's code also runs on the M4.
-static inline uint32_t juno_hsem_core(uint32_t carrier) {
-  return carrier == 0u ? HSEM_CPU1_COREID : HSEM_CPU2_COREID;
+// The HSEM's id of a core. Not the HAL's HSEM_CR_COREID_CURRENT: that is fixed when a file is compiled, and the M7
+// image's code also runs on the M4.
+static inline uint32_t juno_hsem_core(uint32_t core) {
+  return core == 0u ? HSEM_CPU1_COREID : HSEM_CPU2_COREID;
+}
+
+// D2 SRAM is at 0x10000000 for the M4's own accesses and at 0x30000000 for every master: an address both cores can use.
+static inline uint32_t juno_shared_address(const void* pointer) {
+  uint32_t address = reinterpret_cast<uint32_t>(pointer);
+  return address >= 0x10000000u && address < 0x10048000u ? address + 0x20000000u : address;
 }
 
 // One-step lock: reading RLR takes a free semaphore and returns its new owner.
-static inline bool juno_hsem_try(uint32_t id, uint32_t carrier) {
-  bool taken = HSEM->RLR[id] == (HSEM_RLR_LOCK | (juno_hsem_core(carrier) << HSEM_RLR_COREID_Pos));
+static inline bool juno_hsem_try(uint32_t id, uint32_t core) {
+  bool taken = HSEM->RLR[id] == (HSEM_RLR_LOCK | (juno_hsem_core(core) << HSEM_RLR_COREID_Pos));
   __DMB();
   return taken;
 }
 
-static inline void juno_hsem_release(uint32_t id, uint32_t carrier) {
+static inline void juno_hsem_release(uint32_t id, uint32_t core) {
   __DMB();
-  HSEM->R[id] = juno_hsem_core(carrier) << HSEM_R_COREID_Pos;
+  HSEM->R[id] = juno_hsem_core(core) << HSEM_R_COREID_Pos;
 }
 
 // Interrupts the other core: releasing a semaphore raises the interrupt of every core that enabled it.
 static void juno_hsem_notify(uint32_t id) {
-  uint32_t carrier = juno_port_carrier_id();
-  while (!juno_hsem_try(id, carrier)) {
+  uint32_t core = juno_physical_core();
+  while (!juno_hsem_try(id, core)) {
   }
-  juno_hsem_release(id, carrier);
+  juno_hsem_release(id, core);
 }
 
 static void juno_m4_ring_push(JunoM4Ring& ring, uint32_t item) {
