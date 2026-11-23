@@ -13,7 +13,9 @@ import java.io.IOException;
  *     train juno-third-parties/juno-tny2/src/main/resources/tny2/facts target/tny2/TINY.BIN
  * </pre>
  *
- * Exits with 0 on success, 2 for wrong arguments and 1 for an unreadable or invalid file.
+ * Exits with 0 on success, 2 for wrong arguments and 1 for an unreadable or invalid file, or a trained model below
+ * {@code --min-accuracy}. Maven runs the same {@code train} and {@code image} on demand with
+ * {@code ./mvnw -pl juno-third-parties/juno-tny2 -Ptny2-model process-classes}.
  */
 public final class Tny2Builder {
 
@@ -27,7 +29,7 @@ public final class Tny2Builder {
             System.err.println(usage.getMessage());
             System.err.print(CommandLine.USAGE);
             System.exit(2);
-        } catch (IOException | Tny2FormatException | IllegalArgumentException failed) {
+        } catch (IOException | Tny2FormatException | IllegalArgumentException | IllegalStateException failed) {
             System.err.println(failed.getMessage());
             System.exit(1);
         }

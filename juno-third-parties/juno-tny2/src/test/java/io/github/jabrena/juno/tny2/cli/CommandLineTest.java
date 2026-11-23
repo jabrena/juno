@@ -34,7 +34,7 @@ class CommandLineTest {
         // Then
         TrainingOptions defaults = TrainingOptions.defaults(2000);
         assertThat(command).isEqualTo(new TrainCommand(Path.of("facts"), Path.of("out.bin"), Tny2Config.tiny21(),
-                defaults, 1, null));
+                defaults, 1, null, 0));
     }
 
     @Test
@@ -43,13 +43,13 @@ class CommandLineTest {
         // When
         Tny2Command command = commandLine.parse("train", "--steps", "7", "facts", "--batch", "3", "--lr", "0.5",
                 "--threads", "2", "--seed", "9", "--width", "16", "--layers", "2", "--heads", "4", "--hidden", "32",
-                "--resume", "old.bin", "--log-every", "5", "out.bin");
+                "--resume", "old.bin", "--log-every", "5", "--min-accuracy", "0.75", "out.bin");
 
         // Then
         TrainingOptions defaults = TrainingOptions.defaults(7);
         assertThat(command).isEqualTo(new TrainCommand(Path.of("facts"), Path.of("out.bin"),
                 new Tny2Config(16, 2, 4, 32), new TrainingOptions(7, 3, 0.5f, defaults.finalLearningRate(),
-                        defaults.warmupSteps(), defaults.clipNorm(), 2, 5), 9, Path.of("old.bin")));
+                        defaults.warmupSteps(), defaults.clipNorm(), 2, 5), 9, Path.of("old.bin"), 0.75));
     }
 
     @Test
@@ -128,6 +128,30 @@ class CommandLineTest {
         // Then
         assertThat(output).startsWith("Training Tny2Config[width=32, layers=1, heads=2, hidden=64]")
                 .contains("  Who are you? -> ").contains("(expected Someone new.)");
+    }
+
+    @Test
+    @DisplayName("Writes the model but fails when it answers fewer facts than --min-accuracy")
+    void shouldFailBelowTheMinimumAccuracy() throws Exception {
+        // Given
+        Path facts = directory.resolve("facts.txt");
+        Files.writeString(facts, "Hello => Hi!\nWho are you? => Someone new.\n");
+        Path start = directory.resolve("start.bin");
+        Path next = directory.resolve("next.bin");
+        new Tny2Writer().write(TrainedModels.model(), start);
+        String[] args = {"train", facts.toString(), next.toString(), "--resume", start.toString(), "--steps", "1",
+            "--threads", "1", "--log-every", "0", "--lr", "1e-6", "--min-accuracy", "1"};
+
+        // When & Then
+        assertThatThrownBy(() -> run(args)).isInstanceOf(IllegalStateException.class)
+                .hasMessage("accuracy 50.0% is below the required 100.0%");
+        assertThat(next).exists();
+        assertThat(run(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9],
+                args[10], args[11], args[12], args[13], "0.5")).contains("1 of 2 questions answered exactly");
+        assertThatThrownBy(() -> new TrainCommand(facts, next, Tny2Config.tiny21(), TrainingOptions.defaults(1), 1,
+                null, 1.5)).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("minAccuracy");
+        assertThatThrownBy(() -> new TrainCommand(facts, next, Tny2Config.tiny21(), TrainingOptions.defaults(1), 1,
+                null, -0.1)).isInstanceOf(IllegalArgumentException.class);
     }
 
     private static String run(String... args) throws Exception {

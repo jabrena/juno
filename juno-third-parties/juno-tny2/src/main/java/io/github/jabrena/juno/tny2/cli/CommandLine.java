@@ -17,7 +17,7 @@ public final class CommandLine {
             Usage: Tny2Builder <command> [arguments]
               train <facts file or directory> <model.bin> [--steps N] [--batch N] [--lr X] [--threads N]
                     [--seed N] [--width D] [--layers L] [--heads H] [--hidden N] [--resume model.bin]
-                    [--log-every N]
+                    [--log-every N] [--min-accuracy 0-1]
               ask <model.bin> <question> [--creativity 0-9] [--seed N]
               inspect <model.bin>
               image <model.bin> <Tny2ModelImage.java>
@@ -26,7 +26,7 @@ public final class CommandLine {
     private static final int DEFAULT_STEPS = 2000;
     private static final Map<String, Set<String>> OPTIONS = Map.of(
             "train", Set.of("steps", "batch", "lr", "threads", "seed", "width", "layers", "heads", "hidden",
-                    "resume", "log-every"),
+                    "resume", "log-every", "min-accuracy"),
             "ask", Set.of("creativity", "seed"),
             "inspect", Set.of(),
             "image", Set.of());
@@ -72,7 +72,8 @@ public final class CommandLine {
                 arguments.integer("log-every", defaults.logEvery()));
         String resume = arguments.option("resume");
         return new TrainCommand(Path.of(arguments.positional(0)), Path.of(arguments.positional(1)), config, options,
-                arguments.integer("seed", 1), resume == null ? null : Path.of(resume));
+                arguments.integer("seed", 1), resume == null ? null : Path.of(resume),
+                arguments.decimal("min-accuracy", 0f));
     }
 
     /** Positional arguments and {@code --name value} options of one command. */

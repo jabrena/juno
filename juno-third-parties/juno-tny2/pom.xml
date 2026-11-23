@@ -75,4 +75,71 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- On demand only: trains JUNO.BIN from the bundled facts and generates its Tny2ModelImage into
+             target/tny2; a default build never trains. CI runs it in its "Train TNY2 model" job.
+             ./mvnw -pl juno-third-parties/juno-tny2 -Ptny2-model process-classes [-Dtny2.steps=3000]
+             To release the result, copy target/tny2/JUNO.BIN to src/main/resources/tny2/ and
+             target/tny2/Tny2ModelImage.java to src/main/java/io/github/jabrena/juno/thirdparty/tny2/. -->
+        <profile>
+            <id>tny2-model</id>
+            <properties>
+                <tny2.steps>3000</tny2.steps>
+                <tny2.seed>1</tny2.seed>
+                <tny2.minAccuracy>0.95</tny2.minAccuracy>
+                <tny2.outputDirectory>${project.build.directory}/tny2</tny2.outputDirectory>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${exec-maven-plugin.version}</version>
+                        <configuration>
+                            <mainClass>io.github.jabrena.juno.tny2.cli.Tny2Builder</mainClass>
+                            <!-- Tny2Builder exits with 1 on a model below the accuracy gate; fail the build instead. -->
+                            <blockSystemExit>true</blockSystemExit>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>train-model</id>
+                                <phase>process-classes</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>
+                                        <argument>train</argument>
+                                        <argument>${project.basedir}/src/main/resources/tny2/facts</argument>
+                                        <argument>${tny2.outputDirectory}/JUNO.BIN</argument>
+                                        <argument>--steps</argument>
+                                        <argument>${tny2.steps}</argument>
+                                        <argument>--seed</argument>
+                                        <argument>${tny2.seed}</argument>
+                                        <argument>--min-accuracy</argument>
+                                        <argument>${tny2.minAccuracy}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>generate-image</id>
+                                <phase>process-classes</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>
+                                        <argument>image</argument>
+                                        <argument>${tny2.outputDirectory}/JUNO.BIN</argument>
+                                        <argument>${tny2.outputDirectory}/Tny2ModelImage.java</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

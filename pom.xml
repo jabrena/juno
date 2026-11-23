@@ -86,6 +86,7 @@
         <!-- Overridden to true by the modules that are never published; the -Prelease attachments follow it too. -->
         <maven.deploy.skip>false</maven.deploy.skip>
         <maven-plugin-pmd.version>3.28.0</maven-plugin-pmd.version>
+        <exec-maven-plugin.version>3.7.0</exec-maven-plugin.version>
         <pmd.version>7.29.0</pmd.version>
         <maven-plugin-jxr.version>3.6.0</maven-plugin-jxr.version>
         <maven-plugin-spotless.version>3.11.0</maven-plugin-spotless.version>

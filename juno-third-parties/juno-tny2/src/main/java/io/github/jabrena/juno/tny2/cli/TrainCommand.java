@@ -31,9 +31,17 @@ import java.util.SplittableRandom;
  * @param options steps, batch, learning rate and threads
  * @param seed seed of the initial weights and of the example stream
  * @param resume a TNY2 model to continue from, or {@code null} to start from random weights
+ * @param minAccuracy fraction of fact questions, 0 to 1, the written model must answer exactly; below it the
+ *     command fails after writing the model, so a build can reject it
  */
 public record TrainCommand(Path facts, Path output, Tny2Config config, TrainingOptions options, long seed,
-        @Nullable Path resume) implements Tny2Command {
+        @Nullable Path resume, double minAccuracy) implements Tny2Command {
+
+    public TrainCommand {
+        if (!(minAccuracy >= 0 && minAccuracy <= 1)) {
+            throw new IllegalArgumentException("minAccuracy must be 0 to 1, not " + minAccuracy);
+        }
+    }
     private static final int SHOWN_MISSES = 10;
 
     @Override
@@ -54,5 +62,9 @@ public record TrainCommand(Path facts, Path output, Tny2Config config, TrainingO
                 shape.fileSize(), result.correct(), result.total(), 100 * result.accuracy());
         result.misses().stream().limit(SHOWN_MISSES).forEach(miss -> out.printf("  %s -> %s (expected %s)%n",
                 miss.question(), miss.actual(), miss.expected()));
+        if (result.accuracy() < minAccuracy) {
+            throw new IllegalStateException(String.format(Locale.ROOT,
+                    "accuracy %.1f%% is below the required %.1f%%", 100 * result.accuracy(), 100 * minAccuracy));
+        }
     }
 }

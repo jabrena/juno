@@ -99,11 +99,12 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 ./mvnw -pl juno-third-parties/juno-rcx-firmware compile
 java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.juno.backend.h8300.RcxRemoteFirmware
 
-# Train a TNY2 model from facts, ask it, and generate its flash image (run from the repository root)
-./mvnw -pl juno-third-parties/juno-tny2 compile
+# Train JUNO.BIN on demand (the default build never trains): writes it and its Tny2ModelImage into
+# juno-third-parties/juno-tny2/target/tny2, failing below 95% of the facts answered; CI's "Train TNY2 model" job runs
+# the same on workflow_dispatch or when the facts or trainer change. Release it by copying both over the tracked files.
+./mvnw -pl juno-third-parties/juno-tny2 -Ptny2-model process-classes -Dtny2.steps=3000
 java -cp juno-third-parties/juno-tny2/target/classes io.github.jabrena.juno.tny2.cli.Tny2Builder \
-  train juno-third-parties/juno-tny2/src/main/resources/tny2/facts target/tny2/TINY.BIN --steps 1500
-java -cp juno-third-parties/juno-tny2/target/classes io.github.jabrena.juno.tny2.cli.Tny2Builder ask target/tny2/TINY.BIN "What is Juno?"
+  ask juno-third-parties/juno-tny2/target/tny2/JUNO.BIN "What is Juno?"
 
 # Generate Blink. The plugin has no default program: always pass -Djuno.main.
 ./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-uno-r4-wifi
