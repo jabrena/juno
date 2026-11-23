@@ -49,11 +49,19 @@ public enum ArduinoCore {
         return displayName;
     }
 
-    /** Number of physical carriers available to a runtime built for this core. */
+    /** Number of physical carriers available to a runtime built for this core: the most {@code juno.carriers} accepts. */
     public int carrierCount() {
         return switch (this) {
-            case ESP32, ESP32_CAM, M5STACK_ESP32, RP2350 -> 2;
+            case ESP32, ESP32_CAM, M5STACK_ESP32, RP2350, MBED_PORTENTA -> 2;
             default -> 1;
         };
+    }
+
+    /**
+     * Carriers a build uses when {@code juno.carriers} is unset. The Portenta H7's second carrier, its Cortex-M4, is
+     * opt-in with {@code -Djuno.carriers=2} while its support is completed (issue #448).
+     */
+    public int defaultCarrierCount() {
+        return this == MBED_PORTENTA ? 1 : carrierCount();
     }
 }

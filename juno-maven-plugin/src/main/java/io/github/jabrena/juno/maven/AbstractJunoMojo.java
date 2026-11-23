@@ -12,12 +12,15 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.jspecify.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
 /** A goal that first compiles the configured entry point into an Arduino sketch. */
 abstract class AbstractJunoMojo extends AbstractArduinoMojo {
+    private static final long RETRY_DELAY_MILLIS = 4000L;
     private final RuntimeConfigurationFormatter configurationFormatter = new RuntimeConfigurationFormatter();
     private final RuntimeRiskReportFormatter riskFormatter = new RuntimeRiskReportFormatter();
     private final ConfigSuggestionFormatter suggestionFormatter = new ConfigSuggestionFormatter();
@@ -121,10 +124,30 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
         configurationFormatter.format(report.runtimeConfig()).forEach(getLog()::info);
         riskFormatter.format(report.runtimeRisks()).forEach(getLog()::info);
         suggestionFormatter.format(report.configSuggestions()).forEach(getLog()::info);
-        return new CompiledSketch(layout.directory(), targetFqbn, report.usesPicoSecureFirmware());
+        Optional<Coprocessor> coprocessor = result.coprocessor().map(image -> {
+            writeSketch(layout.coprocessorSketch(), image.sketch());
+            String fqbn = targetFqbn + image.fqbnOptions();
+            getLog().info("Generated " + layout.coprocessorSketch() + ", the image of the board's second core (fqbn "
+                    + fqbn + ")");
+            return new Coprocessor(layout.coprocessorDirectory(), fqbn);
+        });
+        return new CompiledSketch(layout.directory(), targetFqbn, report.usesPicoSecureFirmware(), coprocessor);
+    }
+
+    private void writeSketch(Path file, String source) {
+        try {
+            Files.createDirectories(file.getParent());
+            Files.writeString(file, source);
+        } catch (IOException e) {
+            throw new ArduinoCliException("Cannot write " + file + ": " + e.getMessage());
+        }
     }
 
     final void verifySketch(ArduinoCli cli, CompiledSketch sketch) {
+        sketch.coprocessor().ifPresent(coprocessor -> {
+            getLog().info("Compiling the second core's image with arduino-cli");
+            cli.compile(coprocessor.fqbn(), coprocessor.directory());
+        });
         getLog().info("Compiling ASM Arduino sketch with arduino-cli");
         if (!sketch.picoSecureFirmware()) {
             cli.compile(sketch.fqbn(), sketch.directory());
@@ -142,6 +165,16 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
      * it, and a plain upload would reset the board into BOOTSEL and then fail, leaving it there.
      */
     final void upload(ArduinoCli cli, CompiledSketch sketch, String port) {
+        if (sketch.coprocessor().isPresent()) {
+            Coprocessor coprocessor = sketch.coprocessor().get();
+            // The board stays in its bootloader after the first image, so the old program never runs between the two
+            // uploads: an old image that crashes would take the USB port down before the second upload.
+            getLog().info("Flashing the second core's image");
+            retryingOnce(() -> cli.uploadStaying(coprocessor.fqbn(), port, coprocessor.directory(), dfuSerial()));
+            getLog().info("Flashing the program image");
+            retryingOnce(() -> cli.upload(sketch.fqbn(), port, sketch.directory(), dfuSerial()));
+            return;
+        }
         if (sketch.picoSecureFirmware()) {
             cli.upload(sketch.fqbn(), port, sketch.directory(), sketch.buildDirectory(), dfuSerial());
         } else {
@@ -150,18 +183,46 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     }
 
     /**
+     * The first DFU upload after a running program often fails before the board has re-enumerated in DFU mode; the
+     * same upload a few seconds later succeeds.
+     */
+    private void retryingOnce(Runnable upload) {
+        try {
+            upload.run();
+        } catch (ArduinoCliException e) {
+            getLog().warn("Upload failed, retrying once: " + e.getMessage());
+            try {
+                Thread.sleep(RETRY_DELAY_MILLIS);
+            } catch (InterruptedException interrupted) {
+                Thread.currentThread().interrupt();
+                throw e;
+            }
+            upload.run();
+        }
+    }
+
+    /**
      * A generated sketch directory and the FQBN to build it for. {@code picoSecureFirmware} marks a Pico 2 W program
      * that uses the TrustZone secret store: it builds into {@link #buildDirectory()}, where the secure firmware is
-     * installed into its UF2, and flashes from there.
+     * installed into its UF2, and flashes from there. {@code coprocessor} is the image of the board's second core,
+     * which is built and flashed first.
      */
-    record CompiledSketch(Path directory, String fqbn, boolean picoSecureFirmware) {
+    record CompiledSketch(Path directory, String fqbn, boolean picoSecureFirmware, Optional<Coprocessor> coprocessor) {
         CompiledSketch(Path directory, String fqbn) {
-            this(directory, fqbn, false);
+            this(directory, fqbn, false, Optional.empty());
+        }
+
+        CompiledSketch(Path directory, String fqbn, boolean picoSecureFirmware) {
+            this(directory, fqbn, picoSecureFirmware, Optional.empty());
         }
 
         Path buildDirectory() {
             return directory.resolve("build");
         }
+    }
+
+    /** The sketch of the board's second core and the FQBN that selects that core. */
+    record Coprocessor(Path directory, String fqbn) {
     }
 
     /**
@@ -187,6 +248,14 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
 
         Path wrapper() {
             return directory().resolve(simpleName() + "Asm.ino");
+        }
+
+        Path coprocessorDirectory() {
+            return outputDirectory.resolve(simpleName() + "AsmM4");
+        }
+
+        Path coprocessorSketch() {
+            return coprocessorDirectory().resolve(simpleName() + "AsmM4.ino");
         }
     }
 }

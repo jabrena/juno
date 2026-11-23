@@ -152,6 +152,15 @@ class RuntimeConfigTest {
     }
 
     @Test
+    @DisplayName("The Portenta H7 runs one carrier by default and its M4 carrier only on request")
+    void shouldOptIntoThePortentaSecondCarrier() {
+        RuntimeConfig twoCarriers = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("2"));
+
+        assertThat(RuntimeConfig.DEFAULT.resolveFor(Board.PORTENTA_H7).carrierCount()).isEqualTo(1);
+        assertThat(twoCarriers.resolveFor(Board.PORTENTA_H7).carrierCount()).isEqualTo(2);
+    }
+
+    @Test
     @DisplayName("A program without threads runs on one carrier even on a dual-core board")
     void shouldRunAThreadFreeProgramOnOneCarrier() {
         ResolvedRuntimeConfig resolved = RuntimeConfig.DEFAULT.resolveFor(Board.NANO_ESP32);

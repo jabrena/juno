@@ -86,7 +86,7 @@ public record BoardMemoryProfile(int internalSramBytes, int defaultArenaBytes, i
                 throw new CompileException(stackMessage(board, stack));
             }
         }
-        int carriers = board.core().carrierCount();
+        int carriers = board.core().defaultCarrierCount();
         if (requested.carrierCountOverride().isPresent()) {
             carriers = requested.carrierCountOverride().getAsInt();
             if (carriers > board.core().carrierCount()) {
@@ -105,7 +105,7 @@ public record BoardMemoryProfile(int internalSramBytes, int defaultArenaBytes, i
     }
 
     private String stackMessage(Board board, int stack) {
-        String heapSlots = board.core().carrierCount() > 1
+        String heapSlots = board.core().defaultCarrierCount() > 1
                 ? " Each running thread slot takes its stack from the internal heap." : "";
         return "The " + board.displayName() + " has too little RAM for " + stack + "-byte task stacks; juno.Xss can be"
                 + " at most " + maxStackBytes + " bytes there." + heapSlots;

@@ -25,7 +25,7 @@ class BoardProfileValuesTest {
                 arguments(Board.M5_CARDPUTER, 327680, 8192, 273408, 8192, 32768, MemoryAuthority.RUNTIME_HEAP, 2),
                 arguments(Board.PICO_2_W, 524288, 8192, 436176, 4096, 16384, MemoryAuthority.RUNTIME_HEAP, 2),
                 arguments(Board.PORTENTA_H7, 1024 * 1024, 65536, 917504, 8192, 32768,
-                        MemoryAuthority.RUNTIME_HEAP, 1));
+                        MemoryAuthority.RUNTIME_HEAP, 2));
     }
 
     @ParameterizedTest(name = "{0}")

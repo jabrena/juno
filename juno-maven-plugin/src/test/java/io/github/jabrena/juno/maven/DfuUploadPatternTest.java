@@ -8,12 +8,26 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("A board's dfu-util upload recipe, narrowed to one device")
 class DfuUploadPatternTest {
-    private static final String PORTENTA = """
+    static final String PORTENTA = """
             tools.dfu-util.cmd=dfu-util
             tools.dfu-util.upload.pattern="{path}/{cmd}" --device {upload.vid}:{upload.pid} -D "{build.path}/{build.project_name}.bin" -a{upload.interface} --dfuse-address={upload.address}:leave
             upload.tool=dfu-util
             upload.tool.default=dfu-util
             """;
+
+    @Test
+    @DisplayName("Drops :leave so the board stays in its bootloader for the next image")
+    void shouldStayInTheBootloaderWithoutLeave() {
+        // When
+        DfuUploadPattern staying = DfuUploadPattern.from("arduino:mbed_portenta:envie_m7", PORTENTA).staying();
+
+        // Then
+        assertThat(staying.asProperty()).isEqualTo("upload.pattern=\"{path}/{cmd}\" --device {upload.vid}:"
+                + "{upload.pid} -D \"{build.path}/{build.project_name}.bin\" -a{upload.interface} "
+                + "--dfuse-address={upload.address}");
+        assertThat(staying.selecting("0123456789ABCDEF01234567")).endsWith(
+                "--dfuse-address={upload.address} -S \"0123456789ABCDEF01234567\"");
+    }
 
     @Test
     @DisplayName("Keeps the core's own recipe, placeholders included, and appends the serial number")

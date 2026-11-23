@@ -6,9 +6,13 @@ import io.github.jabrena.juno.backend.runtime.RuntimeSource;
 import io.github.jabrena.juno.backend.runtime.ShimLibraries;
 import io.github.jabrena.juno.backend.runtime.SntpServer;
 import io.github.jabrena.juno.backend.runtime.ThreadRuntime;
+import io.github.jabrena.juno.backend.runtime.spi.CoprocessorImage;
 import io.github.jabrena.juno.backend.runtime.spi.CoreRuntime;
 import io.github.jabrena.juno.backend.runtime.spi.WatchdogRuntime;
 import io.github.jabrena.juno.board.Architecture;
+import io.github.jabrena.juno.board.ArduinoCore;
+
+import java.util.Optional;
 
 /**
  * The Arduino Portenta H7 M7 variant of the Arduino Mbed core. Its standard Arduino delay and GPIO functions are real
@@ -464,6 +468,94 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
     @Override
     public String threadPort(ResolvedRuntimeConfig config) {
         return threadRuntime.mbedPort(config.threadStackBytes());
+    }
+
+    /** The Cortex-M7 and, with {@code -Djuno.carriers=2}, the Cortex-M4 running Juno's carrier image. */
+    @Override
+    public int carrierCount() {
+        return ArduinoCore.MBED_PORTENTA.carrierCount();
+    }
+
+    @Override
+    public String threadPort(ResolvedRuntimeConfig config, int carrierCount) {
+        return threadRuntime.mbedPort(config.threadStackBytes(), carrierCount);
+    }
+
+    /** With two carriers, safepoints ask the port: each core reads its own cycle counter, without the runtime lock. */
+    @Override
+    public boolean asksPortForSlices(int carrierCount) {
+        return carrierCount > 1;
+    }
+
+    /** With two carriers, main's setup() starts the M4 carrier image before it runs main. */
+    @Override
+    public String mainLauncher(int carrierCount) {
+        return carrierCount > 1 ? "juno_launch_main" : "";
+    }
+
+    @Override
+    public Optional<CoprocessorImage> coprocessorImage(int carrierCount) {
+        return carrierCount > 1
+                ? Optional.of(new CoprocessorImage(threadRuntime.mbedM4Carrier(), ":target_core=cm4"))
+                : Optional.empty();
+    }
+
+    @Override
+    public String runtimeLock() {
+        return threadRuntime.mbedLink() + """
+                // Recursive lock shared by the two carriers, on a hardware semaphore.
+                static volatile uint32_t juno_runtime_owner = 0u;
+                static volatile uint32_t juno_runtime_depth = 0u;
+
+                extern "C" bool juno_runtime_owned() {
+                  return juno_runtime_owner == juno_port_carrier_id() + 1u;
+                }
+
+                extern "C" void juno_runtime_enter() {
+                  uint32_t carrier = juno_port_carrier_id();
+                  if (juno_runtime_owner == carrier + 1u) {
+                    juno_runtime_depth++;
+                    return;
+                  }
+                  while (!juno_hsem_try(JUNO_HSEM_RUNTIME, carrier)) {
+                    juno_gc_lock_wait();
+                  }
+                  juno_runtime_owner = carrier + 1u;
+                  juno_runtime_depth = 1u;
+                }
+
+                extern "C" void juno_runtime_exit() {
+                  uint32_t carrier = juno_port_carrier_id();
+                  if (juno_runtime_owner == carrier + 1u && juno_runtime_depth != 0u && --juno_runtime_depth == 0u) {
+                    juno_runtime_owner = 0u;
+                    juno_hsem_release(JUNO_HSEM_RUNTIME, carrier);
+                  }
+                }
+                """;
+    }
+
+    @Override
+    public String memoryBarrierInstruction() {
+        return "dmb";
+    }
+
+    @Override
+    public String wideAccessHelpers() {
+        return """
+                extern "C" uint64_t juno_wide_load(const uint32_t* address) {
+                  juno_runtime_enter();
+                  uint64_t value = static_cast<uint64_t>(address[0]) | (static_cast<uint64_t>(address[1]) << 32);
+                  juno_runtime_exit();
+                  return value;
+                }
+
+                extern "C" void juno_wide_store(uint32_t* address, uint32_t low, uint32_t high) {
+                  juno_runtime_enter();
+                  address[0] = low;
+                  address[1] = high;
+                  juno_runtime_exit();
+                }
+                """;
     }
 
     @Override

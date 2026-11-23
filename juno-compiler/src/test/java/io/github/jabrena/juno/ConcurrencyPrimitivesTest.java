@@ -397,6 +397,60 @@ class ConcurrencyPrimitivesTest {
     }
 
     @Test
+    @DisplayName("Portenta H7 programs opt into the M4 carrier: a second image, HSEM locks and main launched on the M7")
+    void shouldBuildDualCarrierPortentaProgramsWithTheM4Image() throws Exception {
+        RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("2"));
+
+        CompilationResult result = compile("ArduinoPortentaH7Board", "Thread.startVirtualThread(new Job()).join();",
+                config);
+
+        assertThat(result.fqbn()).isEqualTo("arduino:mbed_portenta:envie_m7");
+        assertThat(result.coprocessorFqbn()).contains("arduino:mbed_portenta:envie_m7:target_core=cm4");
+        assertThat(result.sketchWrapper().source()).contains("juno_launch_main(" + result.entryPointSymbol() + ");");
+        assertThat(result.runtimeShim()).contains(
+                        "static JunoM4Link* const juno_m4_link = reinterpret_cast<JunoM4Link*>(0x38000000u);",
+                        "while (!juno_hsem_try(JUNO_HSEM_RUNTIME, carrier)) {",
+                        "SCB_DisableDCache();",
+                        "bootM4();",
+                        "#define millis juno_carrier_millis",
+                        "static uint32_t juno_current_slots[2] = {};",
+                        "juno_carrier_vacate(uint32_t slot) {")
+                .doesNotContain("__atomic_compare_exchange_n", "juno_mbed_main_baton");
+        assertThat(result.assembly()).contains("bl juno_java_leave", "bl juno_java_return");
+        assertThat(result.coprocessor()).hasValueSatisfying(image -> assertThat(image.sketch()).contains(
+                        "void setup() {",
+                        "juno_m4_link->taskEntry(",
+                        "__HAL_ART_CONFIG_BASE_ADDRESS(0x08000000UL);",
+                        "juno_m4_link->m4Ready = JUNO_M4_LINK_MAGIC;")
+                .doesNotContain("${"));
+        assertThat(result.report().runtimeRisks().carrierCount()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("Portenta H7 programs stay on the M7's single carrier unless the M4 carrier is requested")
+    void shouldKeepPortentaProgramsOnOneCarrierByDefault() throws Exception {
+        CompilationResult result = compile("ArduinoPortentaH7Board", "Thread.startVirtualThread(new Job()).join();");
+
+        assertThat(result.coprocessor()).isEmpty();
+        assertThat(result.sketchWrapper().source()).doesNotContain("juno_launch_main");
+        assertThat(result.runtimeShim()).contains("juno_mbed_main_baton", "static uint32_t juno_current_slot = 0u;")
+                .doesNotContain("JunoM4Link", "juno_runtime_owner");
+        assertThat(result.report().runtimeRisks().carrierCount()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("A Portenta H7 program without threads is one image even when the M4 carrier is requested")
+    void shouldBuildOneImageForPortentaProgramsWithoutThreads() throws Exception {
+        RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("2"));
+
+        CompilationResult result = compile("ArduinoPortentaH7Board", "int x = 1;", config);
+
+        assertThat(result.coprocessor()).isEmpty();
+        assertThat(result.coprocessorFqbn()).isEmpty();
+        assertThat(result.runtimeShim()).doesNotContain("JunoM4Link");
+    }
+
+    @Test
     @DisplayName("The pipeline can force the ESP32 runtime to one carrier")
     void shouldGenerateTheSingleCarrierRuntimeWhenOverridden() throws Exception {
         RuntimeConfig config = RuntimeConfig.of(Optional.empty(), Optional.empty(), Optional.of("1"));

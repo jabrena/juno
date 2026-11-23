@@ -3,6 +3,8 @@ package io.github.jabrena.juno.backend.runtime.spi;
 import io.github.jabrena.juno.ResolvedRuntimeConfig;
 import io.github.jabrena.juno.board.ArduinoCore;
 
+import java.util.Optional;
+
 /**
  * Everything the generated code needs to know about the {@link ArduinoCore} it links against: the
  * symbols {@code Delay} lowers to and the runtime shim's {@code yield()}/delay glue. The Thumb-2
@@ -60,6 +62,22 @@ public interface CoreRuntime {
      */
     default String mainLauncher(int carrierCount) {
         return "";
+    }
+
+    /**
+     * The image a second core runs when threads run on {@code carrierCount} carriers and that core cannot run the
+     * program image itself (the Portenta H7's Cortex-M4); absent by default.
+     */
+    default Optional<CoprocessorImage> coprocessorImage(int carrierCount) {
+        return Optional.empty();
+    }
+
+    /**
+     * Whether safepoints ask the port for the end of a time slice when threads run on {@code carrierCount} carriers;
+     * the default is {@link #asksPortForSlices()} on any number.
+     */
+    default boolean asksPortForSlices(int carrierCount) {
+        return asksPortForSlices();
     }
 
     /** The runtime lock and wide-field helpers when threads run on {@code carrierCount} carriers, else nothing. */
