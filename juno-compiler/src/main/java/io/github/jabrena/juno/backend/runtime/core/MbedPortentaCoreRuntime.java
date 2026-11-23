@@ -512,9 +512,62 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
                 : Optional.empty();
     }
 
+    /**
+     * The link both carrier images share, the M7's cache acquire, and the stop-the-world flags placed in the link,
+     * which the M7 does not cache: emitted before every other dual-carrier part of the runtime.
+     */
+    @Override
+    public Optional<String> carrierGcState() {
+        return Optional.of(threadRuntime.mbedLink() + """
+
+                // The M7 caches RAM write-through and the M4 has no cache, so the M4 always reads what the M7 wrote, but
+                // the M7 may read a stale copy of what the M4 wrote. Wherever it may next read such data (taking the
+                // runtime lock from the M4, a volatile load, a wake-up, a collection) it drops every cached line. On
+                // the M4 this does nothing.
+                extern "C" void juno_cache_acquire() {
+                  if (juno_physical_core() == 0u) SCB_CleanInvalidateDCache();
+                }
+
+                // juno_cache_acquire for generated code before a volatile load, whose address is already in a
+                // register: it keeps every register and the flags.
+                __asm__(R"(
+                    .pushsection .text
+                    .syntax unified
+                    .thumb
+                    .global juno_cache_acquire_saving
+                    .type juno_cache_acquire_saving, %function
+                    .thumb_func
+                juno_cache_acquire_saving:
+                    push {r0, r1, r2, r3, r12, lr}
+                    mrs r0, apsr
+                    push {r0, r1}
+                    bl juno_cache_acquire
+                    pop {r0, r1}
+                    msr apsr_nzcvq, r0
+                    pop {r0, r1, r2, r3, r12, lr}
+                    bx lr
+                    .popsection
+                )");
+
+                #define juno_carrier_in_java (juno_m4_link->gcInJava)
+                #define juno_carrier_parked (juno_m4_link->gcParked)
+                #define juno_gc_stopping (juno_m4_link->gcStopping)""");
+    }
+
+    /** A collection on the M7 may scan objects the M4 changed: the M7 drops its cached copies once the M4 is stopped. */
+    @Override
+    public String worldStoppedStatement() {
+        return "\n  juno_cache_acquire();";
+    }
+
+    @Override
+    public String volatileLoadFence(int carrierCount) {
+        return carrierCount > 1 ? "bl juno_cache_acquire_saving" : "";
+    }
+
     @Override
     public String runtimeLock() {
-        return threadRuntime.mbedLink() + """
+        return """
                 #include "rtx_os.h"
 
                 // The carrier the calling code runs for. The M4's threads are carrier 1, and so is an M7 worker while it
@@ -528,20 +581,17 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
                   return running != nullptr && running->name == juno_call_worker_name ? 1u : 0u;
                 }
 
-                // Recursive lock shared by the two carriers, on a hardware semaphore. A carrier owns it; the semaphore
-                // is taken and released by the core that runs the carrier at the time.
-                static volatile uint32_t juno_runtime_owner = 0u;
-                static volatile uint32_t juno_runtime_depth = 0u;
-                static volatile uint32_t juno_runtime_core = 0u;
-
+                // Recursive lock shared by the two carriers, on a hardware semaphore, its state in the link. A carrier
+                // owns it; the semaphore is taken and released by the core that runs the carrier at the time. The M7
+                // drops its cached copies when it takes the lock after the M4 last released it.
                 extern "C" bool juno_runtime_owned() {
-                  return juno_runtime_owner == juno_port_carrier_id() + 1u;
+                  return juno_m4_link->runtimeOwner == juno_port_carrier_id() + 1u;
                 }
 
                 extern "C" void juno_runtime_enter() {
                   uint32_t carrier = juno_port_carrier_id();
-                  if (juno_runtime_owner == carrier + 1u) {
-                    juno_runtime_depth++;
+                  if (juno_m4_link->runtimeOwner == carrier + 1u) {
+                    juno_m4_link->runtimeDepth = juno_m4_link->runtimeDepth + 1u;
                     return;
                   }
                   uint32_t core = juno_physical_core();
@@ -551,16 +601,22 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
                     // this image's.
                     if (core == 0u) yield();
                   }
-                  juno_runtime_core = core;
-                  juno_runtime_owner = carrier + 1u;
-                  juno_runtime_depth = 1u;
+                  if (core == 0u && juno_m4_link->runtimeLastCore != 0u) juno_cache_acquire();
+                  juno_m4_link->runtimeCore = core;
+                  juno_m4_link->runtimeOwner = carrier + 1u;
+                  juno_m4_link->runtimeDepth = 1u;
                 }
 
                 extern "C" void juno_runtime_exit() {
                   uint32_t carrier = juno_port_carrier_id();
-                  if (juno_runtime_owner == carrier + 1u && juno_runtime_depth != 0u && --juno_runtime_depth == 0u) {
-                    juno_runtime_owner = 0u;
-                    juno_hsem_release(JUNO_HSEM_RUNTIME, juno_runtime_core);
+                  if (juno_m4_link->runtimeOwner == carrier + 1u && juno_m4_link->runtimeDepth != 0u) {
+                    juno_m4_link->runtimeDepth = juno_m4_link->runtimeDepth - 1u;
+                    if (juno_m4_link->runtimeDepth == 0u) {
+                      juno_m4_link->runtimeOwner = 0u;
+                      uint32_t core = juno_m4_link->runtimeCore;
+                      juno_m4_link->runtimeLastCore = core;
+                      juno_hsem_release(JUNO_HSEM_RUNTIME, core);
+                    }
                   }
                 }
                 """;

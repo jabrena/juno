@@ -22,19 +22,25 @@ final class FieldAccessLowering {
     private final String restoreInterrupts;
     private final boolean dualCarrier;
     private final String memoryBarrier;
+    private final String loadFence;
 
     FieldAccessLowering(AsmEmitter asm, ProgramLayout layout, boolean preemptible) {
-        this(asm, layout, preemptible, false, "");
+        this(asm, layout, preemptible, false, "", "");
     }
 
+    /**
+     * @param loadFence the instruction before a volatile load (see {@code CoreRuntime.volatileLoadFence}); it must
+     *     preserve every register, since the load's address is already in one
+     */
     FieldAccessLowering(AsmEmitter asm, ProgramLayout layout, boolean preemptible,
-                        boolean dualCarrier, String memoryBarrier) {
+                        boolean dualCarrier, String memoryBarrier, String loadFence) {
         this.asm = asm;
         this.layout = layout;
         this.maskInterrupts = preemptible ? MASK_INTERRUPTS : "";
         this.restoreInterrupts = preemptible ? RESTORE_INTERRUPTS : "";
         this.dualCarrier = dualCarrier;
         this.memoryBarrier = memoryBarrier.isEmpty() ? "" : "    " + memoryBarrier + "\n";
+        this.loadFence = loadFence.isEmpty() ? "" : "    " + loadFence + "\n";
     }
 
     void emitLoadField(StringBuilder output, FrameLayout frame, IrInstruction.LoadField load) {
@@ -91,6 +97,7 @@ final class FieldAccessLowering {
                 asm.store64(output, frame, "r1", "r2", target);
             }
         } else {
+            output.append(dualCarrier && volatileField ? loadFence : "");
             output.append("    ldr r1, [").append(base).append(", #").append(offset).append("]\n");
             output.append(loadBarrier(volatileField));
             asm.store(output, frame, "r1", target);
