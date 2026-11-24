@@ -208,6 +208,16 @@ final class Rp2350CoreRuntime implements CoreRuntime {
         return httpsHelpers(false);
     }
 
+    /**
+     * Four requests in flight, as on the ESP32 and Portenta cores: each owns its own client and lwIP socket on the core's
+     * CYW43 stack, and four TLS sessions fit its heap. On a Pico 2 W, four parallel 1 s HTTP requests take 1.6 s instead
+     * of 2.7 s with two leases; HTTPS is unchanged, since its handshakes are CPU-bound. A fifth waits for a lease.
+     */
+    @Override
+    public int maxConcurrentHttpRequests() {
+        return 4;
+    }
+
     @Override
     public String httpsClientDeclaration() {
         return "JunoPicoTlsClient client;";

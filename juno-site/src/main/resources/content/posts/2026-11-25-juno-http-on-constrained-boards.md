@@ -19,9 +19,16 @@ The runtime instead limits concurrent HTTP transport exchanges:
 
 | Board family | Maximum HTTP exchanges in flight |
 |---|---:|
-| UNO R4 WiFi, Raspberry Pi Pico 2 W | 2 |
-| Nano ESP32, ESP32-CAM, Cardputer, Portenta H7 | 4 |
+| UNO R4 WiFi | 2 |
+| Nano ESP32, ESP32-CAM, Cardputer, Portenta H7, Raspberry Pi Pico 2 W | 4 |
 | UNO R3 | Unsupported |
+
+The limit comes from each board's network stack, not from its number of cores: how many sockets it can keep open and
+whether their TLS buffers fit in memory at once. Each value was measured with the `HttpLatencyBenchmark` and
+`HttpsLatencyBenchmark` examples, which time four requests to an endpoint that answers after one second. On a Pico 2 W,
+for example, four plain HTTP requests in flight finish in about 1.6 s instead of 2.7 s with two, while HTTPS barely
+changes, because each TLS handshake is mostly CPU work. The UNO R4 WiFi keeps two: its Wi-Fi radio is a separate
+ESP32-S3 modem that the board reaches over a serial link.
 
 If every lease is busy, another virtual thread waits. That waiting task still occupies a scheduler slot and retains its
 request and captured state. The lease count is therefore a transport ceiling, not a recommendation for a matching number

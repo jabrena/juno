@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.OptionalInt;
@@ -87,6 +88,13 @@ class CoreRuntimeTest {
         assertThat(runtime.wifiHelpers()).contains("WiFi.begin(ssid, password)", "WiFi.beginAP(ssid, \"\")")
                 .doesNotContain("WiFi.beginAP(ssid);");
         assertThat(runtime.i2cBus()).isEqualTo("Wire1");
+    }
+
+    @ParameterizedTest(name = "{0}: {1} HTTP exchanges in flight")
+    @CsvSource({"RENESAS_UNO, 2", "RP2350, 4", "ESP32, 4", "ESP32_CAM, 4", "M5STACK_ESP32, 4", "MBED_PORTENTA, 4"})
+    @DisplayName("Each Wi-Fi core allows the HTTP exchanges in flight that were measured on its board")
+    void shouldAllowTheMeasuredHttpLeases(ArduinoCore core, int leases) {
+        assertThat(coreRuntimes.of(core).maxConcurrentHttpRequests()).isEqualTo(leases);
     }
 
     @Test
