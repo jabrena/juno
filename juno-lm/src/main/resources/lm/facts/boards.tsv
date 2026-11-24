@@ -1,14 +1,14 @@
 # Board specifications: relation<TAB>subject|alias<TAB>answer, expanded through templates.tpl.
-chip	UNO R3|Arduino UNO R3|UNO	An ATmega328P.
-clock	UNO R3|Arduino UNO R3|UNO	16 MHz.
-flash	UNO R3|Arduino UNO R3|UNO	32 KB.
-ram	UNO R3|Arduino UNO R3|UNO	2 KB.
-psram	UNO R3|Arduino UNO R3|UNO	None.
-id	UNO R3|Arduino UNO R3|UNO	arduino-uno-r3.
-led	UNO R3|Arduino UNO R3|UNO	D13.
-arena	UNO R3|Arduino UNO R3|UNO	1 KiB.
-wifi	UNO R3|Arduino UNO R3|UNO	No. Use the Arduino WiFi Shield.
-backend	UNO R3|Arduino UNO R3|UNO	AVR.
+chip	UNO R3|Arduino UNO R3	An ATmega328P.
+clock	UNO R3|Arduino UNO R3	16 MHz.
+flash	UNO R3|Arduino UNO R3	32 KB.
+ram	UNO R3|Arduino UNO R3	2 KB.
+psram	UNO R3|Arduino UNO R3	None.
+id	UNO R3|Arduino UNO R3	arduino-uno-r3.
+led	UNO R3|Arduino UNO R3	D13.
+arena	UNO R3|Arduino UNO R3	1 KiB.
+wifi	UNO R3|Arduino UNO R3	No. It has no network support.
+backend	UNO R3|Arduino UNO R3	AVR.
 chip	UNO R4 WiFi|UNO R4|Arduino UNO R4 WiFi	A Renesas RA4M1, an Arm Cortex-M4.
 clock	UNO R4 WiFi|UNO R4|Arduino UNO R4 WiFi	48 MHz.
 flash	UNO R4 WiFi|UNO R4|Arduino UNO R4 WiFi	256 KB.

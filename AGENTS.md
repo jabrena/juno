@@ -103,7 +103,7 @@ java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.j
 # Train JUNO.BIN on demand (the default build never trains; CI only compiles juno-lm). The command writes JUNO.BIN into
 # juno-lm/target/lm, failing below 95% of the facts answered; copy it over
 # src/main/resources/lm/JUNO.BIN to make it the model LanguageModel.begin() links into programs.
-./mvnw -pl juno-lm -Plm-model process-classes -Dlm.steps=8000
+./mvnw -pl juno-lm -Plm-model process-classes -Dlm.steps=16000
 java -cp juno-lm/target/classes io.github.jabrena.juno.lm.cli.JlmBuilder \
   ask juno-lm/target/lm/JUNO.BIN "What is Juno?"
 # Convert a TINY 2.1 TNY2 model into JLM1, the only format the board engine reads
