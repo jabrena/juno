@@ -38,4 +38,19 @@ class BytecodeDecoderTest {
         // Then
         assertThat(instructions).extracting(Instruction::opcode).containsExactly(0, 177);
     }
+
+    @Test
+    @DisplayName("Decodes the whole dup family as one-byte opcodes")
+    void shouldDecodeTheDupFamily() {
+        // Given: dup, dup_x1, dup_x2, dup2, dup2_x1, dup2_x2, return
+        byte[] code = {89, 90, 91, 92, 93, 94, (byte) 177};
+        JavaMethod method = new JavaMethod("demo.Dups", 0, "run", "()V", 4, 0, code);
+
+        // When
+        List<Instruction> instructions = decoder.decode(method);
+
+        // Then
+        assertThat(instructions).extracting(Instruction::opcode).containsExactly(89, 90, 91, 92, 93, 94, 177);
+        assertThat(instructions).extracting(Instruction::offset).containsExactly(0, 1, 2, 3, 4, 5, 6);
+    }
 }
