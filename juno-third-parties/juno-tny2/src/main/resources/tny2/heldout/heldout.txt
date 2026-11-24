@@ -43,3 +43,12 @@ What is the capital of Portugal? => I do not know.
 How many moons does Mars have? => I do not know.
 What is the best programming language? => I do not know.
 Tell me about the weather in Madrid. => I do not know.
+
+# Questions a user asked the web chat on the Nano ESP32 (2026-11-24), kept verbatim.
+what models support? => UNO R3, UNO R4 WiFi, Nano ESP32, Portenta H7, Pico 2 W, ESP32-CAM and Cardputer.
+what boards support the project? => UNO R3, UNO R4 WiFi, Nano ESP32, Portenta H7, Pico 2 W, ESP32-CAM and Cardputer.
+what is possible to do with the project? => Juno compiles Java programs into firmware for microcontrollers.
+# More wordings that name the project instead of Juno.
+Which boards can the project run on? => UNO R3, UNO R4 WiFi, Nano ESP32, Portenta H7, Pico 2 W, ESP32-CAM and Cardputer.
+What does this project do? => Juno compiles Java programs into firmware for microcontrollers.
+Which JDK does the project need? => JDK 27.

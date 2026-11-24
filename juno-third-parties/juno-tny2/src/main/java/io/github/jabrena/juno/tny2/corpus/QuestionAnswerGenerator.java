@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.tny2.corpus;
 
+import io.github.jabrena.juno.tny2.Tny2Config;
 import io.github.jabrena.juno.tny2.Tny2Vocabulary;
 
 import java.util.ArrayList;
@@ -20,7 +21,9 @@ public final class QuestionAnswerGenerator implements ExampleSource {
             Map.entry("chip", List.of("processor", "cpu", "microcontroller")),
             Map.entry("processor", List.of("chip", "cpu")),
             Map.entry("cpu", List.of("chip", "processor")),
-            Map.entry("board", List.of("device")),
+            Map.entry("board", List.of("device", "model")),
+            Map.entry("boards", List.of("models", "devices", "hardware")),
+            Map.entry("juno", List.of("the project", "this project", "the compiler")),
             Map.entry("what", List.of("which")),
             Map.entry("which", List.of("what")),
             Map.entry("big", List.of("large")),
@@ -61,7 +64,10 @@ public final class QuestionAnswerGenerator implements ExampleSource {
         String question = fact.questions().get(random.nextInt(fact.questions().size()));
         String answer = chance(augmentation.primaryAnswer()) ? fact.primaryAnswer()
                 : fact.answers().get(random.nextInt(fact.answers().size()));
-        return new Example(perturb(question), answer);
+        String perturbed = perturb(question);
+        // A synonym can lengthen the question past the context; the fact itself always fits, so teach it unchanged.
+        boolean fits = perturbed.length() + answer.length() + 2 <= Tny2Config.CONTEXT;
+        return new Example(fits ? perturbed : Tny2Vocabulary.ASCII.question(question), answer);
     }
 
     private String perturb(String question) {

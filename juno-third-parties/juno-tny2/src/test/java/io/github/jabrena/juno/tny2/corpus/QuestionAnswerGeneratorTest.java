@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.tny2.corpus;
 
+import io.github.jabrena.juno.tny2.Tny2Config;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -70,6 +71,23 @@ class QuestionAnswerGeneratorTest {
                 "which microcontroller is in the board", "what chip is in the board", "which chip is in the device");
         assertThat(dropped).contains("which chip is in board", "which chip in the board")
                 .doesNotContain("which chip is in the board");
+    }
+
+    @Test
+    @DisplayName("Keeps the original wording when a synonym would make the example too long for the context")
+    void shouldKeepTheOriginalWordingWhenASynonymDoesNotFit() {
+        // Given
+        String answer = "a".repeat(Tny2Config.CONTEXT - 2 - "what is juno".length());
+        ExampleSource source = new QuestionAnswerGenerator(List.of(new Fact(List.of("What is Juno?"),
+                List.of(answer))), new Augmentation(1, 0, 0, 1), new SplittableRandom(6));
+
+        // When
+        Set<String> questions = new HashSet<>();
+        Stream.generate(source::next).limit(50).forEach(example -> questions.add(example.question()));
+
+        // Then
+        assertThat(questions).contains("what is juno").allSatisfy(question ->
+                assertThat(question.length() + answer.length() + 2).isLessThanOrEqualTo(Tny2Config.CONTEXT));
     }
 
     @Test

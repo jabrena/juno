@@ -12,7 +12,7 @@ What can you do? | How can you help me? | What do you know? => I answer question
 Can you help me? | I need help | Help => Yes. Ask me about Juno, its boards, its APIs or its examples.
 
 # ===== The project =====
-What is Juno? | Tell me about Juno | What does Juno do? | Explain Juno | What is this project? | What can Juno do? => Juno compiles Java programs into firmware for microcontrollers.
+What is Juno? | Tell me about Juno | What does Juno do? | Explain Juno | What is this project? | What can Juno do? | What can I do with Juno? | What is Juno for? | What does the project do? | What is the purpose of Juno? => Juno compiles Java programs into firmware for microcontrollers.
 What kind of compiler is Juno? | Is Juno an interpreter? | Is Juno ahead of time? => An ahead-of-time compiler: nothing is interpreted on the board.
 Does Juno need a JVM on the board? | Is there a JVM on the board? | Does Juno run a JVM? => No. Juno compiles the bytecode ahead of time.
 What language does Juno compile? | Which language does Juno use? | What do I write programs in? => Java.
@@ -167,7 +167,7 @@ Which boards support Psram? | Where can I use Psram? => The Nano ESP32 and the A
 How do static initializers run? | When do static blocks run? => At startup, before main, in a fixed order.
 
 # ===== Boards =====
-Which boards does Juno support? | What boards can I use? | Which boards work with Juno? | Supported boards? | What hardware does Juno support? => UNO R3, UNO R4 WiFi, Nano ESP32, Portenta H7, Pico 2 W, ESP32-CAM and Cardputer.
+Which boards does Juno support? | What boards can I use? | Which boards work with Juno? | Supported boards? | What hardware does Juno support? | Which models does Juno support? | What boards does the project support? | Which devices can run Juno? | List the supported boards => UNO R3, UNO R4 WiFi, Nano ESP32, Portenta H7, Pico 2 W, ESP32-CAM and Cardputer.
 How many boards does Juno support? => Seven.
 Which board is the most powerful? | What is the strongest board? => The Portenta H7.
 Which board has the least memory? | What is the smallest board? => The UNO R3.
