@@ -4,6 +4,7 @@ import com.sun.management.ThreadMXBean;
 import io.github.jabrena.juno.hardware.device.ir.Infrared;
 import io.github.jabrena.juno.hardware.device.ir.hx.HX53InfraredEmitter;
 import io.github.jabrena.juno.hardware.device.ir.hx.HXM121InfraredReceiver;
+import io.github.jabrena.juno.hardware.time.Clock;
 import io.github.jabrena.juno.testing.SimulatedTime;
 import io.github.jabrena.juno.testing.Wire;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,22 @@ class RcxRegulatedAllocationTest {
     private static final int STATUS = 0x61;
     private static final int READY = 1;
 
+    /**
+     * The simulated board time without {@link SimulatedTime#clock()}'s Mockito mock: the link polls the clock while it
+     * waits for each reply, and every mocked call allocates kilobytes, a varying amount that buried the polls' own cost.
+     */
+    private static final Clock SIMULATED_CLOCK = new Clock() {
+        @Override
+        public int millis() {
+            return SimulatedTime.now / 1000;
+        }
+
+        @Override
+        public int micros() {
+            return SimulatedTime.now;
+        }
+    };
+
     private final ThreadMXBean threads = (ThreadMXBean) ManagementFactory.getThreadMXBean();
     private RcxLink link;
     private RcxRegulatedPair pair;
@@ -36,7 +53,7 @@ class RcxRegulatedAllocationTest {
     void startWithAnArmedPair() {
         Wire.resetBoard();
         Infrared.reset();
-        link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), SimulatedTime.clock());
+        link = new RcxLink(new HX53InfraredEmitter(3), new HXM121InfraredReceiver(2), SIMULATED_CLOCK);
         pair = new RcxRegulatedPair(link, 1, RcxRegulatedPair.maxPower(7), 16);
     }
 

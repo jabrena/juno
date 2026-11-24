@@ -63,7 +63,7 @@
         <archunit.version>1.5.1</archunit.version>
         <mockito.version>5.24.0</mockito.version>
         <jspecify.version>1.0.1</jspecify.version>
-        <error-prone.version>2.52.0</error-prone.version>
+        <error-prone.version>2.53.0</error-prone.version>
         <nullaway.version>0.14.4</nullaway.version>
         <!-- Error Prone and NullAway checks for every @NullMarked module. -->
         <nullaway.errorprone.arg>-Xplugin:ErrorProne -Xep:NullAway:ERROR -XepOpt:NullAway:JSpecifyMode=true -XepOpt:NullAway:AnnotatedPackages=io.github.jabrena.juno -XepOpt:NullAway:TreatGeneratedAsUnannotated=true -XepOpt:NullAway:CheckOptionalEmptiness=true -XepOpt:NullAway:HandleTestAssertionLibraries=true -XepOpt:NullAway:AssertsEnabled=true -XepExcludedPaths:.*/src/test/.*</nullaway.errorprone.arg>
@@ -90,7 +90,7 @@
         <exec-maven-plugin.version>3.7.0</exec-maven-plugin.version>
         <pmd.version>7.29.0</pmd.version>
         <maven-plugin-jxr.version>3.6.0</maven-plugin-jxr.version>
-        <maven-plugin-spotless.version>3.11.0</maven-plugin-spotless.version>
+        <maven-plugin-spotless.version>3.12.0</maven-plugin-spotless.version>
         <maven-plugin-enforcer.version>3.7.0</maven-plugin-enforcer.version>
         <extra-enforcer-rules.version>1.12.1</extra-enforcer-rules.version>
         <maven-plugin-jacoco.version>0.8.16</maven-plugin-jacoco.version>

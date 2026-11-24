@@ -10,10 +10,19 @@ layout: page
 
 <ul class="blog-simple-list">
   {#for post in posts}
-  <li>
-    <a href="{post.url}">{post.title}</a>
-    {#if post.date}<time class="blog-simple-date">{post.date.format('MMM d, yyyy')}</time>{/if}
+  {#if post.data.blogVisible??}
+  <li class="blog-simple-item">
+    <div class="blog-simple-meta">
+      {#if post.date}<time class="blog-simple-date">{post.date.format('MMM d, yyyy')}</time>{/if}
+      {#if post.data.tags}
+      <span class="blog-simple-tags">{#for tag in post.data.tags}<span class="blog-simple-tag">{tag}</span>{/for}</span>
+      {/if}
+    </div>
+    <h2 class="blog-simple-title"><a href="{post.url}">{post.title}</a></h2>
+    {#if post.description}<p class="blog-simple-description">{post.description}</p>{/if}
+    <span class="blog-simple-more" aria-hidden="true">Read article →</span>
   </li>
+  {/if}
   {/for}
 </ul>
 

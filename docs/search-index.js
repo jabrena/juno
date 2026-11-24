@@ -401,4 +401,10 @@ window.JUNO_SEARCH_INDEX = [
     "description": "Articles about building practical Java applications for Arduino and other embedded boards.",
     "text": "Articles about building practical Java applications for Arduino and other embedded boards. Explore complete projects,\nthe hardware and APIs behind them, and the lessons learned while bringing Java programs to the board."
   },
+  {
+    "url": "/juno/posts/page2/",
+    "title": "Blog",
+    "description": "Articles about building practical Java applications for Arduino and other embedded boards.",
+    "text": "Articles about building practical Java applications for Arduino and other embedded boards. Explore complete projects,\nthe hardware and APIs behind them, and the lessons learned while bringing Java programs to the board."
+  },
 ];
