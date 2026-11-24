@@ -146,7 +146,8 @@ class LanguageModelQemuIT {
         if (!prebuilt.isBlank()) {
             return new GenericContainer<>(DockerImageName.parse(prebuilt));
         }
-        return new GenericContainer<>(new ImageFromDockerfile("juno-xtensa:bookworm-v1", false)
-                .withFileFromPath(".", HARNESS));
+        // Only the Nano ESP32's core: the harness's other cores take over 10 GB to install and this test never uses them.
+        return new GenericContainer<>(new ImageFromDockerfile("juno-xtensa-nano:bookworm-v1", false)
+                .withFileFromPath(".", HARNESS).withBuildArg("EXTRA_CORES", "false"));
     }
 }
