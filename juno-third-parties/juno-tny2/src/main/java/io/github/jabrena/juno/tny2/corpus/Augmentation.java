@@ -3,17 +3,19 @@ package io.github.jabrena.juno.tny2.corpus;
 /**
  * How often the generator perturbs a question, so the model tolerates how people really type.
  *
- * @param lowercase probability of lower-casing the question: half of those times the whole question, otherwise only
- *     its first character
- * @param questionMark probability of adding or removing a trailing {@code ?}
+ * <p>Case and punctuation need no noise: {@link io.github.jabrena.juno.tny2.Tny2Vocabulary#question(String)}
+ * removes them before the model reads a question, in training and on the board.
+ *
+ * @param synonym probability of replacing one word with a synonym, such as {@code chip} with {@code processor}
+ * @param dropWord probability of dropping one filler word, such as {@code the} or {@code does}
  * @param typo probability of swapping two adjacent letters or dropping one
  * @param primaryAnswer probability of teaching the first answer rather than a random one
  */
-public record Augmentation(double lowercase, double questionMark, double typo, double primaryAnswer) {
+public record Augmentation(double synonym, double dropWord, double typo, double primaryAnswer) {
 
     public Augmentation {
-        check("lowercase", lowercase);
-        check("questionMark", questionMark);
+        check("synonym", synonym);
+        check("dropWord", dropWord);
         check("typo", typo);
         check("primaryAnswer", primaryAnswer);
     }

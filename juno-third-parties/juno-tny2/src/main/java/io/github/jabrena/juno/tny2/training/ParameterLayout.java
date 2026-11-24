@@ -4,6 +4,7 @@ import io.github.jabrena.juno.tny2.Tny2Config;
 import io.github.jabrena.juno.tny2.Tny2Vocabulary;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -70,5 +71,17 @@ final class ParameterLayout {
 
     int size() {
         return size;
+    }
+
+    /** True for every matrix value and false for the RMS gains, which weight decay must leave alone. */
+    boolean[] decayMask() {
+        boolean[] mask = new boolean[size];
+        Arrays.fill(mask, true);
+        for (Block block : blocks) {
+            Arrays.fill(mask, block.attentionGain().offset(), block.attentionGain().end(), false);
+            Arrays.fill(mask, block.feedForwardGain().offset(), block.feedForwardGain().end(), false);
+        }
+        Arrays.fill(mask, finalGain.offset(), finalGain.end(), false);
+        return mask;
     }
 }

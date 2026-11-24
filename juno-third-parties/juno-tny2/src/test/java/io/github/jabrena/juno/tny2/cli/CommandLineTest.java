@@ -34,7 +34,7 @@ class CommandLineTest {
         // Then
         TrainingOptions defaults = TrainingOptions.defaults(2000);
         assertThat(command).isEqualTo(new TrainCommand(Path.of("facts"), Path.of("out.bin"), Tny2Config.tiny21(),
-                defaults, 1, null, 0));
+                defaults, 1, null, 0, null, 0));
     }
 
     @Test
@@ -43,13 +43,15 @@ class CommandLineTest {
         // When
         Tny2Command command = commandLine.parse("train", "--steps", "7", "facts", "--batch", "3", "--lr", "0.5",
                 "--threads", "2", "--seed", "9", "--width", "16", "--layers", "2", "--heads", "4", "--hidden", "32",
-                "--resume", "old.bin", "--log-every", "5", "--min-accuracy", "0.75", "out.bin");
+                "--resume", "old.bin", "--log-every", "5", "--min-accuracy", "0.75", "--held-out", "held",
+                "--min-held-out", "0.25", "--weight-decay", "0.05", "--dropout", "0.2", "--eval-every", "3", "out.bin");
 
         // Then
         TrainingOptions defaults = TrainingOptions.defaults(7);
         assertThat(command).isEqualTo(new TrainCommand(Path.of("facts"), Path.of("out.bin"),
                 new Tny2Config(16, 2, 4, 32), new TrainingOptions(7, 3, 0.5f, defaults.finalLearningRate(),
-                        defaults.warmupSteps(), defaults.clipNorm(), 2, 5), 9, Path.of("old.bin"), 0.75));
+                        defaults.warmupSteps(), defaults.clipNorm(), 2, 5, 0.05f, 0.2f, 3), 9, Path.of("old.bin"), 0.75,
+                Path.of("held"), 0.25));
     }
 
     @Test
@@ -92,7 +94,8 @@ class CommandLineTest {
         Path model = directory.resolve("out/model.bin");
 
         // When
-        String trained = run("train", facts.toString(), model.toString(), "--steps", "60", "--batch", "8",
+        String trained = run("train", facts.toString(), model.toString(), "--steps", "150", "--batch", "8",
+                "--dropout", "0", "--weight-decay", "0",
                 "--lr", "0.01", "--threads", "2", "--width", "16", "--layers", "1", "--heads", "2", "--hidden", "32",
                 "--log-every", "0");
         String inspected = run("inspect", model.toString());
@@ -101,7 +104,7 @@ class CommandLineTest {
 
         // Then
         assertThat(trained).startsWith("Training Tny2Config[width=16, layers=1, heads=2, hidden=32]")
-                .contains("on 2 facts: 60 steps of 8 on 2 threads", "2 of 2 questions answered exactly (100.0%)");
+                .contains("on 2 facts: 150 steps of 8 on 2 threads", "2 of 2 questions answered exactly (100.0%)");
         assertThat(new Tny2Reader().read(model).config()).isEqualTo(new Tny2Config(16, 1, 2, 32));
         assertThat(inspected).contains("width 16, layers 1, heads 2, hidden 32",
                 "PSRAM on the board: %d bytes of weights + %d bytes of attention cache"
@@ -149,9 +152,40 @@ class CommandLineTest {
         assertThat(run(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9],
                 args[10], args[11], args[12], args[13], "0.5")).contains("1 of 2 questions answered exactly");
         assertThatThrownBy(() -> new TrainCommand(facts, next, Tny2Config.tiny21(), TrainingOptions.defaults(1), 1,
-                null, 1.5)).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("minAccuracy");
+                null, 1.5, null, 0)).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("minAccuracy");
         assertThatThrownBy(() -> new TrainCommand(facts, next, Tny2Config.tiny21(), TrainingOptions.defaults(1), 1,
-                null, -0.1)).isInstanceOf(IllegalArgumentException.class);
+                null, -0.1, null, 0)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new TrainCommand(facts, next, Tny2Config.tiny21(), TrainingOptions.defaults(1), 1,
+                null, 0, null, 0.5)).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("held-out");
+        assertThatThrownBy(() -> new TrainCommand(facts, next, Tny2Config.tiny21(), TrainingOptions.defaults(1), 1,
+                null, 0, facts, 2)).isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("minHeldOutAccuracy");
+    }
+
+    @Test
+    @DisplayName("Scores held-out facts at each checkpoint, keeps the best model and gates on its held-out score")
+    void shouldScoreHeldOutFactsAndGateOnThem() throws Exception {
+        // Given
+        Path facts = directory.resolve("facts.txt");
+        Files.writeString(facts, "Hello => Hi!\nWhat is Juno? => A compiler.\n");
+        Path heldOut = directory.resolve("heldout.txt");
+        Files.writeString(heldOut, "Who made the moon? => Nobody here.\n");
+        Path model = directory.resolve("model.bin");
+        String[] args = {"train", facts.toString(), model.toString(), "--steps", "40", "--batch", "8", "--lr", "0.01",
+            "--threads", "2", "--width", "16", "--layers", "1", "--heads", "2", "--hidden", "32", "--log-every", "0",
+            "--held-out", heldOut.toString(), "--eval-every", "20", "--dropout", "0", "--weight-decay", "0"};
+
+        // When
+        String output = run(args);
+
+        // Then
+        assertThat(output).contains("step 20  held-out ", "step 40  held-out ", "Held-out: ", "best at step ");
+        assertThat(model).exists();
+        String[] gated = java.util.Arrays.copyOf(args, args.length + 2);
+        gated[args.length] = "--min-held-out";
+        gated[args.length + 1] = "1";
+        assertThatThrownBy(() -> run(gated)).isInstanceOf(IllegalStateException.class)
+                .hasMessage("held-out accuracy 0.0% is below the required 100.0%");
     }
 
     private static String run(String... args) throws Exception {

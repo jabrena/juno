@@ -15,6 +15,8 @@ public final class Tny2Vocabulary {
     private static final int OFFSET = 30;
     private static final char FIRST = ' ';
     private static final char LAST = '~';
+    /** Punctuation that never changes what a question asks, so normalization turns it into a space. */
+    private static final String SEPARATORS = "?!,;\"";
 
     private Tny2Vocabulary() {
     }
@@ -37,20 +39,33 @@ public final class Tny2Vocabulary {
     }
 
     /**
-     * Normalizes a question the way the board engine does: non-printable characters become spaces, the text is cut
-     * to {@link #MAX_QUESTION} characters, and trailing spaces are dropped.
+     * Normalizes a question the way the board engine does, so wordings that differ only in case or punctuation reach
+     * the model as one input: the text is cut to {@link #MAX_QUESTION} characters, upper-case letters become lower
+     * case, non-printable characters and {@code ? ! , ; "} become spaces, and runs of spaces collapse to one, with
+     * none at either end.
      */
     public String question(String text) {
         StringBuilder cleaned = new StringBuilder(Math.min(text.length(), MAX_QUESTION));
         for (int i = 0; i < text.length() && i < MAX_QUESTION; i++) {
-            char character = text.charAt(i);
-            cleaned.append(isPrintable(character) ? character : FIRST);
+            char character = normalized(text.charAt(i));
+            boolean space = character == FIRST;
+            if (space && (cleaned.isEmpty() || cleaned.charAt(cleaned.length() - 1) == FIRST)) {
+                continue;
+            }
+            cleaned.append(character);
         }
         int end = cleaned.length();
         while (end > 0 && cleaned.charAt(end - 1) == FIRST) {
             end--;
         }
         return cleaned.substring(0, end);
+    }
+
+    private char normalized(char character) {
+        if (!isPrintable(character) || SEPARATORS.indexOf(character) >= 0) {
+            return FIRST;
+        }
+        return character >= 'A' && character <= 'Z' ? (char) (character + ('a' - 'A')) : character;
     }
 
     /** The tokens of a text, one per character. */

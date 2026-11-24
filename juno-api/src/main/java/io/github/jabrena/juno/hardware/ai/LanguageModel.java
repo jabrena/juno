@@ -11,9 +11,12 @@ package io.github.jabrena.juno.hardware.ai;
  * character is handed over as soon as it is generated, so the same loop can print it to the serial port, write it to
  * an HTTP response or send it over TCP, and nothing is allocated per answer.
  *
- * <p>A question is printable ASCII, at most {@link #MAX_QUESTION} characters; other characters count as spaces and
- * longer text is cut, as in TINY 2.1. Asking runs the whole question through the model, which takes about 30 ms per
- * character on the Nano ESP32, and so does each {@link #nextChar()}.
+ * <p>A question is printable ASCII, at most {@link #MAX_QUESTION} characters; longer text is cut. The engine reads it
+ * the way the model was trained: in lower case, with {@code ? ! , ;} and quotes as spaces and runs of spaces collapsed,
+ * so wordings that differ only in case or punctuation are the same question. Asking runs the question through the
+ * model, which takes about 30 ms per character on the Nano ESP32, and also picks the answer's first 8 characters: if
+ * the model is unsure of any of them, the answer is "I do not know." instead of a guess. Each later
+ * {@link #nextChar()} takes about the same 30 ms.
  */
 public interface LanguageModel {
     /** Success of {@link #load(int)}, {@link #ask(String, int)} and {@link #release()}. */

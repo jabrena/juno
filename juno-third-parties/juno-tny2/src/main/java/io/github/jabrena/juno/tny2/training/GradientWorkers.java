@@ -5,6 +5,7 @@ import io.github.jabrena.juno.tny2.corpus.Example;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.SplittableRandom;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -29,11 +30,16 @@ final class GradientWorkers implements AutoCloseable {
     private final List<float[]> gradients;
 
     GradientWorkers(ParameterLayout layout, int threads) {
+        this(layout, threads, 0f, 0L);
+    }
+
+    /** Workers whose passes drop {@code dropout} of each branch, each with its own generator from {@code seed}. */
+    GradientWorkers(ParameterLayout layout, int threads, float dropout, long seed) {
         executor = Executors.newFixedThreadPool(threads);
         passes = new ArrayList<>(threads);
         gradients = new ArrayList<>(threads);
         for (int w = 0; w < threads; w++) {
-            passes.add(new SequencePass(layout));
+            passes.add(new SequencePass(layout, dropout, new SplittableRandom(seed + w)));
             gradients.add(new float[layout.size()]);
         }
     }

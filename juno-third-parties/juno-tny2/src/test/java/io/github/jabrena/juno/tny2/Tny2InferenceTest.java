@@ -77,6 +77,19 @@ class Tny2InferenceTest {
     }
 
     @Test
+    @DisplayName("Answers I do not know when an early pick is less certain than the floor")
+    void shouldFallBackBelowTheConfidenceFloor() {
+        // Given
+        Tny2Inference certain = new Tny2Inference(TrainedModels.model(), 0f);
+        Tny2Inference doubtful = new Tny2Inference(TrainedModels.model(), 1.01f);
+
+        // When & Then
+        assertThat(certain.answer("What is Juno?")).isEqualTo("A Java compiler.");
+        assertThat(doubtful.answer("What is Juno?")).isEqualTo(Tny2Inference.UNKNOWN);
+        assertThat(new Tny2Inference(TrainedModels.model()).answer("What is Juno?")).isEqualTo("A Java compiler.");
+    }
+
+    @Test
     @DisplayName("Rejects an empty question and an out-of-range creativity")
     void shouldRejectAnEmptyQuestionAndBadCreativity() {
         // Given

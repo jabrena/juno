@@ -13,6 +13,11 @@ static constexpr int32_t JUNO_LM_MAX_LAYERS = 8;
 static constexpr int32_t JUNO_LM_MAX_QUESTION = 72;
 static constexpr int32_t JUNO_LM_END = 1;
 static constexpr int32_t JUNO_LM_TOKEN_OFFSET = 30;
+// The same rule as Tny2Inference: if any of the first LOOKAHEAD picks, counting a closing END, is less certain than the
+// floor, the answer is "I do not know." instead of a guess. ask() makes those picks before nextChar streams anything.
+static constexpr int32_t JUNO_LM_LOOKAHEAD = 8;
+static constexpr float JUNO_LM_CONFIDENCE_FLOOR = 0.5f;
+static const char JUNO_LM_UNKNOWN[] = "I do not know.";
 
 struct JunoLmTable {
   const float* scale;
@@ -49,6 +54,12 @@ static const float* juno_lm_final_gain = nullptr;
 static int32_t juno_lm_answer_position = 0;
 static int32_t juno_lm_creativity = 0;
 static bool juno_lm_answering = false;
+static float juno_lm_confidence = 1.0f;
+static char juno_lm_pending[JUNO_LM_LOOKAHEAD];
+static int32_t juno_lm_pending_length = 0;
+static int32_t juno_lm_pending_next = 0;
+static bool juno_lm_pending_ended = false;
+static const char* juno_lm_fallback = nullptr;
 static float juno_lm_state[JUNO_LM_MAX_WIDTH], juno_lm_normalized[JUNO_LM_MAX_WIDTH], juno_lm_query[JUNO_LM_MAX_WIDTH];
 static float juno_lm_temporary[JUNO_LM_MAX_WIDTH], juno_lm_attended[JUNO_LM_MAX_WIDTH];
 static float juno_lm_hidden_values[JUNO_LM_MAX_HIDDEN], juno_lm_weights[JUNO_LM_CONTEXT];
@@ -251,6 +262,12 @@ static int32_t juno_lm_pick() {
   for (int32_t i = 1; i < JUNO_LM_VOCAB; i++) {
     if (juno_lm_scores[i] > juno_lm_scores[best]) best = i;
   }
+  float sum = 0.0f;
+  for (int32_t i = 0; i < JUNO_LM_VOCAB; i++) {
+    float exponent = juno_lm_scores[i] - juno_lm_scores[best];
+    sum += expf(exponent < -60.0f ? -60.0f : exponent);
+  }
+  juno_lm_confidence = 1.0f / sum;
   if (juno_lm_creativity == 0) return best;
   float temperature = juno_lm_creativity / 5.0f, total = 0.0f;
   for (int32_t i = 0; i < JUNO_LM_VOCAB; i++) {
@@ -270,11 +287,16 @@ static int32_t juno_lm_pick() {
 static int32_t juno_lm_ask(const char* text, int32_t length, int32_t creativity) {
   if (juno_lm_layer_count == 0) return -4;
   if (creativity < 0 || creativity > 9) return -5;
+  // The same normalization as Tny2Vocabulary.question: cut to 72 characters, lower-case, ? ! , ; " and non-printable
+  // characters as spaces, runs of spaces collapsed, none at either end.
   char question[JUNO_LM_MAX_QUESTION];
   int32_t size = 0;
-  for (; size < length && size < JUNO_LM_MAX_QUESTION && text[size] != '\0'; size++) {
-    unsigned char c = static_cast<unsigned char>(text[size]);
-    question[size] = (c < 32 || c > 126) ? ' ' : static_cast<char>(c);
+  for (int32_t i = 0; i < length && i < JUNO_LM_MAX_QUESTION && text[i] != '\0'; i++) {
+    unsigned char c = static_cast<unsigned char>(text[i]);
+    if (c < 32 || c > 126 || c == '?' || c == '!' || c == ',' || c == ';' || c == '"') c = ' ';
+    if (c >= 'A' && c <= 'Z') c = static_cast<unsigned char>(c + ('a' - 'A'));
+    if (c == ' ' && (size == 0 || question[size - 1] == ' ')) continue;
+    question[size++] = static_cast<char>(c);
   }
   while (size > 0 && question[size - 1] == ' ') size--;
   if (size == 0) return -5;
@@ -284,6 +306,23 @@ static int32_t juno_lm_ask(const char* text, int32_t length, int32_t creativity)
     juno_lm_step(static_cast<unsigned char>(question[position]) - JUNO_LM_TOKEN_OFFSET, position);
   }
   juno_lm_step(JUNO_LM_END, position++);
+  juno_lm_pending_length = 0;
+  juno_lm_pending_next = 0;
+  juno_lm_pending_ended = false;
+  juno_lm_fallback = nullptr;
+  float lowest = 1.0f;
+  for (int32_t picks = 0; picks < JUNO_LM_LOOKAHEAD && position < JUNO_LM_CONTEXT; picks++, position++) {
+    int32_t token = juno_lm_pick();
+    if (juno_lm_confidence < lowest) lowest = juno_lm_confidence;
+    if (token <= JUNO_LM_END) {
+      juno_lm_pending_ended = true;
+      break;
+    }
+    juno_lm_pending[juno_lm_pending_length++] = static_cast<char>(token + JUNO_LM_TOKEN_OFFSET);
+    juno_lm_step(token, position);
+  }
+  if (position >= JUNO_LM_CONTEXT) juno_lm_pending_ended = true;
+  if (lowest < JUNO_LM_CONFIDENCE_FLOOR) juno_lm_fallback = JUNO_LM_UNKNOWN;
   juno_lm_answer_position = position;
   juno_lm_answering = true;
   return 0;
@@ -301,7 +340,20 @@ extern "C" int32_t juno_language_model_ask_bytes(const uint8_t* question, int32_
 }
 
 extern "C" int32_t juno_language_model_next_char() {
-  if (!juno_lm_answering || juno_lm_answer_position >= JUNO_LM_CONTEXT) {
+  if (!juno_lm_answering) return -1;
+  if (juno_lm_fallback != nullptr) {
+    char c = *juno_lm_fallback;
+    if (c == '\0') {
+      juno_lm_answering = false;
+      return -1;
+    }
+    juno_lm_fallback++;
+    return static_cast<unsigned char>(c);
+  }
+  if (juno_lm_pending_next < juno_lm_pending_length) {
+    return static_cast<unsigned char>(juno_lm_pending[juno_lm_pending_next++]);
+  }
+  if (juno_lm_pending_ended || juno_lm_answer_position >= JUNO_LM_CONTEXT) {
     juno_lm_answering = false;
     return -1;
   }

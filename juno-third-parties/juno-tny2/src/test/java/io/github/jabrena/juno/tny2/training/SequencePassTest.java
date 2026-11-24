@@ -69,6 +69,28 @@ class SequencePassTest {
         assertThat(first).isEqualTo(second).isCloseTo(uniform, within(uniform * 0.2));
     }
 
+    @Test
+    @DisplayName("Dropout changes the loss, reproducibly for a seed, and no dropout matches the plain pass")
+    void shouldDropBranchOutputsReproducibly() {
+        // Given
+        Tny2Network network = Tny2Network.initialize(SMALL, new SplittableRandom(7));
+        float[] weights = network.weights();
+        int size = network.layout().size();
+
+        // When
+        double plain = new SequencePass(network.layout()).accumulate(EXAMPLE, weights, new float[size]);
+        double none = new SequencePass(network.layout(), 0f, new SplittableRandom(1))
+                .accumulate(EXAMPLE, weights, new float[size]);
+        double first = new SequencePass(network.layout(), 0.5f, new SplittableRandom(1))
+                .accumulate(EXAMPLE, weights, new float[size]);
+        double second = new SequencePass(network.layout(), 0.5f, new SplittableRandom(1))
+                .accumulate(EXAMPLE, weights, new float[size]);
+
+        // Then
+        assertThat(none).isEqualTo(plain);
+        assertThat(first).isEqualTo(second).isNotEqualTo(plain);
+    }
+
     private static double numericGradient(SequencePass pass, float[] weights, int index) {
         float original = weights[index];
         float[] scratch = new float[weights.length];

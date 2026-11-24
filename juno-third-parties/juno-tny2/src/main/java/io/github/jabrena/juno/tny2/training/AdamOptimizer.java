@@ -1,6 +1,9 @@
 package io.github.jabrena.juno.tny2.training;
 
-/** Adam with bias correction over one flat parameter array. */
+/**
+ * Adam with bias correction over one flat parameter array, with optional decoupled weight decay (AdamW) on the
+ * values its mask selects.
+ */
 final class AdamOptimizer {
     private static final float BETA1 = 0.9f;
     private static final float BETA2 = 0.99f;
@@ -8,11 +11,20 @@ final class AdamOptimizer {
 
     private final float[] firstMoment;
     private final float[] secondMoment;
+    private final float weightDecay;
+    private final boolean[] decayed;
     private int steps;
 
     AdamOptimizer(int size) {
+        this(size, 0f, new boolean[size]);
+    }
+
+    /** {@code decayed[i]} says whether value {@code i} decays by {@code weightDecay} times the step size each step. */
+    AdamOptimizer(int size, float weightDecay, boolean[] decayed) {
         firstMoment = new float[size];
         secondMoment = new float[size];
+        this.weightDecay = weightDecay;
+        this.decayed = decayed.clone();
     }
 
     /** Moves {@code weights} against {@code gradient} with step size {@code learningRate}. */
@@ -26,7 +38,8 @@ final class AdamOptimizer {
             secondMoment[i] = BETA2 * secondMoment[i] + (1 - BETA2) * g * g;
             float m = firstMoment[i] / firstCorrection;
             float v = secondMoment[i] / secondCorrection;
-            weights[i] -= learningRate * m / ((float) Math.sqrt(v) + EPSILON);
+            float decay = decayed[i] ? weightDecay * weights[i] : 0f;
+            weights[i] -= learningRate * (m / ((float) Math.sqrt(v) + EPSILON) + decay);
         }
     }
 }

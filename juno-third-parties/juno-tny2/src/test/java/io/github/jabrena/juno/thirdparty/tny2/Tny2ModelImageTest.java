@@ -46,6 +46,6 @@ class Tny2ModelImageTest {
         // When & Then
         assertThat(inference.answer("What is Juno?"))
                 .isEqualTo("Juno compiles Java programs into firmware for microcontrollers.");
-        assertThat(inference.answer("How much PSRAM has the Nano ESP32?")).isEqualTo("8 MB.");
+        assertThat(inference.answer("How much PSRAM does the Nano ESP32 have?")).isEqualTo("8 MB.");
     }
 }

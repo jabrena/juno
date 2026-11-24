@@ -5,8 +5,9 @@ import java.util.random.RandomGenerator;
 /**
  * Runs a quantized model exactly as the board's TINY engine does, so its answers are the reference for the board:
  * the question is fed one character per position, then {@link Tny2Vocabulary#END}, then characters are picked until
- * the model picks {@code END} or the context is full. Keys and values are cached as signed bytes with one scale per
- * position, as on the board. One instance holds the attention cache, so it is not thread-safe.
+ * the model picks {@code END} or the context is full. If any of the first {@link #LOOKAHEAD} picks is less certain
+ * than the floor, the answer is {@link #UNKNOWN} instead of a guess. Keys and values are cached as signed bytes with
+ * one scale per position, as on the board. One instance holds the attention cache, so it is not thread-safe.
  */
 public final class Tny2Inference {
     /** Highest creativity; 0 always picks the most likely character. */
@@ -16,6 +17,12 @@ public final class Tny2Inference {
     private static final float EXP_LIMIT = -60f;
     private static final float NORM_EPSILON = 1e-5f;
     private static final float CACHE_FLOOR = 1e-20f;
+    /** Answer characters, counting a closing END, whose certainty decides between the answer and {@link #UNKNOWN}. */
+    public static final int LOOKAHEAD = 8;
+    /** Below this certainty, the probability of the most likely character, a lookahead pick gives up the answer. */
+    public static final float CONFIDENCE_FLOOR = 0.5f;
+    /** What an uncertain model answers instead of guessing. */
+    public static final String UNKNOWN = "I do not know.";
 
     private final Tny2Model model;
     private final Tny2Vocabulary vocabulary = Tny2Vocabulary.ASCII;
@@ -35,8 +42,19 @@ public final class Tny2Inference {
     private final float[] hidden;
     private final float[] weights;
     private final float[] scores = new float[Tny2Vocabulary.SIZE];
+    private final float confidenceFloor;
+    private float confidence;
 
     public Tny2Inference(Tny2Model model) {
+        this(model, CONFIDENCE_FLOOR);
+    }
+
+    /**
+     * An engine with its own floor, to tune {@link #CONFIDENCE_FLOOR}: 0 never falls back. The board uses
+     * {@link #CONFIDENCE_FLOOR}.
+     */
+    public Tny2Inference(Tny2Model model, float confidenceFloor) {
+        this.confidenceFloor = confidenceFloor;
         this.model = model;
         Tny2Config config = model.config();
         width = config.width();
@@ -79,15 +97,19 @@ public final class Tny2Inference {
         }
         step(Tny2Vocabulary.END, position++);
         StringBuilder answer = new StringBuilder();
-        for (; position < Tny2Config.CONTEXT; position++) {
+        float lowest = 1f;
+        for (int picks = 0; position < Tny2Config.CONTEXT; position++, picks++) {
             int token = pick(creativity, random);
+            if (picks < LOOKAHEAD) {
+                lowest = Math.min(lowest, confidence);
+            }
             if (token <= Tny2Vocabulary.END) {
                 break;
             }
             answer.append(vocabulary.character(token));
             step(token, position);
         }
-        return answer.toString();
+        return lowest < confidenceFloor ? UNKNOWN : answer.toString();
     }
 
     private void step(int token, int position) {
@@ -190,6 +212,11 @@ public final class Tny2Inference {
                 best = i;
             }
         }
+        float sum = 0f;
+        for (int i = 0; i < Tny2Vocabulary.SIZE; i++) {
+            sum += (float) Math.exp(Math.clamp(scores[i] - scores[best], EXP_LIMIT, 0f));
+        }
+        confidence = 1f / sum;
         if (creativity == 0) {
             return best;
         }

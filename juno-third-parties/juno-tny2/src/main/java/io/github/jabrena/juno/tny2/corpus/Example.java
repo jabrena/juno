@@ -15,14 +15,15 @@ public record Example(String question, String answer) {
 
     public Example {
         Tny2Vocabulary vocabulary = Tny2Vocabulary.ASCII;
-        if (question.isEmpty() || !vocabulary.question(question).equals(question)) {
-            throw new Tny2FormatException(("question must be 1 to %d printable ASCII characters without trailing "
-                    + "spaces: \"%s\"").formatted(Tny2Vocabulary.MAX_QUESTION, question));
+        if (question.length() > Tny2Vocabulary.MAX_QUESTION || vocabulary.question(question).isEmpty()
+                || !question.chars().allMatch(c -> vocabulary.isPrintable((char) c))) {
+            throw new Tny2FormatException("question must be 1 to %d printable ASCII characters: \"%s\""
+                    .formatted(Tny2Vocabulary.MAX_QUESTION, question));
         }
         if (answer.isEmpty() || !answer.chars().allMatch(c -> vocabulary.isPrintable((char) c))) {
             throw new Tny2FormatException("answer must be printable ASCII: \"%s\"".formatted(answer));
         }
-        if (question.length() + answer.length() + 2 > Tny2Config.CONTEXT) {
+        if (vocabulary.question(question).length() + answer.length() + 2 > Tny2Config.CONTEXT) {
             throw new Tny2FormatException("question and answer must fit in %d characters: \"%s\""
                     .formatted(Tny2Config.CONTEXT - 2, question));
         }
@@ -30,7 +31,7 @@ public record Example(String question, String answer) {
 
     /** The whole sequence: question tokens, {@code END}, answer tokens, {@code END}. */
     public int[] tokens() {
-        int[] questionTokens = Tny2Vocabulary.ASCII.tokens(question);
+        int[] questionTokens = Tny2Vocabulary.ASCII.tokens(normalizedQuestion());
         int[] answerTokens = Tny2Vocabulary.ASCII.tokens(answer);
         int[] tokens = new int[questionTokens.length + answerTokens.length + 2];
         System.arraycopy(questionTokens, 0, tokens, 0, questionTokens.length);
@@ -42,6 +43,11 @@ public record Example(String question, String answer) {
 
     /** Index in {@link #tokens()} of the first predicted token, the first answer character. */
     public int firstTarget() {
-        return question.length() + 1;
+        return normalizedQuestion().length() + 1;
+    }
+
+    /** The question as the model reads it, after {@link Tny2Vocabulary#question(String)}. */
+    public String normalizedQuestion() {
+        return Tny2Vocabulary.ASCII.question(question);
     }
 }

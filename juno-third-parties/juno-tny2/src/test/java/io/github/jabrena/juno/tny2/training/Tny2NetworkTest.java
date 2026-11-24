@@ -84,6 +84,38 @@ class Tny2NetworkTest {
         assertThat(weights[2]).isEqualTo(1f);
     }
 
+    @Test
+    @DisplayName("AdamW shrinks the masked weights by the decay and leaves the others to Adam")
+    void shouldDecayOnlyTheMaskedWeights() {
+        // Given
+        AdamOptimizer optimizer = new AdamOptimizer(2, 0.5f, new boolean[] {true, false});
+        float[] weights = {2f, 2f};
+
+        // When
+        optimizer.update(weights, new float[] {0f, 0f}, 0.1f);
+
+        // Then
+        assertThat(weights[0]).isCloseTo(2f - 0.1f * 0.5f * 2f, within(1e-6f));
+        assertThat(weights[1]).isEqualTo(2f);
+    }
+
+    @Test
+    @DisplayName("The decay mask covers the matrices and leaves every gain out")
+    void shouldMaskTheMatricesButNotTheGains() {
+        // When
+        ParameterLayout layout = new ParameterLayout(SMALL);
+        boolean[] mask = layout.decayMask();
+
+        // Then
+        ParameterLayout.Block block = layout.blocks().getFirst();
+        assertThat(mask[layout.embedding().offset()]).isTrue();
+        assertThat(mask[block.query().offset()]).isTrue();
+        assertThat(mask[block.attentionGain().offset()]).isFalse();
+        assertThat(mask[block.feedForwardGain().end() - 1]).isFalse();
+        assertThat(mask[layout.finalGain().offset()]).isFalse();
+        assertThat(mask[block.down().end() - 1]).isTrue();
+    }
+
     private static double standardDeviation(float[] weights, Slice slice) {
         double sum = 0;
         double squares = 0;

@@ -17,10 +17,11 @@ class QuestionAnswerGeneratorTest {
     private static final Fact JUNO = new Fact(List.of("What is Juno?", "Tell me about Juno"),
             List.of("A compiler.", "A Java compiler."));
     private static final Fact HELLO = new Fact(List.of("Hello"), List.of("Hi!"));
+    private static final Fact CHIP = new Fact(List.of("Which chip is in the board?"), List.of("An ESP32-S3."));
 
     @Test
-    @DisplayName("Without augmentation, teaches verbatim phrasings and the primary answer")
-    void shouldTeachVerbatimPhrasingsWithoutAugmentation() {
+    @DisplayName("Without augmentation, teaches each phrasing as the model reads it, with the primary answer")
+    void shouldTeachNormalizedPhrasingsWithoutAugmentation() {
         // Given
         ExampleSource source = new QuestionAnswerGenerator(List.of(JUNO, HELLO), Augmentation.none(),
                 new SplittableRandom(1));
@@ -29,8 +30,9 @@ class QuestionAnswerGeneratorTest {
         List<Example> examples = Stream.generate(source::next).limit(200).toList();
 
         // Then
-        assertThat(examples).extracting(Example::question).containsOnly("What is Juno?", "Tell me about Juno",
-                "Hello").contains("What is Juno?", "Tell me about Juno", "Hello");
+        assertThat(examples).extracting(Example::question)
+                .containsOnly("what is juno", "tell me about juno", "hello")
+                .contains("what is juno", "tell me about juno", "hello");
         assertThat(examples).extracting(Example::answer).containsOnly("A compiler.", "Hi!");
     }
 
@@ -38,9 +40,9 @@ class QuestionAnswerGeneratorTest {
     @DisplayName("Gives the same stream for the same seed")
     void shouldGiveTheSameStreamForTheSameSeed() {
         // Given
-        ExampleSource first = new QuestionAnswerGenerator(List.of(JUNO, HELLO), Augmentation.standard(),
+        ExampleSource first = new QuestionAnswerGenerator(List.of(JUNO, CHIP), Augmentation.standard(),
                 new SplittableRandom(9));
-        ExampleSource second = new QuestionAnswerGenerator(List.of(JUNO, HELLO), Augmentation.standard(),
+        ExampleSource second = new QuestionAnswerGenerator(List.of(JUNO, CHIP), Augmentation.standard(),
                 new SplittableRandom(9));
 
         // When & Then
@@ -49,59 +51,69 @@ class QuestionAnswerGeneratorTest {
     }
 
     @Test
-    @DisplayName("With full augmentation, lower-cases, toggles the question mark, misspells and varies answers")
-    void shouldPerturbQuestionsAndVaryAnswers() {
+    @DisplayName("Swaps a word for a synonym and drops filler words")
+    void shouldSwapSynonymsAndDropFillers() {
         // Given
-        ExampleSource source = new QuestionAnswerGenerator(List.of(JUNO), new Augmentation(1, 1, 1, 0),
+        ExampleSource synonyms = new QuestionAnswerGenerator(List.of(CHIP), new Augmentation(1, 0, 0, 1),
                 new SplittableRandom(3));
+        ExampleSource fillers = new QuestionAnswerGenerator(List.of(CHIP), new Augmentation(0, 1, 0, 1),
+                new SplittableRandom(3));
+
+        // When
+        Set<String> swapped = new HashSet<>();
+        Stream.generate(synonyms::next).limit(200).forEach(example -> swapped.add(example.question()));
+        Set<String> dropped = new HashSet<>();
+        Stream.generate(fillers::next).limit(200).forEach(example -> dropped.add(example.question()));
+
+        // Then
+        assertThat(swapped).contains("which processor is in the board", "which cpu is in the board",
+                "which microcontroller is in the board", "what chip is in the board", "which chip is in the device");
+        assertThat(dropped).contains("which chip is in board", "which chip in the board")
+                .doesNotContain("which chip is in the board");
+    }
+
+    @Test
+    @DisplayName("Misspells long questions, never short ones, and varies answers when asked to")
+    void shouldMisspellLongQuestionsAndVaryAnswers() {
+        // Given
+        ExampleSource long_ = new QuestionAnswerGenerator(List.of(JUNO), new Augmentation(0, 0, 1, 0),
+                new SplittableRandom(4));
+        ExampleSource short_ = new QuestionAnswerGenerator(List.of(HELLO), new Augmentation(0, 0, 1, 1),
+                new SplittableRandom(4));
 
         // When
         Set<String> questions = new HashSet<>();
         Set<String> answers = new HashSet<>();
-        Stream.generate(source::next).limit(300).forEach(example -> {
+        Stream.generate(long_::next).limit(300).forEach(example -> {
             questions.add(example.question());
             answers.add(example.answer());
         });
+        Set<String> shortQuestions = new HashSet<>();
+        Stream.generate(short_::next).limit(20).forEach(example -> shortQuestions.add(example.question()));
 
         // Then
-        assertThat(questions).allSatisfy(question -> assertThat(question).doesNotEndWith(" "));
-        assertThat(questions).contains("what is Juno", "tell me about Juno?")
-                .anySatisfy(question -> assertThat(question).hasSize("what is Juno".length() - 1))
-                .anySatisfy(question -> assertThat(question).hasSize("what is Juno".length())
-                        .isNotEqualTo("what is Juno"));
+        assertThat(questions).contains("what is juno")
+                .anySatisfy(question -> assertThat(question).hasSize("what is juno".length() - 1))
+                .anySatisfy(question -> assertThat(question).hasSize("what is juno".length())
+                        .isNotEqualTo("what is juno"));
         assertThat(answers).containsExactlyInAnyOrder("A compiler.", "A Java compiler.");
+        assertThat(shortQuestions).containsExactly("hello");
     }
 
     @Test
-    @DisplayName("Never misspells short questions, nor grows a full one or empties a lone question mark")
-    void shouldKeepShortAndFullQuestionsValid() {
+    @DisplayName("Leaves a one-word question alone and needs at least one fact and valid probabilities")
+    void shouldLeaveOneWordQuestionsAloneAndRejectBadSettings() {
         // Given
-        Fact longQuestion = new Fact(List.of("q".repeat(72)), List.of("a"));
-        Fact mark = new Fact(List.of("?"), List.of("a"));
-        ExampleSource marks = new QuestionAnswerGenerator(List.of(HELLO, longQuestion, mark),
-                new Augmentation(0, 1, 0, 1), new SplittableRandom(4));
-        ExampleSource typos = new QuestionAnswerGenerator(List.of(HELLO), new Augmentation(0, 0, 1, 1),
-                new SplittableRandom(4));
+        ExampleSource source = new QuestionAnswerGenerator(List.of(HELLO), new Augmentation(1, 1, 0, 1),
+                new SplittableRandom(5));
 
-        // When
-        Set<String> marked = new HashSet<>();
-        Stream.generate(marks::next).limit(100).forEach(example -> marked.add(example.question()));
-        Set<String> misspelled = new HashSet<>();
-        Stream.generate(typos::next).limit(20).forEach(example -> misspelled.add(example.question()));
-
-        // Then
-        assertThat(marked).containsExactlyInAnyOrder("Hello?", "q".repeat(72), "?");
-        assertThat(misspelled).containsExactly("Hello");
-    }
-
-    @Test
-    @DisplayName("Needs at least one fact and probabilities from 0 to 1")
-    void shouldRejectNoFactsAndBadProbabilities() {
         // When & Then
+        assertThat(Stream.generate(source::next).limit(20).map(Example::question).distinct().toList())
+                .containsExactly("hello");
         assertThatThrownBy(() -> new QuestionAnswerGenerator(List.of(), Augmentation.none(),
                 new SplittableRandom(1))).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new Augmentation(-0.1, 0, 0, 1)).hasMessageContaining("lowercase");
-        assertThatThrownBy(() -> new Augmentation(0, 1.1, 0, 1)).hasMessageContaining("questionMark");
+        assertThatThrownBy(() -> new Augmentation(-0.1, 0, 0, 1)).hasMessageContaining("synonym");
+        assertThatThrownBy(() -> new Augmentation(0, 1.1, 0, 1)).hasMessageContaining("dropWord");
         assertThatThrownBy(() -> new Augmentation(0, 0, 2, 1)).hasMessageContaining("typo");
         assertThatThrownBy(() -> new Augmentation(0, 0, 0, -1)).hasMessageContaining("primaryAnswer");
     }

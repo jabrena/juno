@@ -33,20 +33,34 @@ import java.util.SplittableRandom;
  * @param resume a TNY2 model to continue from, or {@code null} to start from random weights
  * @param minAccuracy fraction of fact questions, 0 to 1, the written model must answer exactly; below it the
  *     command fails after writing the model, so a build can reject it
+ * @param heldOut facts whose questions are not in training, scored at every checkpoint to keep the model that
+ *     generalizes best, or {@code null} to write the last model
+ * @param minHeldOutAccuracy fraction of held-out questions, 0 to 1, the written model must answer exactly
  */
 public record TrainCommand(Path facts, Path output, Tny2Config config, TrainingOptions options, long seed,
-        @Nullable Path resume, double minAccuracy) implements Tny2Command {
+        @Nullable Path resume, double minAccuracy, @Nullable Path heldOut, double minHeldOutAccuracy)
+        implements Tny2Command {
+    private static final int SHOWN_MISSES = 10;
 
     public TrainCommand {
-        if (!(minAccuracy >= 0 && minAccuracy <= 1)) {
-            throw new IllegalArgumentException("minAccuracy must be 0 to 1, not " + minAccuracy);
+        fraction("minAccuracy", minAccuracy);
+        fraction("minHeldOutAccuracy", minHeldOutAccuracy);
+        if (heldOut == null && minHeldOutAccuracy > 0) {
+            throw new IllegalArgumentException("minHeldOutAccuracy needs held-out facts");
         }
     }
-    private static final int SHOWN_MISSES = 10;
+
+    /** The best checkpoint so far by held-out accuracy; a later one wins a tie, since it trained longer. */
+    private static final class Best {
+        private @Nullable Tny2Model model;
+        private double accuracy = -1;
+        private int step;
+    }
 
     @Override
     public void run(PrintStream out) throws IOException {
         List<Fact> loaded = new FactsReader().read(facts);
+        List<Fact> heldOutFacts = heldOut == null ? List.of() : new FactsReader().read(heldOut);
         Tny2Network network = resume == null ? Tny2Network.initialize(config, new SplittableRandom(seed))
                 : Tny2Network.from(new Tny2Reader().read(resume));
         Tny2Config shape = network.config();
@@ -54,17 +68,50 @@ public record TrainCommand(Path facts, Path output, Tny2Config config, TrainingO
                 shape.parameterCount(), loaded.size(), options.steps(), options.batchSize(), options.threads());
         QuestionAnswerGenerator examples = new QuestionAnswerGenerator(loaded, Augmentation.standard(),
                 new SplittableRandom(seed + 1));
-        new Tny2Trainer(options, out).train(network, examples);
-        Tny2Model model = network.quantize();
+        Tny2Evaluation evaluation = new Tny2Evaluation();
+        Best best = new Best();
+        new Tny2Trainer(options, out).train(network, examples, (step, current) -> {
+            if (heldOutFacts.isEmpty()) {
+                return;
+            }
+            Tny2Model candidate = current.quantize();
+            Tny2Evaluation.Result scored = evaluation.evaluate(candidate, heldOutFacts);
+            out.printf(Locale.ROOT, "step %d  held-out %d of %d (%.1f%%)%n", step, scored.correct(), scored.total(),
+                    100 * scored.accuracy());
+            if (scored.accuracy() >= best.accuracy) {
+                best.model = candidate;
+                best.accuracy = scored.accuracy();
+                best.step = step;
+            }
+        });
+        Tny2Model model = best.model == null ? network.quantize() : best.model;
         new Tny2Writer().write(model, output);
-        Tny2Evaluation.Result result = new Tny2Evaluation().evaluate(model, loaded);
+        Tny2Evaluation.Result result = evaluation.evaluate(model, loaded);
         out.printf(Locale.ROOT, "Wrote %s: %d bytes; %d of %d questions answered exactly (%.1f%%)%n", output,
                 shape.fileSize(), result.correct(), result.total(), 100 * result.accuracy());
         result.misses().stream().limit(SHOWN_MISSES).forEach(miss -> out.printf("  %s -> %s (expected %s)%n",
                 miss.question(), miss.actual(), miss.expected()));
-        if (result.accuracy() < minAccuracy) {
-            throw new IllegalStateException(String.format(Locale.ROOT,
-                    "accuracy %.1f%% is below the required %.1f%%", 100 * result.accuracy(), 100 * minAccuracy));
+        require("accuracy", result.accuracy(), minAccuracy);
+        if (!heldOutFacts.isEmpty()) {
+            Tny2Evaluation.Result held = evaluation.evaluate(model, heldOutFacts);
+            out.printf(Locale.ROOT, "Held-out: %d of %d answered exactly (%.1f%%), best at step %d%n",
+                    held.correct(), held.total(), 100 * held.accuracy(), best.step);
+            held.misses().stream().limit(SHOWN_MISSES).forEach(miss -> out.printf("  %s -> %s (expected %s)%n",
+                    miss.question(), miss.actual(), miss.expected()));
+            require("held-out accuracy", held.accuracy(), minHeldOutAccuracy);
+        }
+    }
+
+    private static void require(String name, double actual, double minimum) {
+        if (actual < minimum) {
+            throw new IllegalStateException(String.format(Locale.ROOT, "%s %.1f%% is below the required %.1f%%",
+                    name, 100 * actual, 100 * minimum));
+        }
+    }
+
+    private static void fraction(String name, double value) {
+        if (!(value >= 0 && value <= 1)) {
+            throw new IllegalArgumentException("%s must be 0 to 1, not %s".formatted(name, value));
         }
     }
 }

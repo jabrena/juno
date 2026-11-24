@@ -47,6 +47,10 @@ class TrainingOptionsTest {
         assertThat(options.warmupSteps()).isEqualTo(100);
         assertThat(options.threads()).isEqualTo(Runtime.getRuntime().availableProcessors());
         assertThat(TrainingOptions.defaults(50).warmupSteps()).isEqualTo(5);
+        assertThat(options.weightDecay()).isEqualTo(0.01f);
+        assertThat(options.dropout()).isEqualTo(0.1f);
+        assertThat(options.evalEvery()).isEqualTo(250);
+        assertThat(new TrainingOptions(1, 1, 1f, 0f, 0, 1f, 1, 0).dropout()).isZero();
     }
 
     @Test
@@ -66,5 +70,11 @@ class TrainingOptionsTest {
         assertThatThrownBy(() -> new TrainingOptions(1, 1, 1f, 0f, -1, 1f, 1, 0)).hasMessageContaining("warmup");
         assertThatThrownBy(() -> new TrainingOptions(1, 1, 1f, 0f, 0, 1f, 1, -1)).hasMessageContaining("logEvery");
         assertThatThrownBy(() -> new TrainingOptions(1, 1, 1f, 0f, 0, 0f, 1, 0)).hasMessageContaining("clipNorm");
+        assertThatThrownBy(() -> new TrainingOptions(1, 1, 1f, 0f, 0, 1f, 1, 0, -0.1f, 0f, 0))
+                .hasMessageContaining("weightDecay");
+        assertThatThrownBy(() -> new TrainingOptions(1, 1, 1f, 0f, 0, 1f, 1, 0, 0f, 1f, 0))
+                .hasMessageContaining("dropout");
+        assertThatThrownBy(() -> new TrainingOptions(1, 1, 1f, 0f, 0, 1f, 1, 0, 0f, 0f, -1))
+                .hasMessageContaining("evalEvery");
     }
 }

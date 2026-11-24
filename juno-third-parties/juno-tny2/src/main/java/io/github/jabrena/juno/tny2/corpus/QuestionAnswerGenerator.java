@@ -2,8 +2,11 @@ package io.github.jabrena.juno.tny2.corpus;
 
 import io.github.jabrena.juno.tny2.Tny2Vocabulary;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.random.RandomGenerator;
 
 /**
@@ -12,7 +15,32 @@ import java.util.random.RandomGenerator;
  */
 public final class QuestionAnswerGenerator implements ExampleSource {
     private static final int MIN_TYPO_LENGTH = 8;
-    private static final char QUESTION_MARK = '?';
+    /** Words people use interchangeably in questions about boards and Juno. */
+    private static final Map<String, List<String>> SYNONYMS = Map.ofEntries(
+            Map.entry("chip", List.of("processor", "cpu", "microcontroller")),
+            Map.entry("processor", List.of("chip", "cpu")),
+            Map.entry("cpu", List.of("chip", "processor")),
+            Map.entry("board", List.of("device")),
+            Map.entry("what", List.of("which")),
+            Map.entry("which", List.of("what")),
+            Map.entry("big", List.of("large")),
+            Map.entry("support", List.of("handle")),
+            Map.entry("supported", List.of("available")),
+            Map.entry("create", List.of("make")),
+            Map.entry("make", List.of("create")),
+            Map.entry("start", List.of("begin")),
+            Map.entry("show", List.of("display")),
+            Map.entry("use", List.of("need")),
+            Map.entry("has", List.of("does")));
+    /** Filler words a question still makes sense without; the empty entry drops the word. */
+    private static final Map<String, List<String>> FILLERS = Map.ofEntries(
+            Map.entry("the", List.of("")),
+            Map.entry("a", List.of("")),
+            Map.entry("an", List.of("")),
+            Map.entry("does", List.of("")),
+            Map.entry("is", List.of("")),
+            Map.entry("please", List.of("")),
+            Map.entry("of", List.of("")));
 
     private final List<Fact> facts;
     private final Augmentation augmentation;
@@ -37,13 +65,13 @@ public final class QuestionAnswerGenerator implements ExampleSource {
     }
 
     private String perturb(String question) {
-        String result = question;
-        if (chance(augmentation.lowercase())) {
-            result = random.nextBoolean() ? result.toLowerCase(Locale.ROOT)
-                    : Character.toLowerCase(result.charAt(0)) + result.substring(1);
+        // Normalized first, as the model reads it, so a word followed by punctuation still matches its synonyms.
+        String result = Tny2Vocabulary.ASCII.question(question);
+        if (chance(augmentation.synonym())) {
+            result = replaceWord(result, SYNONYMS);
         }
-        if (chance(augmentation.questionMark())) {
-            result = toggleQuestionMark(result);
+        if (chance(augmentation.dropWord())) {
+            result = replaceWord(result, FILLERS);
         }
         if (result.length() >= MIN_TYPO_LENGTH && chance(augmentation.typo())) {
             result = typo(result);
@@ -52,11 +80,30 @@ public final class QuestionAnswerGenerator implements ExampleSource {
         return normalized.isEmpty() ? question : normalized;
     }
 
-    private static String toggleQuestionMark(String question) {
-        if (question.charAt(question.length() - 1) != QUESTION_MARK) {
-            return question.length() < Tny2Vocabulary.MAX_QUESTION ? question + QUESTION_MARK : question;
+    /**
+     * Replaces one word that has entries in {@code choices}, picked at random, with one of them; an empty entry drops
+     * the word. A question with no such word is returned unchanged.
+     */
+    private String replaceWord(String question, Map<String, List<String>> choices) {
+        List<String> words = new ArrayList<>(List.of(question.split(" ")));
+        List<Integer> candidates = new ArrayList<>();
+        for (int i = 0; i < words.size(); i++) {
+            if (choices.containsKey(words.get(i).toLowerCase(Locale.ROOT))) {
+                candidates.add(i);
+            }
         }
-        return question.length() > 1 ? question.substring(0, question.length() - 1) : question;
+        if (candidates.isEmpty() || words.size() < 2) {
+            return question;
+        }
+        int index = candidates.get(random.nextInt(candidates.size()));
+        List<String> options = Objects.requireNonNull(choices.get(words.get(index).toLowerCase(Locale.ROOT)));
+        String replacement = options.get(random.nextInt(options.size()));
+        if (replacement.isEmpty()) {
+            words.remove(index);
+        } else {
+            words.set(index, replacement);
+        }
+        return String.join(" ", words);
     }
 
     private String typo(String question) {

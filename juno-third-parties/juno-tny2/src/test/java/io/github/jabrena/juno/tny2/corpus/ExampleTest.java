@@ -21,9 +21,10 @@ class ExampleTest {
         Example example = new Example("Hi?", "Yo");
 
         // Then
-        assertThat(example.tokens()).containsExactly('H' - 30, 'i' - 30, '?' - 30, Tny2Vocabulary.END, 'Y' - 30,
-                'o' - 30, Tny2Vocabulary.END);
-        assertThat(example.firstTarget()).isEqualTo(4);
+        assertThat(example.normalizedQuestion()).isEqualTo("hi");
+        assertThat(example.tokens()).containsExactly('h' - 30, 'i' - 30, Tny2Vocabulary.END, 'Y' - 30, 'o' - 30,
+                Tny2Vocabulary.END);
+        assertThat(example.firstTarget()).isEqualTo(3);
     }
 
     @Test
@@ -41,7 +42,7 @@ class ExampleTest {
         // When & Then
         assertThatThrownBy(() -> new Example("", "a")).isInstanceOf(Tny2FormatException.class)
                 .hasMessageContaining("question must be 1 to 72");
-        assertThatThrownBy(() -> new Example("Hi ", "a")).isInstanceOf(Tny2FormatException.class);
+        assertThatThrownBy(() -> new Example("??", "a")).isInstanceOf(Tny2FormatException.class);
         assertThatThrownBy(() -> new Example("q".repeat(73), "a")).isInstanceOf(Tny2FormatException.class);
         assertThatThrownBy(() -> new Example("Mañana?", "a")).isInstanceOf(Tny2FormatException.class);
         assertThatThrownBy(() -> new Example("Hi", "")).isInstanceOf(Tny2FormatException.class)

@@ -14,25 +14,40 @@ import java.util.stream.Stream;
 /**
  * Reads facts in the TINY 2.1 text format, one per line: {@code question | question => answer | answer}. Blank
  * lines and lines starting with {@code #} are skipped. A directory is read as all of its {@code .txt} files in name
- * order.
+ * order, then, when it holds a {@code templates.tpl}, every {@code .tsv} table expanded through those templates (see
+ * {@link TemplateTables}).
  */
 public final class FactsReader {
     private static final String ARROW = "=>";
     private static final String ALTERNATIVE = "\\|";
     private static final String COMMENT = "#";
     private static final String EXTENSION = ".txt";
+    private static final String TABLE_EXTENSION = ".tsv";
+    private static final String TEMPLATES = "templates.tpl";
 
     public List<Fact> read(Path path) throws IOException {
         if (!Files.isDirectory(path)) {
             return parse(path.toString(), Files.readString(path, StandardCharsets.US_ASCII));
         }
         List<Fact> facts = new ArrayList<>();
-        try (Stream<Path> files = Files.list(path)) {
-            for (Path file : files.filter(file -> file.toString().endsWith(EXTENSION)).sorted().toList()) {
-                facts.addAll(read(file));
+        for (Path file : files(path, EXTENSION)) {
+            facts.addAll(read(file));
+        }
+        Path templates = path.resolve(TEMPLATES);
+        if (Files.exists(templates)) {
+            TemplateTables tables = new TemplateTables(templates.toString(),
+                    Files.readString(templates, StandardCharsets.US_ASCII));
+            for (Path table : files(path, TABLE_EXTENSION)) {
+                facts.addAll(tables.expand(table.toString(), Files.readString(table, StandardCharsets.US_ASCII)));
             }
         }
         return List.copyOf(facts);
+    }
+
+    private static List<Path> files(Path directory, String extension) throws IOException {
+        try (Stream<Path> files = Files.list(directory)) {
+            return files.filter(file -> file.toString().endsWith(extension)).sorted().toList();
+        }
     }
 
     public List<Fact> parse(String source, String text) {

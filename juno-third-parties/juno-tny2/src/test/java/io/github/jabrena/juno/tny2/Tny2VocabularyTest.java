@@ -44,11 +44,15 @@ class Tny2VocabularyTest {
     }
 
     @Test
-    @DisplayName("Normalizes a question as the board does")
+    @DisplayName("Normalizes a question as the board does: lower case, no ? ! , ; or quotes, single spaces")
     void shouldNormalizeAQuestionAsTheBoardDoes() {
         // When & Then
-        assertThat(vocabulary.question("Hola, ¿qué tal?  ")).isEqualTo("Hola,  qu  tal?");
+        assertThat(vocabulary.question("Hola, \u00bfqu\u00e9 tal?  ")).isEqualTo("hola qu tal");
+        assertThat(vocabulary.question("  What  is   JUNO?!")).isEqualTo("what is juno");
+        assertThat(vocabulary.question("Say \"hi\"; now")).isEqualTo("say hi now");
+        assertThat(vocabulary.question("juno:flash -Djuno.port=/dev/x")).isEqualTo("juno:flash -djuno.port=/dev/x");
         assertThat(vocabulary.question("a".repeat(80))).hasSize(Tny2Vocabulary.MAX_QUESTION);
         assertThat(vocabulary.question(" \t ")).isEmpty();
+        assertThat(vocabulary.question("??")).isEmpty();
     }
 }

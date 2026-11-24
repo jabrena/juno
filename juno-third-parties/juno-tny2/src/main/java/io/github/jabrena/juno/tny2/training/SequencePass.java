@@ -5,6 +5,8 @@ import io.github.jabrena.juno.tny2.Tny2Vocabulary;
 import io.github.jabrena.juno.tny2.corpus.Example;
 
 import java.util.Arrays;
+import java.util.SplittableRandom;
+import java.util.random.RandomGenerator;
 
 /**
  * Forward and backward pass of one example through the full-precision network, the same computation as the board
@@ -53,8 +55,23 @@ final class SequencePass {
     private final float[] dHidden;
     private final float[] dProbability = new float[CONTEXT];
     private final float[] logits = new float[Tny2Vocabulary.SIZE];
+    private final float dropout;
+    private final RandomGenerator random;
+    private final float[][] attentionKeep;
+    private final float[][] feedForwardKeep;
+    private final float[] dScaled;
 
     SequencePass(ParameterLayout layout) {
+        this(layout, 0f, new SplittableRandom(0));
+    }
+
+    /**
+     * A pass that drops {@code dropout} of each residual branch's outputs in training, scaling the rest by
+     * {@code 1 / (1 - dropout)}; {@code random} picks them, so one seed per worker keeps training reproducible.
+     */
+    SequencePass(ParameterLayout layout, float dropout, RandomGenerator random) {
+        this.dropout = dropout;
+        this.random = random;
         this.layout = layout;
         Tny2Config config = layout.config();
         width = config.width();
@@ -85,6 +102,9 @@ final class SequencePass {
         dKey = new float[states];
         dValue = new float[states];
         activation = new float[hidden];
+        attentionKeep = new float[layers][states];
+        feedForwardKeep = new float[layers][states];
+        dScaled = new float[width];
         dHidden = new float[hidden];
     }
 
@@ -169,7 +189,7 @@ final class SequencePass {
             int at = t * width;
             linear(weights, block.output(), attended[l], at, middle[l], at);
             for (int i = 0; i < width; i++) {
-                middle[l][at + i] += residual[l][at + i];
+                middle[l][at + i] = middle[l][at + i] * keep(attentionKeep[l], at + i) + residual[l][at + i];
             }
             feedForwardNorm[l][t] = normalize(middle[l], at, weights, block.feedForwardGain(), feedForwardInput[l]);
             linear(weights, block.up(), feedForwardInput[l], at, preActivation[l], t * hidden);
@@ -178,7 +198,8 @@ final class SequencePass {
             }
             linear(weights, block.down(), activation, 0, residual[l + 1], at);
             for (int i = 0; i < width; i++) {
-                residual[l + 1][at + i] += middle[l][at + i];
+                residual[l + 1][at + i] = residual[l + 1][at + i] * keep(feedForwardKeep[l], at + i)
+                        + middle[l][at + i];
             }
         }
     }
@@ -221,7 +242,10 @@ final class SequencePass {
                 activation[i] = Math.max(preActivation[l][t * hidden + i], 0f);
             }
             Arrays.fill(dHidden, 0f);
-            linearBackward(weights, gradient, block.down(), activation, 0, dResidual, at, dHidden, 0);
+            for (int i = 0; i < width; i++) {
+                dScaled[i] = dResidual[at + i] * feedForwardKeep[l][at + i];
+            }
+            linearBackward(weights, gradient, block.down(), activation, 0, dScaled, 0, dHidden, 0);
             for (int i = 0; i < hidden; i++) {
                 if (preActivation[l][t * hidden + i] <= 0f) {
                     dHidden[i] = 0f;
@@ -234,7 +258,10 @@ final class SequencePass {
         System.arraycopy(dMiddle, 0, dResidual, 0, states);
         Arrays.fill(dAttended, 0, states, 0f);
         for (int t = 0; t < length; t++) {
-            linearBackward(weights, gradient, block.output(), attended[l], t * width, dMiddle, t * width, dAttended,
+            for (int i = 0; i < width; i++) {
+                dScaled[i] = dMiddle[t * width + i] * attentionKeep[l][t * width + i];
+            }
+            linearBackward(weights, gradient, block.output(), attended[l], t * width, dScaled, 0, dAttended,
                     t * width);
         }
         Arrays.fill(dQuery, 0, states, 0f);
@@ -278,6 +305,13 @@ final class SequencePass {
                 dKey[key + i] += dScore * queries[l][out + i];
             }
         }
+    }
+
+    /** Draws whether one branch output survives dropout, records its scale for the backward pass and returns it. */
+    private float keep(float[] scales, int index) {
+        float scale = dropout == 0f ? 1f : random.nextFloat() < dropout ? 0f : 1f / (1f - dropout);
+        scales[index] = scale;
+        return scale;
     }
 
     private float dot(float[] a, int aOffset, float[] b, int bOffset) {

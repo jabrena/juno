@@ -17,7 +17,8 @@ public final class CommandLine {
             Usage: Tny2Builder <command> [arguments]
               train <facts file or directory> <model.bin> [--steps N] [--batch N] [--lr X] [--threads N]
                     [--seed N] [--width D] [--layers L] [--heads H] [--hidden N] [--resume model.bin]
-                    [--log-every N] [--min-accuracy 0-1]
+                    [--log-every N] [--min-accuracy 0-1] [--held-out facts] [--min-held-out 0-1]
+                    [--weight-decay X] [--dropout 0-1] [--eval-every N]
               ask <model.bin> <question> [--creativity 0-9] [--seed N]
               inspect <model.bin>
               image <model.bin> <Tny2ModelImage.java>
@@ -26,7 +27,8 @@ public final class CommandLine {
     private static final int DEFAULT_STEPS = 2000;
     private static final Map<String, Set<String>> OPTIONS = Map.of(
             "train", Set.of("steps", "batch", "lr", "threads", "seed", "width", "layers", "heads", "hidden",
-                    "resume", "log-every", "min-accuracy"),
+                    "resume", "log-every", "min-accuracy", "held-out", "min-held-out", "weight-decay", "dropout",
+                    "eval-every"),
             "ask", Set.of("creativity", "seed"),
             "inspect", Set.of(),
             "image", Set.of());
@@ -69,11 +71,16 @@ public final class CommandLine {
                 arguments.integer("batch", defaults.batchSize()),
                 arguments.decimal("lr", defaults.learningRate()), defaults.finalLearningRate(),
                 defaults.warmupSteps(), defaults.clipNorm(), arguments.integer("threads", defaults.threads()),
-                arguments.integer("log-every", defaults.logEvery()));
+                arguments.integer("log-every", defaults.logEvery()),
+                arguments.decimal("weight-decay", defaults.weightDecay()),
+                arguments.decimal("dropout", defaults.dropout()),
+                arguments.integer("eval-every", defaults.evalEvery()));
         String resume = arguments.option("resume");
+        String heldOut = arguments.option("held-out");
         return new TrainCommand(Path.of(arguments.positional(0)), Path.of(arguments.positional(1)), config, options,
                 arguments.integer("seed", 1), resume == null ? null : Path.of(resume),
-                arguments.decimal("min-accuracy", 0f));
+                arguments.decimal("min-accuracy", 0f), heldOut == null ? null : Path.of(heldOut),
+                arguments.decimal("min-held-out", 0f));
     }
 
     /** Positional arguments and {@code --name value} options of one command. */

@@ -88,6 +88,9 @@
                 <tny2.steps>3000</tny2.steps>
                 <tny2.seed>1</tny2.seed>
                 <tny2.minAccuracy>0.95</tny2.minAccuracy>
+                <!-- The held-out questions in src/main/resources/tny2/heldout are never trained on; the profile keeps
+                     the checkpoint that answers most of them and fails below this fraction. -->
+                <tny2.minHeldOutAccuracy>0</tny2.minHeldOutAccuracy>
                 <!-- TINY 2.1's shape: a 382 KB JUNO.BIN that runs on the Nano ESP32. The engine's largest shape is
                      -Dtny2.width=128 -Dtny2.layers=8 -Dtny2.hidden=512 (1.6 M parameters, 1.65 MB). -->
                 <tny2.width>96</tny2.width>
@@ -133,6 +136,10 @@
                                         <argument>${tny2.heads}</argument>
                                         <argument>--hidden</argument>
                                         <argument>${tny2.hidden}</argument>
+                                        <argument>--held-out</argument>
+                                        <argument>${project.basedir}/src/main/resources/tny2/heldout</argument>
+                                        <argument>--min-held-out</argument>
+                                        <argument>${tny2.minHeldOutAccuracy}</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
