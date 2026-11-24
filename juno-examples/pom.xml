@@ -374,5 +374,35 @@
                 </plugins>
             </build>
         </profile>
+        <!-- Run the board's TNY2 engine under Espressif's QEMU in Docker and compare its answers with the Java engine
+             (Tny2QemuIT); reuses juno-compiler's Xtensa harness image. -->
+        <profile>
+            <id>xtensa</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <groups>xtensa</groups>
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*Test.java</exclude>
+                            </excludes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
