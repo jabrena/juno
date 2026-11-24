@@ -30,6 +30,7 @@
 
     <modules>
         <module>juno-api</module>
+        <module>juno-lm</module>
         <module>juno-compiler</module>
         <module>juno-maven-plugin</module>
         <module>juno-examples</module>
@@ -131,7 +132,7 @@
             </dependency>
             <dependency>
                 <groupId>io.github.jabrena</groupId>
-                <artifactId>juno-tny2</artifactId>
+                <artifactId>juno-lm</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -411,11 +412,11 @@
                                     <!-- A module below ${coverage.level} fails the build. juno-examples opts out
                                          with jacoco.skip, since its board programs need hardware to run. -->
                                     <haltOnFailure>true</haltOnFailure>
-                                    <!-- This adapter's native entry points only execute in the board runtime and
-                                         cannot be covered by the desktop JVM tests. Its Java forwarding paths are
-                                         still exercised by NativeLanguageModelTest. -->
+                                    <!-- The language model's PSRAM kernels and runtime are native calls that only run on
+                                         the board; JlmLanguageModelTest covers the Java engine over heap memory. -->
                                     <excludes>
-                                        <exclude>io/github/jabrena/juno/hardware/internal/NativeLanguageModel*</exclude>
+                                        <exclude>io/github/jabrena/juno/hardware/internal/PsramModelMemory*</exclude>
+                                        <exclude>io/github/jabrena/juno/hardware/internal/PsramJlmRuntime*</exclude>
                                     </excludes>
                                     <rules>
                                         <rule>

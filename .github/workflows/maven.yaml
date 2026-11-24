@@ -83,7 +83,7 @@ jobs:
             grep -Eq "$1" <<<"$changed_files"
           }
 
-          if changed '^(pom.xml|\.mvn/|\.github/workflows/maven\.yaml|juno-api/|juno-compiler/|juno-maven-plugin/|juno-third-parties/|juno-examples/pom.xml|juno-examples/src/test/)'; then
+          if changed '^(pom.xml|\.mvn/|\.github/workflows/maven\.yaml|juno-api/|juno-compiler/|juno-maven-plugin/|juno-lm/|juno-third-parties/|juno-examples/pom.xml|juno-examples/src/test/)'; then
             full=true
           fi
 
@@ -571,10 +571,10 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-  # TNY2 model builder: compiles juno-third-parties/juno-tny2 only. It trains no model and publishes nothing; the
-  # model is built and released by hand with -Ptny2-model.
-  tny2-compile:
-    name: Compile TNY2 model builder
+  # JLM1 model builder: compiles juno-lm only. It trains no model and publishes nothing; the
+  # model is built and released by hand with -Plm-model.
+  lm-compile:
+    name: Compile JLM1 model builder
     needs: changes
     if: needs.changes.result == 'success'
     runs-on: ubuntu-latest
@@ -583,8 +583,8 @@ jobs:
         with:
           submodules: true
       - uses: ./.github/actions/setup-maven
-      - name: Compile juno-tny2
-        run: ./mvnw --batch-mode --no-transfer-progress -pl juno-third-parties/juno-tny2 compile
+      - name: Compile juno-lm
+        run: ./mvnw --batch-mode --no-transfer-progress -pl juno-lm compile
 
   integration-build:
     name: Prepare integration build outputs

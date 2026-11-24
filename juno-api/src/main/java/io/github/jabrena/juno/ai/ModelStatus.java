@@ -6,7 +6,7 @@ public enum ModelStatus {
     OK,
     /** The engine lost track of the PSRAM copy it was given; a correct program never sees it. */
     INVALID_HANDLE,
-    /** {@code begin}: the model is not a complete TNY2 file the engine accepts. */
+    /** {@code begin}: the model is not a complete JLM1 file the engine accepts. */
     INVALID_MODEL,
     /** {@code begin}: PSRAM has no room for the weights and the attention cache. */
     EXHAUSTED,

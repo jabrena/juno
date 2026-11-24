@@ -40,14 +40,19 @@ RUN case "$(dpkg --print-architecture)" in \
     && arduino-cli core install "${ESP32_CORE}"
 
 # The cores for the other two boards, pinned to the versions the core-drift baselines record, and their board-manager indexes.
+# They carry toolchains for every ESP32 chip and take over 10 GB while installing, so a test that runs only the Nano ESP32
+# builds with --build-arg EXTRA_CORES=false (LanguageModelQemuIT does).
+ARG EXTRA_CORES=true
 ARG M5STACK_PACKAGE_INDEX_URL=https://static-cdn.m5stack.com/resource/arduino/package_m5stack_index.json
 ARG ESPRESSIF_PACKAGE_INDEX_URL=https://espressif.github.io/arduino-esp32/package_esp32_index.json
 ARG M5STACK_CORE=m5stack:esp32@3.3.10
 ARG ESPRESSIF_CORE=esp32:esp32@3.3.12
-RUN arduino-cli config add board_manager.additional_urls "${M5STACK_PACKAGE_INDEX_URL}" \
-    && arduino-cli config add board_manager.additional_urls "${ESPRESSIF_PACKAGE_INDEX_URL}" \
-    && arduino-cli core update-index \
-    && arduino-cli core install "${M5STACK_CORE}" "${ESPRESSIF_CORE}"
+RUN if [ "${EXTRA_CORES}" = "true" ]; then \
+        arduino-cli config add board_manager.additional_urls "${M5STACK_PACKAGE_INDEX_URL}" \
+        && arduino-cli config add board_manager.additional_urls "${ESPRESSIF_PACKAGE_INDEX_URL}" \
+        && arduino-cli core update-index \
+        && arduino-cli core install "${M5STACK_CORE}" "${ESPRESSIF_CORE}"; \
+    fi
 
 # The emulator variant: the core's Nano ESP32 variant with variant.cpp replaced (see that file).
 COPY variant.cpp /harness/

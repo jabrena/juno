@@ -274,15 +274,16 @@ public enum Intrinsic {
     PSRAM_READ,
     PSRAM_WRITE,
     PSRAM_RELEASE,
-    LANGUAGE_MODEL_LOAD,
-    LANGUAGE_MODEL_IS_LOADED,
-    LANGUAGE_MODEL_WIDTH,
-    LANGUAGE_MODEL_LAYERS,
-    LANGUAGE_MODEL_ASK,
-    LANGUAGE_MODEL_ASK_BYTES,
-    LANGUAGE_MODEL_NEXT_CHAR,
-    LANGUAGE_MODEL_RELEASE,
-    LANGUAGE_MODEL_BEGIN_DEFAULT,
+    LANGUAGE_MODEL_BUNDLED,
+    LANGUAGE_MODEL_READ_FLOATS,
+    LANGUAGE_MODEL_MULTIPLY_ROWS,
+    LANGUAGE_MODEL_ACCUMULATE_ROWS,
+    LANGUAGE_MODEL_QUANTIZE_ROW,
+    LANGUAGE_MODEL_EXPONENTIALS,
+    LANGUAGE_MODEL_ATTEND,
+    LANGUAGE_MODEL_RMS_NORM,
+    LANGUAGE_MODEL_ADD,
+    LANGUAGE_MODEL_RELU,
     SERIAL_WRITE,
     SMTP_SEND,
     SMTP_SEND_TLS,
@@ -595,10 +596,15 @@ public enum Intrinsic {
             PSRAM_TOTAL_BYTES, PSRAM_FREE_BYTES, PSRAM_LARGEST_FREE_BLOCK, PSRAM_ALLOCATE, PSRAM_CAPACITY,
             PSRAM_READ_BYTE, PSRAM_WRITE_BYTE, PSRAM_READ, PSRAM_WRITE, PSRAM_RELEASE);
 
-    /** The TNY2 engine calls behind {@code NativeLanguageModel}: one model per program, so they ignore their receiver. */
-    private static final Set<Intrinsic> LANGUAGE_MODEL_OPERATIONS = EnumSet.of(LANGUAGE_MODEL_LOAD,
-            LANGUAGE_MODEL_IS_LOADED, LANGUAGE_MODEL_WIDTH, LANGUAGE_MODEL_LAYERS, LANGUAGE_MODEL_ASK,
-            LANGUAGE_MODEL_ASK_BYTES, LANGUAGE_MODEL_NEXT_CHAR, LANGUAGE_MODEL_RELEASE, LANGUAGE_MODEL_BEGIN_DEFAULT);
+    /**
+     * The float kernels behind {@code PsramModelMemory} and {@code PsramJlmRuntime}, the only native code of the Java
+     * language-model engine: int8 rows, attention, RMS norm, residual add, ReLU and {@code expf}. They are static, so
+     * there is no receiver.
+     */
+    private static final Set<Intrinsic> LANGUAGE_MODEL_OPERATIONS = EnumSet.of(LANGUAGE_MODEL_BUNDLED,
+            LANGUAGE_MODEL_READ_FLOATS, LANGUAGE_MODEL_MULTIPLY_ROWS, LANGUAGE_MODEL_ACCUMULATE_ROWS,
+            LANGUAGE_MODEL_QUANTIZE_ROW, LANGUAGE_MODEL_EXPONENTIALS, LANGUAGE_MODEL_ATTEND, LANGUAGE_MODEL_RMS_NORM,
+            LANGUAGE_MODEL_ADD, LANGUAGE_MODEL_RELU);
 
     /**
      * The families that touch only Juno's own runtime: monitors, locks and the other {@code java.util.concurrent}

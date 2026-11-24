@@ -24,11 +24,11 @@
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-api</artifactId>
         </dependency>
-        <!-- Runtime scope: DefaultLanguageModel reads its tny2/JUNO.BIN, the model LanguageModel.begin() links into
+        <!-- Runtime scope: DefaultLanguageModel reads its lm/JUNO.BIN, the model LanguageModel.begin() links into
              a program's firmware; no class of it is used. -->
         <dependency>
             <groupId>io.github.jabrena</groupId>
-            <artifactId>juno-tny2</artifactId>
+            <artifactId>juno-lm</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -85,9 +85,9 @@
                             <ignoredNonTestScopedDependencies>
                                 <ignoredNonTestScopedDependency>io.github.jabrena:juno-api</ignoredNonTestScopedDependency>
                             </ignoredNonTestScopedDependencies>
-                            <!-- juno-tny2 provides a resource, the bundled model, not classes. -->
+                            <!-- juno-lm provides a resource, the bundled model, not classes. -->
                             <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>io.github.jabrena:juno-tny2</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>io.github.jabrena:juno-lm</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

@@ -41,8 +41,8 @@
         </dependency>
         <dependency>
             <groupId>io.github.jabrena</groupId>
-            <artifactId>juno-tny2</artifactId>
-            <!-- Test scope: Tny2QemuIT checks the board's answers against the Java engine and the bundled model. -->
+            <artifactId>juno-lm</artifactId>
+            <!-- Test scope: LanguageModelQemuIT checks the board's answers against the Java engine and the bundled model. -->
             <scope>test</scope>
         </dependency>
         <!-- Eclipse Collections is present while compiling and linking examples, but is not a board runtime dependency. -->
@@ -376,8 +376,8 @@
                 </plugins>
             </build>
         </profile>
-        <!-- Run the board's TNY2 engine under Espressif's QEMU in Docker and compare its answers with the Java engine
-             (Tny2QemuIT); reuses juno-compiler's Xtensa harness image. -->
+        <!-- Run the board's JLM1 engine under Espressif's QEMU in Docker and compare its answers with the Java engine
+             (LanguageModelQemuIT); reuses juno-compiler's Xtensa harness image. -->
         <profile>
             <id>xtensa</id>
             <build>

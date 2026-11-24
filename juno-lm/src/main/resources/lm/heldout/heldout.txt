@@ -1,0 +1,54 @@
+# Held-out questions: none of these phrasings appear in src/main/resources/lm/facts. They measure how well the model
+# generalizes to new wordings, in the same format as the facts. Answers must match the facts exactly.
+
+Which Java version does the Juno compiler need? => JDK 27.
+What version of Java does Juno require? => JDK 27.
+How much PSRAM does the Nano ESP32 provide? => 8 MB.
+How much external RAM is on the Nano ESP32? => 8 MB.
+How much program flash does the Nano ESP32 have? => 16 MB.
+What is the flash size of the Nano ESP32? => 16 MB.
+Which chip is inside the Pico 2 W? => An RP2350.
+Which processor does the Portenta H7 use? => An STM32H747 with a Cortex-M7 and a Cortex-M4.
+How many cores does the Portenta H7 have? => Two.
+Which board has the built-in keyboard? => The M5Stack Cardputer.
+Which board carries a camera? => The AI Thinker ESP32-CAM.
+Which camera sensor does the ESP32-CAM use? => An OV2640.
+How many boards can Juno target? => Seven.
+Which board has the smallest memory? => The UNO R3.
+Is the UNO R3 the smallest board? => The UNO R3.
+Which tool compiles the generated sketch? => arduino-cli.
+Which build system does Juno use? => Maven, with the mvnw wrapper.
+Which command uploads a program to the board? => Run juno:flash with the Maven plugin.
+How do I read the board's serial output? => Run juno:monitor with the Maven plugin.
+How do I check a program without touching the board? => Run juno:verify; it never touches the board.
+Which goal writes the sketch files? => juno:compile.
+Does Juno need a Java virtual machine on the board? => No. Juno compiles the bytecode ahead of time.
+Does the compiler produce machine code directly? => Assembly and a C++ shim, built by arduino-cli.
+What language do Juno programs use? => Java.
+What is the entry point of a Juno program? => The main method.
+Can Juno load classes while the board runs? => No. Everything is linked ahead of time.
+Which Java features does Juno leave out? => I do not know.
+Where does the Juno source code live? => On GitHub, at jabrena/juno.
+Which license covers Juno? => The Apache License 2.0.
+Who is behind the Juno project? => Juan Antonio Brena Moral, jabrena on GitHub.
+Can I send a program over Wi-Fi? => No. Always upload over USB serial with -Djuno.port.
+Which secure element does the Portenta H7 have? => NXP SE050C2.
+What is the arena size of the UNO R4? => 8 KiB.
+What is the default arena of the Nano ESP32? => 64 KiB.
+What does the Nano ESP32 onboard LED use as its pin? => D13, which is ESP32-S3 GPIO48.
+Which board uses an ATmega328P? => The UNO R3.
+What is the clock speed of the UNO R4? => 48 MHz.
+How much SRAM does the UNO R4 have? => 32 KB.
+What is the capital of Portugal? => I do not know.
+How many moons does Mars have? => I do not know.
+What is the best programming language? => I do not know.
+Tell me about the weather in Madrid. => I do not know.
+
+# Questions a user asked the web chat on the Nano ESP32 (2026-11-24), kept verbatim.
+what models support? => UNO R3, UNO R4 WiFi, Nano ESP32, Portenta H7, Pico 2 W, ESP32-CAM and Cardputer.
+what boards support the project? => UNO R3, UNO R4 WiFi, Nano ESP32, Portenta H7, Pico 2 W, ESP32-CAM and Cardputer.
+what is possible to do with the project? => Juno compiles Java programs into firmware for microcontrollers.
+# More wordings that name the project instead of Juno.
+Which boards can the project run on? => UNO R3, UNO R4 WiFi, Nano ESP32, Portenta H7, Pico 2 W, ESP32-CAM and Cardputer.
+What does this project do? => Juno compiles Java programs into firmware for microcontrollers.
+Which JDK does the project need? => JDK 27.

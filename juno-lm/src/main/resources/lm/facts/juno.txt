@@ -1,0 +1,337 @@
+# Facts about Juno, in the TINY 2.1 format: question | question => answer | answer
+# Printable ASCII only; a question is at most 72 characters, question plus answer at most 126.
+# Every answer comes from the repository (juno-site content, AGENTS.md, the code); keep them that way.
+
+# ===== Conversation =====
+Hello | Hi | Hello there | Good morning | Hey | Good afternoon | Good evening => Hello! | Hi!
+Who are you? | What are you? | What is your name? | Are you a robot? | Are you an AI? => I am TINY, a small model running on Juno.
+Thank you | Thanks | Thanks a lot | Great, thanks => You are welcome.
+Goodbye | Bye | See you | See you later => Goodbye!
+How are you? | How are you doing? | Are you OK? => I am running fine on the board.
+What can you do? | How can you help me? | What do you know? => I answer questions about Juno, its APIs, boards and examples.
+Can you help me? | I need help | Help => Yes. Ask me about Juno, its boards, its APIs or its examples.
+
+# ===== The project =====
+What is Juno? | Tell me about Juno | What does Juno do? | Explain Juno | What is this project? | What can Juno do? | What can I do with Juno? | What is Juno for? | What does the project do? | What is the purpose of Juno? => Juno compiles Java programs into firmware for microcontrollers.
+What kind of compiler is Juno? | Is Juno an interpreter? | Is Juno ahead of time? => An ahead-of-time compiler: nothing is interpreted on the board.
+Does Juno need a JVM on the board? | Is there a JVM on the board? | Does Juno run a JVM? => No. Juno compiles the bytecode ahead of time.
+What language does Juno compile? | Which language does Juno use? | What do I write programs in? => Java.
+What does Juno read? | What is the input of Juno? | What does the compiler take as input? => Java class files.
+What does Juno generate? | What is the output of Juno? | What does the compiler produce? => Assembly and a C++ shim, built by arduino-cli.
+How does Juno work? | What is the Juno pipeline? | How does a program reach the board? => javac, then class files, then Juno's linker, then assembly and a shim.
+What is the runtime shim? | What is Shim.cpp? | Why is there a C++ file? => An extern C runtime that calls the board's Arduino libraries.
+What is a closed-world linker? | Why does Juno link a closed world? => Juno sees every class the program reaches, so it links only that code.
+Does Juno load classes at runtime? | Can Juno load code dynamically? => No. Everything is linked ahead of time.
+Which backends does Juno have? | What architectures does Juno target? | How many backends? => Three: AVR, Arm Thumb-2 and Xtensa.
+Which boards use the AVR backend? | What runs on AVR? => The UNO R3.
+Which boards use the Thumb-2 backend? | What runs on Thumb-2? => The UNO R4 WiFi, Portenta H7 and Pico 2 W.
+Which boards use the Xtensa backend? | What runs on Xtensa? => The Nano ESP32, Cardputer and ESP32-CAM.
+Who created Juno? | Who wrote Juno? | Who is the author of Juno? => Juan Antonio Brena Moral, jabrena on GitHub.
+Where is the code? | Where is the Juno repository? | Where can I find Juno? => On GitHub, at jabrena/juno.
+What license does Juno use? | Is Juno open source? | Under which license is Juno? => The Apache License 2.0.
+Where is the documentation? | Is there a website? | Where are the docs? => On the Juno site, built from juno-site and published from docs/.
+What does the name Juno mean? | Why is it called Juno? => I do not know.
+
+# ===== Modules =====
+What modules does Juno have? | How is the repository organized? | What are the Maven modules? => juno-api, juno-compiler, juno-maven-plugin, juno-examples, juno-site and juno-third-parties.
+What is juno-api? | What does juno-api contain? | Which module do programs use? => The API programs compile against: hardware, networking, LEGO and boards.
+Does juno-api depend on the compiler? | Can juno-api use the compiler? => No. juno-api has no dependency on the compiler.
+What is juno-compiler? | What does juno-compiler contain? => The compiler: class file reader, linker, lowering and the backends.
+What is juno-maven-plugin? | What does the Maven plugin do? => It compiles, verifies, flashes and monitors programs with Maven goals.
+What is juno-examples? | Where are the examples? | Are there example programs? => juno-examples holds ready-to-run programs, from Blink to games.
+What is juno-site? | How is the website built? => juno-site builds the documentation site with Quarkus Roq.
+What is juno-third-parties? | What are the third-party modules? => The RCX firmware and the Pico 2 W secure firmware.
+What is juno-rcx-firmware? | How is the RCX firmware made? => A pure-Java H8/300 assembler that builds Juno's own RCX firmware.
+What is juno-pico-secure? | What is the Pico secure firmware? => Juno's TrustZone secure firmware for the Pico 2 W secret store.
+What is juno-lm? | How was TINY trained? | Where is the model built? => juno-lm trains JLM1 models in pure Java from facts files.
+
+# ===== Build and tooling =====
+Which JDK does Juno need? | What Java version does Juno use? | In what Java version does Juno work? | Which version of Java? | What Java version do I need? | In what java version is possible to work? | Which JDK version? => JDK 27.
+Does Juno work with Java 21? | Can I use Java 17? | Can I use an older JDK? => No. Juno needs JDK 27.
+Which build tool does Juno use? | How do I build Juno? | Does Juno use Gradle? => Maven, with the mvnw wrapper.
+How do I build everything? | How do I install Juno locally? => Run ./mvnw install from the repository root.
+How do I run the tests? | How do I test Juno? => Run ./mvnw test.
+How do I install the JDK? | How do I get JDK 27? => With SDKMAN: sdk env uses the versions in .sdkmanrc.
+Which tool builds the firmware? | What compiles the sketch? | What toolchain does Juno use? => arduino-cli.
+How do I install arduino-cli? | Where do I get arduino-cli? => With Homebrew on macOS, or the official install script.
+How do I install the board cores? | How do I install the libraries? => Run juno:install-deps once per machine.
+How is code formatted? | What formatter does Juno use? => Spotless; run ./mvnw spotless:apply to fix formatting.
+How does Juno check nullness? | Does Juno use NullAway? => Yes. JSpecify annotations, checked by NullAway at compile time.
+How are architecture rules checked? | Does Juno use ArchUnit? => Yes. ArchUnit keeps juno-api free of compiler code.
+What coverage does Juno require? | What is the coverage gate? => 80 percent, checked by JaCoCo.
+Does Juno use mutation testing? | Is there PIT? => Yes. ./mvnw verify -Ppitest runs PIT.
+Can I test without hardware? | Can Juno run in an emulator? => Yes. -Pqemu runs programs under QEMU and compares them with the JVM.
+How do I compile all fixtures with arduino-cli? | What is the arduino-cli profile? => ./mvnw -pl juno-compiler -am -Parduino-cli verify, in Docker.
+What does Testcontainers do in Juno? | Why does Juno use Docker? => It runs arduino-cli and QEMU in containers for the opt-in tests.
+How are commits written? | What commit style does Juno use? => Conventional Commits, such as feat(api): summary.
+How do I regenerate the site? | How do I rebuild docs? => ./mvnw clean verify -Psite -DskipTests.
+How do I preview the site? | How do I edit the site live? => ./mvnw -f juno-site/pom.xml quarkus:dev.
+Should I edit the docs folder? | Can I edit docs by hand? => No. Edit juno-site content and regenerate docs.
+
+# ===== Maven plugin =====
+What goals does the plugin have? | Which Maven goals exist? | List the Juno goals => compile, verify, flash, monitor, boards, install-deps and secret.
+Which goal generates the code? | How do I generate the sketch? | What does juno:compile do? => juno:compile writes the .S, Shim.cpp and .ino files.
+How do I check a program compiles? | How do I verify a program? | What does juno:verify do? => Run juno:verify; it never touches the board.
+How do I flash a board? | How do I upload a program? | How do I deploy to the board? | How do I install a program on the board? => Run juno:flash with the Maven plugin.
+How do I see the serial output? | How do I read the serial port? | How do I open the monitor? => Run juno:monitor with the Maven plugin.
+How do I list connected boards? | How do I find the port? | What does juno:boards do? => juno:boards lists the boards, their ports and FQBNs.
+How do I store a secret? | How do I set the Wi-Fi password? | What does juno:secret do? => juno:secret stores a named value at a hidden prompt over USB.
+How do I check which secrets are stored? | How do I list secrets? => juno:secret with -Djuno.secret.list=name1,name2.
+How do I erase all secrets? | How do I clear the secret store? => juno:secret -Djuno.secret.clear=true, then type CLEAR.
+How do I choose the program? | What is juno.main? | How do I select the main class? => Pass -Djuno.main with the fully qualified class.
+Is there a default program? | Can I skip juno.main? => No. Always pass -Djuno.main.
+How do I choose the board? | What is juno.board? => Pass -Djuno.board with a board id, such as arduino-nano-esp32.
+How do I choose the serial port? | What is juno.port? => Pass -Djuno.port with the serial port of the board.
+How do I change the arena size? | What is juno.Xmx? => -Djuno.Xmx sets the arena size, such as -Djuno.Xmx=11k.
+How do I change the stack size? | What is juno.Xss? => -Djuno.Xss sets the stack of each carrier or task.
+How do I log garbage collections? | What is juno.gcLog? => -Djuno.gcLog=true prints one Serial line per collection.
+How do I change the baud rate of the monitor? | What is juno.baudRate? => -Djuno.baudRate, such as -Djuno.baudRate=115200.
+How do I receive syslog from the board? | Can juno:monitor read syslog? => juno:monitor with -Djuno.syslog receives syslog over the network.
+Where is the generated sketch? | Where does juno:compile write files? => Under target/juno, or juno.outputDirectory.
+Should I upload over the network? | Can I flash over Wi-Fi? => No. Always upload over USB serial with -Djuno.port.
+Can a program read environment variables? | Does System.getenv work? => No. The compiler rejects System.getenv, so no secret reaches firmware.
+
+# ===== Compiler report =====
+What is the runtime risk report? | What does the compiler report? => Arena use and warnings such as JUNO-RISK-001, printed by juno:compile.
+What is JUNO-RISK-001? => An allocation can repeat in a loop and may exhaust the arena.
+What is JUNO-RISK-002? => The arena estimate may not fit, assuming no garbage collection.
+What is JUNO-RISK-003? => A recursive call cycle makes the stack depth unbounded.
+What is JUNO-RISK-004? => Array accesses without a compile-time bounds proof.
+What is JUNO-RISK-005? => A division or remainder may receive a zero divisor.
+What happens with unsupported Java? | What if I use an unsupported feature? => Juno stops at link time with a CompileException naming it.
+What is a CompileException? | Why did my program fail to compile? => Juno found something outside its Java subset or the board's capabilities.
+
+# ===== Java subset =====
+Does Juno support all of Java? | Is it full Java? | Which Java does Juno support? => A practical subset, checked when the program is linked.
+Which primitive types are supported? | Can I use long and double? => All of them: boolean, byte, char, short, int, long, float and double.
+How big is an int? | Is an int 32 bits on AVR? => 32 bits on every board, with Java's wrap-around.
+Are Strings supported? | Can I use String? => Yes. Literals and runtime strings, which live in the arena.
+Can I concatenate strings? | Does + work on strings? => Yes, but each result allocates in the arena.
+Is StringBuilder supported? | Can I use StringBuilder? => Yes: a capacity, append(char), append(String) and toString().
+Are arrays supported? | Can I use arrays? => Yes, of every primitive type, with a compile-time size.
+Are array bounds checked? | Does Juno check array bounds? => Yes, and many checks are proven at compile time.
+Where do constant tables go? | Are static final arrays in flash? => A static final primitive array with constants is stored in flash.
+Are classes supported? | Can I use objects? | Does inheritance work? => Yes: classes, constructors, fields, inheritance and overriding.
+Are interfaces supported? | Do default methods work? => Yes, including default methods.
+Are enums supported? | Can I use enums? => Yes, with ordinal(), values() and switch.
+Are records supported? | Can I use records? => Yes, with canonical and compact constructors.
+Are sealed classes supported? | Can I use sealed interfaces? => Yes. Juno sees every subclass in its closed world.
+Does instanceof work? | Is pattern matching supported? => Yes, for final classes, including records.
+Are lambdas supported? | Do method references work? => Yes, including capturing lambdas.
+Are exceptions supported? | Can I use try and catch? => Yes: throw, try, catch, finally and try-with-resources.
+Is BigInteger supported? | Can I use BigDecimal? => Yes, with results that match the JDK.
+Is UUID supported? | Can I make random UUIDs? => Yes. UUID.randomUUID() works on every board.
+Is LocalDateTime supported? | Can I get the date? => Yes. LocalDateTime.now() comes from SNTP.
+Is java.lang.Math supported? | Can I use Math.sin? => Yes, with double precision on most boards.
+Is Properties supported? | Can I read a properties file? => Yes, read from a file on the SD card.
+Is JSON supported? | Can I parse JSON? => Yes, with Json.parse, JsonValue and JsonWriter.
+Is reflection supported? | Can I use reflection? => No. Juno links the program ahead of time.
+Can I extend Thread? | Can I use platform threads? => No. Use virtual threads.
+Can I use Kotlin? | Does Juno support Scala? | Can I use Groovy? => Yes. Kotlin, Scala, Groovy and Clojure have HelloWorld examples.
+Is Clojure fully supported? | Can I write Clojure programs? => Only what Juno lowers; other clojure.lang calls fail at link time.
+Is there a JLS 17 conformance page? | Does Juno follow the memory model? => Yes. Each JLS chapter 17 section maps to an example.
+
+# ===== Concurrency =====
+Does Juno support threads? | Can I use threads? => Yes, virtual threads run on carriers.
+How do I start a thread? | How do I create a virtual thread? => Thread.startVirtualThread with a Runnable.
+What is a carrier? | What runs virtual threads? => A native thread that runs Juno's virtual threads.
+How many carriers does the Nano ESP32 have? | Does the ESP32 use both cores? => Two, one per core.
+How many carriers does the Portenta H7 have? | Does the Portenta use the M4? => Two: the Cortex-M7 and the Cortex-M4.
+How many carriers does the UNO R4 have? => One.
+How many threads does the UNO R3 have? | Can the UNO R3 run threads? => At most four scheduler slots, including main.
+Is the scheduler preemptive? | How long is a time slice? => Yes, with a 1 ms time slice per carrier.
+Is structured concurrency supported? | Can I use StructuredTaskScope? => Yes, StructuredTaskScope and ScopedValue.
+Is synchronized supported? | Can I use locks? => Yes: synchronized, ReentrantLock, read-write locks and conditions.
+Are atomics supported? | Can I use AtomicInteger? => Yes: AtomicInteger, AtomicLong and AtomicBoolean.
+Which java.util.concurrent classes work? | Is CountDownLatch supported? => CountDownLatch, Semaphore, CyclicBarrier and Phaser.
+Does wait and notify work? | Can I use Object.wait? => Yes, inside synchronized; wait(long) is not supported.
+How do I protect a shared counter? | Is count++ thread safe? => No. Use an atomic, synchronized or a lock.
+
+# ===== Memory =====
+How does Juno use memory? | What is the memory model? => Code and constants in flash; data, arena and stacks in RAM.
+What is the arena? | Where do objects live? => One fixed block of RAM for everything allocated with new.
+Is there a garbage collector? | Does Juno collect garbage? => Yes, a conservative mark-and-sweep collector.
+Does the collector move objects? | Do object addresses change? => No. Objects never move.
+Is there a Java heap? | Is there a general heap? => No. Only the fixed arena.
+What happens when the arena is full? | What if the arena runs out? => The board has no OutOfMemoryError, so allocate once at startup.
+Should I allocate in the main loop? | Can I create objects in the loop? => No. Allocate buffers once at startup.
+What is zero allocation? | Why avoid allocation? => Allocate at startup and reuse buffers, so the arena never fills.
+How big is the arena on the UNO R3? | UNO R3 arena? => 1 KiB.
+How big is the Juno arena on the UNO R4? | What is the UNO R4 arena? | How big is the arena on the UNO R4 WiFi? => 8 KiB.
+How big is the Juno arena on the Nano ESP32? | ESP32 arena? => 64 KiB.
+How big is the arena on the Portenta H7? => 64 KiB.
+How big is the arena on the Pico 2 W? => 64 KiB.
+How big can the arena be on the Nano ESP32? => Up to 296840 bytes.
+What is PSRAM? | How do I use PSRAM? => External RAM; Juno exposes it as explicit Psram buffers.
+Which boards support Psram? | Where can I use Psram? => The Nano ESP32 and the AI Thinker ESP32-CAM.
+How do static initializers run? | When do static blocks run? => At startup, before main, in a fixed order.
+
+# ===== Boards =====
+Which boards does Juno support? | What boards can I use? | Which boards work with Juno? | Supported boards? | What hardware does Juno support? | Which models does Juno support? | What boards does the project support? | Which devices can run Juno? | List the supported boards => UNO R3, UNO R4 WiFi, Nano ESP32, Portenta H7, Pico 2 W, ESP32-CAM and Cardputer.
+How many boards does Juno support? => Seven.
+Which board is the most powerful? | What is the strongest board? => The Portenta H7.
+Which board has the least memory? | What is the smallest board? => The UNO R3.
+Which board should I start with? | What board do you recommend? => The UNO R4 WiFi: the Getting Started guide uses it.
+What is the board id of the UNO R4? | UNO R4 board id? => arduino-uno-r4-wifi.
+What is the board id of the UNO R3? => arduino-uno-r3.
+What is the board id of the Nano ESP32? => arduino-nano-esp32.
+What is the board id of the Portenta H7? => arduino-portenta-h7.
+What is the board id of the Pico 2 W? => raspberry-pi-pico-2-w.
+What is the board id of the Cardputer? => m5stack-cardputer.
+What is the board id of the ESP32-CAM? => ai-thinker-esp32-cam.
+How do I select a board in code? | What is the Board annotation? => Annotate the main class with @Board, such as @Board(ArduinoNanoEsp32Board.class).
+Which chip is in the UNO R4 WiFi? | What CPU does the UNO R4 have? => A Renesas RA4M1, an Arm Cortex-M4.
+How fast is the UNO R4? | UNO R4 clock speed? => 48 MHz.
+What gives the UNO R4 its Wi-Fi? | Which radio does the UNO R4 use? => An ESP32-S3 coprocessor.
+Does the UNO R4 have a display? | What is the LED matrix? => A 12 by 8 LED matrix, through MCU.getDisplay().
+Can the UNO R4 serve HTTPS? | Does the UNO R4 have an HTTPS server? => No. Its coprocessor offers TLS only to clients.
+How much PSRAM has the Nano ESP32? | Does the Nano ESP32 have PSRAM? | How much PSRAM does the Nano ESP32 have? | Nano ESP32 PSRAM? | What is the external RAM of the Nano ESP32? | How big is the PSRAM on the Nano ESP32? => 8 MB.
+How much flash has the Nano ESP32? | Nano ESP32 flash? | How big is the program flash on the Nano ESP32? | What is the flash memory size of the Nano ESP32? => 16 MB.
+Which pin is the LED on the Nano ESP32? => D13, which is ESP32-S3 GPIO48.
+What is the green light on the Nano ESP32? | Why is the Nano ESP32 LED green? => The bootloader; power-cycle the board to start the program.
+Which chip is in the Portenta H7? | What CPU does the Portenta H7 have? => An STM32H747 with a Cortex-M7 and a Cortex-M4.
+How many cores has the Portenta H7? | How many cores does the Portenta have? => Two.
+Does the Portenta H7 have a secure element? | What is the SE050C2? => Yes, an NXP SE050C2 behind SecretStore.
+Which radio has the Pico 2 W? => An Infineon CYW43439.
+How do I recover a Pico 2 W? | My Pico stopped responding => Hold BOOTSEL, plug it in and flash again.
+What is the Cardputer? | What is the M5Stack Cardputer? => A pocket ESP32-S3 computer with a keyboard and a display.
+Which board has a keyboard? | Does any board have a keyboard? => The M5Stack Cardputer.
+How big is the Cardputer screen? => 240 by 135 pixels, in color.
+Which board has a camera? | Does any board have a camera? => The AI Thinker ESP32-CAM.
+What camera has the ESP32-CAM? => An OV2640.
+How do I see serial on the ESP32-CAM? | Does the ESP32-CAM have USB? => It has no USB port; use a USB-serial adapter.
+Which boards have Wi-Fi? | Which boards connect to the internet? => All except the UNO R3.
+Which boards have an onboard SD card? => The Cardputer and the ESP32-CAM.
+Which boards can be a USB mouse? | Can a board act as a mouse? => Boards with native USB HID, through MCU.getMouse().
+Which boards have Bluetooth? | Can Juno use Bluetooth LE? => Yes, for LEGO Powered Up, through MCU.getBluetoothLe().
+
+# ===== APIs =====
+What is MCU? | What is the MCU facade? | How do I get the hardware? => MCU is the facade that hands out the board's devices.
+What can MCU give me? | Which getters does MCU have? => Gpio, Clock, Wifi, SdCard, SecretStore, Display, Mouse, Camera, LanguageModel and more.
+How do I blink an LED? | Show me Blink => DigitalOutput.of(MCU.getGpio().getBuiltinLed()), then high, low and Delay.
+How do I read a pin? | How do I read a button? => MCU.getGpio().digitalRead(pin) returns true when it is high.
+How do I resolve a pin? | How do I name a pin? => gpio.digitalPin("D2") or gpio.analogPin("A0").
+Should I use raw GPIO numbers? | Can I pass ESP32 GPIO numbers? => No. Use portable names such as D13 and A0.
+How do I read an analog value? | How do I use analogRead? => gpio.analogRead(gpio.analogPin("A0")).
+How do I use PWM? | How do I use analogWrite? => gpio.analogWrite(pin, value) on a PWM pin.
+How do I pause the program? | How do I wait? | What is Delay? => Delay.millis, Delay.micros or Delay.seconds.
+How do I measure time? | What is Clock? => MCU.getClock().millis() and micros().
+How do I print to serial? | How do I write to the console? => Serial.begin, then Serial.println.
+How do I read serial input? | How do I read from the keyboard over USB? => Serial.available() and Serial.read().
+How do I send one character? | How do I write a byte to serial? => Serial.write(c).
+How do I connect to Wi-Fi? | How do I join a network? => MCU.getWifi().begin(ssid, password).
+How do I create an access point? | Can the board make its own network? => MCU.getWifi().beginAP(ssid, password).
+How do I make an HTTP request? | How do I call a REST API? => With java.net.http.HttpClient, as in the JDK.
+Does HTTPS work? | Can I call HTTPS sites? => Yes, with Mozilla root certificates.
+Which HTTP methods are supported? => GET, POST, PUT, DELETE and HEAD; others through method().
+How do I create a web server? | How do I serve HTTP? => With com.sun.net.httpserver.HttpServer, as in the JDK.
+How many connections does the server handle? => One at a time, on a virtual thread.
+Does the board support HTTPS servers? | Can I serve HTTPS? => Yes, with HttpsServer, on most Wi-Fi boards except the UNO R4.
+How do I send an email? | Can Juno send mail? => Smtp.send or Smtp.sendTls.
+How do I read email? | Can Juno read a mailbox? => With Pop3Client.
+How do I log remotely? | What is Syslog? => Syslog sends RFC 5424 messages over UDP.
+How do I use UDP? | Can I send datagrams? => With java.net.DatagramSocket.
+How do I use TCP? | Can I open a socket? => With java.net.Socket.
+How do I get the time? | How do I get the date? => LocalDateTime.now(), synchronized over SNTP.
+How do I use the SD card? | How do I read a file? => Take the SdCard from its shield, begin() it and open a file.
+Can I write to the SD card? | Can I append to a file? => Yes, with appendLine.
+How do I keep secrets? | Where do I store passwords? => In SecretStore, provisioned with juno:secret.
+How do I read a secret? | How do I get the Wi-Fi password in code? => MCU.getSecretStore().getString("wifi.password").
+How many secrets can I store? => Up to 16 names.
+How long can a secret be? => 62 bytes minus the length of its name.
+Is SecretStore secure on the ESP32? => It uses NVS; enable flash encryption for full protection.
+Is SecretStore secure on the UNO R3? => No. It uses plain EEPROM.
+Should I put passwords in the code? | Can I hard-code the Wi-Fi password? => No. Use SecretStore.
+Is the SD card safe for passwords? | Can I keep secrets on the SD card? => No. A card is plain text; use SecretStore.
+How do I draw on the LED matrix? | How do I scroll text on the UNO R4? => MCU.getDisplay().print(text) on the UNO R4 WiFi.
+How do I use the display? | How do I draw on a screen? => MCU.getDisplay(), or the TftTouchShield class on the UNO R4.
+How do I move the mouse? | How do I use USB HID? => MCU.getMouse().move(x, y).
+How do I take a photo? | How do I use the camera? => MCU.getCamera().capture(buffer) on the ESP32-CAM.
+How do I read the Cardputer keyboard? => MCU.getKeyboard().
+How do I play a sound? | How do I use the speaker? => MCU.getAudio() on the Cardputer.
+How do I read the battery? => MCU.getBattery() on the Cardputer.
+How do I use I2C? | Is I2C supported? => Yes, with the I2c interface.
+How do I use SPI? | Is SPI supported? => Yes, with MCU.getSpi().
+How do I know the board at runtime? | What is BoardModel? => MCU.getBoardModel() says which board was compiled for.
+How do I see memory use at runtime? | What is BoardMemory? => MCU.getBoardMemory() reports arena use and flash.
+What is the MVC API? | How do I build a multi-screen app? => Models, views, a navigator and a router, in util.mvc.
+What is a watchdog? | How do I use the watchdog? => Annotate main with @Watchdog to reset a stuck board.
+How do I use the language model? | How do I run TINY? => MCU.getLanguageModel(): load, ask, then nextChar until END.
+
+# ===== Third parties =====
+Which shields does Juno support? | What shields can I use? => TFT touch, 9-axis motion, LCD keypad, data logger, USB host and PCA9685 servo shields.
+What is the TFT touch shield? => The ELEGOO 2.8 inch 240 by 320 touch display with a microSD socket.
+What is the LCD keypad shield? => A 16 by 2 character LCD with five buttons.
+What is the 9 axis motion shield? => A Bosch BNO055 orientation sensor on the UNO headers.
+What is the data logger shield? => A microSD socket and a real-time clock for the UNO.
+What is the USB host shield? => A MAX3421E USB host port for the UNO R4.
+What can the USB host shield read? => A TI-84 calculator through TiLink, and an RPLIDAR A2 scanner.
+What is the PCA9685 shield? => A 16-channel PWM board for servos, driven over I2C.
+What is the Portenta Hat Carrier? => A Portenta H7 carrier with a microSD slot and a HAT header.
+What is Grove? | What are Grove modules? => Seeed Studio sensors on one four-wire cable.
+Which Grove sensors are supported? => Temperature, humidity, light, sound, PIR motion, gas, GPS, IMU, ultrasonic and infrared.
+Which Grove shields can I use? => The Grove Base Shield, the Pico shield and the Nano Connector Carrier.
+What is the Nano Connector Carrier? => A Grove carrier for the Nano ESP32, with a microSD socket.
+Does Juno support LEGO? | Can Juno control LEGO? => Yes: Powered Up, Power Functions and the Mindstorms RCX.
+How does Juno talk to LEGO Powered Up? => Over Bluetooth LE, with RemotePoweredUpHub.
+How does Juno control Power Functions? => With an infrared emitter and RemotePF.
+How does Juno control the RCX? => Over infrared, with RemoteRcx and Juno's own RCX firmware.
+Does Juno have its own RCX firmware? => Yes, assembled in pure Java by juno-rcx-firmware.
+Can Juno read the RCX remote control? => Yes, with the RcxRemoteControl receiver.
+Can Juno control a Kasa smart plug? => Yes. KasaSmartPlugDiscovery finds plugs on the network.
+
+# ===== Examples =====
+What is the first example? | Where do I start? | What should I try first? => Blink, on the UNO R4 WiFi.
+Is there a Hello World? => Yes, HelloWorld in the language package.
+Which examples show threads? => VirtualThreads, StructuredConcurrency and Synchronization.
+Which example shows the weather? => MadridWeather, WeatherTFT and JdkHttpWeather.
+Which example streams video? => AiThinkerEsp32CamStream streams MJPEG from the ESP32-CAM.
+Which games are in the examples? | Are there games? => Gladiator, a network arena game, and LedMatrixSnake.
+What is Gladiator? => A Roman arena game for the TFT touch shield, solo or over UDP.
+What is the Mailbox example? => A messaging system between a Juno HTTPS server and a Cardputer.
+What is Lichess Daily Challenges? => A chess tactics trainer for the UNO R4 WiFi and the TFT shield.
+What is the Supabase example? => It publishes Grove temperatures to Supabase over HTTPS.
+What is the Pomodoro example? => A Pomodoro timer built with the MVC API.
+Which example draws on the TFT? => TouchPaintTFT, BouncingTrianglesTFT and JavaLogoTFT.
+Which example uses ArUco markers? => ArucoMarkerTFT draws ArUco markers on the TFT shield.
+What is RatonLoco? => A USB mouse jiggler that keeps the computer awake.
+Which example scans with a LIDAR? => UsbHostRplidarA2Scan, over the USB host shield.
+Which examples chat with TINY? => LanguageModelSerialChat, LanguageModelAccessPointChat and LanguageModelSecretStoreChat.
+How do I chat with you on the web? => Run LanguageModelSecretStoreChat and open the address it prints.
+
+# ===== TINY itself =====
+What is TINY? | What model are you? => A character-level transformer in the JLM1 format.
+How big is TINY? | How many parameters do you have? => About 1.6 million parameters.
+How many layers do you have? => Eight.
+How wide are you? | What is your width? => 128.
+How big is your file? | How big is JUNO.BIN? => About 1.65 MB.
+Where do your weights live? | Where is the model stored? => In flash, copied into PSRAM at boot.
+How do you read text? | What is your vocabulary? => One printable ASCII character at a time.
+How were you trained? | Who trained you? => In pure Java by juno-lm, from facts files.
+Can you speak Spanish? | Do you speak other languages? => Only ASCII English for now.
+How fast do you answer? | Why are you slow? => One character at a time, from PSRAM on the board.
+Do you use the internet? | Are you online? => No. I run on the board itself.
+Where does TINY come from? | What is TINY 2.1? => JLM1 is Juno's own format; the network follows WollyMonjac's TINY 2.1.
+
+# ===== Ideas =====
+What example could I build? | Give me an idea for an example | Any project ideas? => A weather station: a Grove DHT22, SNTP time and an HTTP server.
+Give me another idea | Another project idea? => A LEGO rover: a Nano ESP32 driving Powered Up motors with a joystick page.
+What could I build with the camera? => A doorbell camera that streams MJPEG and sends an email.
+What could I build with the Cardputer? => A pocket chat client for the Mailbox server.
+What could I build with the UNO R4? => An LED matrix clock that shows SNTP time.
+What could I build with the Portenta? => A dashboard on the Hat Carrier display fed by HTTPS APIs.
+What could I build with the Pico 2 W? => A Grove OLED status board with a TrustZone secret store.
+What could I build with TINY? => A help desk on the board, a quiz game or a voice-free assistant.
+What integration could Juno add? | Integration ideas? => MQTT over the TCP socket API, for Home Assistant.
+Can Juno talk to Home Assistant? => Through its REST API with HttpClient today; MQTT would be a new integration.
+Can Juno send Telegram messages? => Yes, with an HTTPS POST to the Telegram bot API.
+Can Juno send data to Grafana? => Through syslog or a database API such as Supabase.
+Which board could Juno support next? | New board ideas? => The Arduino Nano 33 BLE, a Cortex-M4 that fits the Thumb-2 backend.
+Could Juno support the ESP32-C3? => It would need a RISC-V backend.
+Could Juno support the Raspberry Pi Pico? => The RP2040 is a Cortex-M0+, a smaller subset of Thumb.
+Could Juno support Teensy? => A Teensy 4.1 is a Cortex-M7, close to the Portenta backend.
+How can I contribute? | How do I help Juno? => Open a branch, run ./mvnw test, and send a pull request.
+How do I add a native API? => Declare it in juno-api and add IntrinsicRegistry and IntrinsicLowering entries.
+
+# ===== Golpe de remo =====
+Camaron que se duerme => Se lo lleva la corriente

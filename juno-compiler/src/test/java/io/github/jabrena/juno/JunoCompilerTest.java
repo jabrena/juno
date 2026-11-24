@@ -156,13 +156,14 @@ class JunoCompilerTest {
 
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoLanguageModel");
 
-            assertThat(result.runtimeShim()).contains("juno_language_model_begin_default",
-                    "juno_lm_default_model[381808]", "juno_lm_load_bytes", "juno_language_model_ask_bytes",
-                    "juno_language_model_next_char", "juno_language_model_release", "juno_psram_find",
-                    "#include <esp_heap_caps.h>").doesNotContain("NativeLanguageModel");
-            assertThat(result.runtimeShim().split("int32_t juno_language_model_load", -1)).hasSize(2);
-            assertThat(result.assembly()).contains("juno_language_model_ask", "juno_language_model_is_loaded",
-                    "juno_language_model_width", "juno_language_model_layers");
+            assertThat(result.runtimeShim()).contains("juno_lm_bundled_model", "juno_lm_default_model[381907]",
+                    "juno_lm_multiply_rows", "juno_lm_accumulate_rows", "juno_lm_quantize_row", "juno_lm_read_floats",
+                    "juno_psram_find", "#include <esp_heap_caps.h>")
+                    .doesNotContain("juno_language_model");
+            assertThat(result.runtimeShim().split("int32_t juno_lm_multiply_rows", -1)).hasSize(2);
+            assertThat(result.assembly()).contains("juno_lm_bundled_model", "juno_lm_multiply_rows",
+                    "juno_lm_accumulate_rows", "juno_lm_quantize_row", "juno_lm_read_floats", "juno_lm_exponentials",
+                    "juno_lm_attend", "juno_lm_rms_norm", "juno_lm_add", "juno_lm_relu");
         }
 
         @Test
@@ -187,8 +188,8 @@ class JunoCompilerTest {
 
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoSdLanguageModel");
 
-            assertThat(result.runtimeShim()).contains("juno_language_model_load", "juno_lm_load_bytes", "juno_psram_write")
-                    .doesNotContain("juno_lm_default_model", "juno_language_model_begin_default");
+            assertThat(result.runtimeShim()).contains("juno_lm_multiply_rows", "juno_psram_write")
+                    .doesNotContain("juno_lm_default_model", "juno_lm_bundled_model");
         }
 
         @Test
@@ -210,7 +211,7 @@ class JunoCompilerTest {
 
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoPsramOnly");
 
-            assertThat(result.runtimeShim()).contains("juno_psram_allocate").doesNotContain("juno_language_model");
+            assertThat(result.runtimeShim()).contains("juno_psram_allocate").doesNotContain("juno_lm_");
         }
 
         @Test
