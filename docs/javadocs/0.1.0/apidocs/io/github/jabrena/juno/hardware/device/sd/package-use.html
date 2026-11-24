@@ -73,47 +73,66 @@ initTheme();
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Package</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware">io.github.jabrena.juno.hardware</a></div>
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.ai">io.github.jabrena.juno.ai</a></div>
 <div class="col-last even-row-color">
+<div class="block">On-board language model: <a href="../../../ai/LanguageModel.html" title="interface in io.github.jabrena.juno.ai"><code>LanguageModel</code></a> runs a JLM1 character-level
+transformer, Juno's model format that <code>juno-lm</code> trains, from PSRAM.</div>
+</div>
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware">io.github.jabrena.juno.hardware</a></div>
+<div class="col-last odd-row-color">
 <div class="block">The board's own hardware and program-wide introspection: <a href="../../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> and
 <a href="../../MCU.html" title="class in io.github.jabrena.juno.hardware"><code>MCU</code></a> hand out
 the board's pins, I2C bus, USB mouse, LED matrix, clock, <a href="../../BoardModel.html" title="enum class in io.github.jabrena.juno.hardware"><code>BoardModel</code></a> (which
 board the program was compiled for) and <a href="../../BoardMemory.html" title="interface in io.github.jabrena.juno.hardware"><code>BoardMemory</code></a> (Juno's arena and
 the program's flash usage).</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.carrier">io.github.jabrena.juno.hardware.device.carrier</a></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.device.carrier">io.github.jabrena.juno.hardware.device.carrier</a></div>
+<div class="col-last even-row-color">
 <div class="block">Pin maps for passive carrier boards a Nano plugs into, currently
 <a href="../carrier/NanoConnectorCarrier.html" title="class in io.github.jabrena.juno.hardware.device.carrier"><code>NanoConnectorCarrier</code></a>: its microSD slot, Grove and Qwiic
 connectors are ordinary Nano header pins, so a carrier needs no compiler intrinsic of its own.</div>
 </div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.device.lcd">io.github.jabrena.juno.hardware.device.lcd</a></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.lcd">io.github.jabrena.juno.hardware.device.lcd</a></div>
+<div class="col-last odd-row-color">
 <div class="block">Drivers for character LCD shields, currently
 <a href="../lcd/LcdKeypadShield.html" title="class in io.github.jabrena.juno.hardware.device.lcd"><code>LcdKeypadShield</code></a>: a 16x2 HD44780-compatible display in
 4-bit mode plus 5 buttons read from a single resistor-ladder analog pin, wired for the shield's
 standard pinout.</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.sd">io.github.jabrena.juno.hardware.device.sd</a></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.device.sd">io.github.jabrena.juno.hardware.device.sd</a></div>
+<div class="col-last even-row-color">
 <div class="block">SPI SD-card access: <a href="SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd"><code>SdCard</code></a>, taken from the shield that holds
 the card's socket (such as the <a href="DataLoggerShield.html" title="class in io.github.jabrena.juno.hardware.device.sd"><code>DataLoggerShield</code></a>), opens files
 through an <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/io/InputStream.html" title="class in java.io" class="external-link"><code>InputStream</code></a> accepted by Juno's bounded intrinsic implementation of <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/util/Properties.html#load(java.io.InputStream)" class="external-link"><code>Properties.load(java.io.InputStream)</code></a>.</div>
 </div>
-<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.device.tft">io.github.jabrena.juno.hardware.device.tft</a></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.device.tft">io.github.jabrena.juno.hardware.device.tft</a></div>
+<div class="col-last odd-row-color">
 <div class="block">Drivers for TFT display shields, currently
 <a href="../tft/TftTouchShield.html" title="class in io.github.jabrena.juno.hardware.device.tft"><code>TftTouchShield</code></a>: the ELEGOO 2.8" 240x320 ILI9341 display
 on an 8-bit parallel bus, with a resistive touch panel and a microSD socket (its card is
 <a href="../tft/TftTouchShield.html#getSdCard()"><code>TftTouchShield.getSdCard()</code></a>).</div>
 </div>
-<div class="col-first odd-row-color"><a href="#io.github.jabrena.juno.hardware.internal">io.github.jabrena.juno.hardware.internal</a></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><a href="#io.github.jabrena.juno.hardware.internal">io.github.jabrena.juno.hardware.internal</a></div>
+<div class="col-last even-row-color">
 <div class="block">The board's native implementations: the classes whose methods are compiler intrinsics.</div>
 </div>
 </div>
 <section class="package-uses">
 <ul class="block-list">
+<li>
+<section class="detail" id="io.github.jabrena.juno.ai">
+<div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.hardware.device.sd</a> used by <a href="../../../ai/package-summary.html">io.github.jabrena.juno.ai</a></span></div>
+<div class="summary-table two-column-summary">
+<div class="table-header col-first">Class</div>
+<div class="table-header col-last">Description</div>
+<div class="col-first even-row-color"><a href="class-use/SdCard.html#io.github.jabrena.juno.ai">SdCard</a></div>
+<div class="col-last even-row-color">
+<div class="block">Access to an SPI SD card, backed by the Arduino <code>SdFat</code> library with long-file-name support
+enabled.</div>
+</div>
+</div>
+</section>
+</li>
 <li>
 <section class="detail" id="io.github.jabrena.juno.hardware">
 <div class="caption"><span>Classes in <a href="package-summary.html">io.github.jabrena.juno.hardware.device.sd</a> used by <a href="../../package-summary.html">io.github.jabrena.juno.hardware</a></span></div>

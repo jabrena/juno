@@ -33,6 +33,7 @@
   <meta property="og:url" content="https://jabrena.github.io/juno/boards/ai-thinker-esp32-cam/" />
   <meta name="twitter:url" content="https://jabrena.github.io/juno/boards/ai-thinker-esp32-cam/">
 
+
   <!-- SEO TYPE -->
   <meta property="og:type" content="website" />
 
@@ -41,7 +42,7 @@
   <!-- SEO LOCALE -->
   <meta property="og:locale" content="es_ES" />
   <!-- SEO GENERATOR -->
-  <meta name="generator" content="Quarkus Roq v2.2.0" />
+  <meta name="generator" content="Quarkus Roq v2.2.1" />
 
 <!-- Favicon -->
 
@@ -493,7 +494,8 @@ only for the photo: it is bright and gets hot when left lit.</p>
 serves four paths: <code>GET /</code> is a page with the live view, <code>GET /stream</code> is a 160×120 MJPEG stream, <code>GET /capture</code>
 takes one fresh 640×480 photo on every request, and <code>GET /capture/flash</code> takes it with the flash lit. It reads
 <code>wifi.ssid</code> and <code>wifi.password</code> from the board's secret store (provision them once with <code>juno:secret</code>), and its 48 KB
-frame buffer needs a larger arena:</p>
+frame buffer, the camera driver, Wi-Fi and the HTTP server leave too little static DRAM for the default 64 KB
+arena, so build it with a smaller one:</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash -Djuno.board=ai-thinker-esp32-cam -Djuno.port=&lt;PORT&gt; \
   -Djuno.main=io.github.jabrena.juno.api.hardware.net.http.AiThinkerEsp32CamStream -Djuno.Xmx=59k
 </code></pre>

@@ -33,6 +33,7 @@
   <meta property="og:url" content="https://jabrena.github.io/juno/features/juno-maven-plugin/" />
   <meta name="twitter:url" content="https://jabrena.github.io/juno/features/juno-maven-plugin/">
 
+
   <!-- SEO TYPE -->
   <meta property="og:type" content="website" />
 
@@ -41,7 +42,7 @@
   <!-- SEO LOCALE -->
   <meta property="og:locale" content="es_ES" />
   <!-- SEO GENERATOR -->
-  <meta name="generator" content="Quarkus Roq v2.2.0" />
+  <meta name="generator" content="Quarkus Roq v2.2.1" />
 
 <!-- Favicon -->
 
@@ -544,8 +545,8 @@ them with <code>-D</code>:</p>
 </tr>
 <tr>
 <td><code>juno.carriers</code></td>
-<td>2 on the ESP32 boards and the Pico 2 W; 1 elsewhere</td>
-<td>How many carriers run threads: <code>1</code> or <code>2</code>, at most the board's carriers. Use <code>1</code> only in test environments that cannot run both cores.</td>
+<td>2 on the ESP32 boards, the Pico 2 W and the Portenta H7; 1 elsewhere</td>
+<td>How many carriers run threads: <code>1</code> or <code>2</code>, at most the board's carriers. Use <code>1</code> only in test environments that cannot run both cores. On the Portenta H7, two carriers build and flash a second image, for the Cortex-M4.</td>
 </tr>
 <tr>
 <td><code>juno.gcLog</code></td>
@@ -632,7 +633,7 @@ programmatically as immutable records with stable diagnostic codes.</p>
 </tr>
 </tbody>
 </table>
-<p>The 8 KiB arena capacity and the count of bounds-checked array accesses (checked at run time, or proved safe
+<p>The arena capacity and the count of bounds-checked array accesses (checked at run time, or proved safe
 at compile time) are exact compiler facts. Arena,
 static-RAM, and stack figures are conservative source-level estimates: alignment is overestimated,
 branch feasibility is not modeled, and the downstream C++ compiler may optimize stack locals. The
