@@ -30,14 +30,14 @@ public final class LanguageModelSerialChat {
     public static void main(String[] args) {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        Serial.println("TINY: loading JUNO.BIN into PSRAM");
+        Serial.println("JLM1: loading JUNO.BIN into PSRAM");
         ModelStatus status = MODEL.begin();
         while (status != ModelStatus.OK) {
-            Serial.print("TINY: model load failed: ");
+            Serial.print("JLM1: model load failed: ");
             Serial.println(LanguageModelStatus.describe(status));
             Delay.millis(5000);
         }
-        Serial.print("TINY: model online, layers=");
+        Serial.print("JLM1: model online, layers=");
         Serial.print(MODEL.layers());
         Serial.print(", width=");
         Serial.println(MODEL.width());

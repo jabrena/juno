@@ -14,14 +14,14 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 
 /**
- * The TINY neural terminal in Java: the Nano ESP32 opens its own Wi-Fi network {@code TINY-NEURAL} (password
+ * The JLM1 neural terminal in Java: the Nano ESP32 opens its own Wi-Fi network {@code JLM1-NEURAL} (password
  * {@code tinyterminal}) and serves the {@link LanguageModelWebChat} page at {@code http://192.168.4.1}. No internet and no
  * credentials are needed: join the board's network and chat with the model running on it.
  */
 @Board({ArduinoNanoEsp32Board.class})
 public final class LanguageModelAccessPointChat {
     private static final LanguageModel MODEL = MCU.getLanguageModel();
-    private static final String SSID = "TINY-NEURAL";
+    private static final String SSID = "JLM1-NEURAL";
     private static final String PASSWORD = "tinyterminal";
     private static final int HTTP_PORT = 80;
     private static final int[] OCTETS = new int[4];
@@ -32,8 +32,8 @@ public final class LanguageModelAccessPointChat {
     public static void main(String[] args) throws IOException {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        Serial.println("TINY: loading JUNO.BIN into PSRAM");
-        Serial.print("TINY: model load status ");
+        Serial.println("JLM1: loading JUNO.BIN into PSRAM");
+        Serial.print("JLM1: model load status ");
         Serial.println(LanguageModelStatus.describe(MODEL.begin()));
 
         Wifi wifi = MCU.getWifi();
@@ -42,11 +42,11 @@ public final class LanguageModelAccessPointChat {
         LanguageModelWebChat.register(server);
         server.start();
         while (true) {
-            Serial.print("TINY: join Wi-Fi ");
+            Serial.print("JLM1: join Wi-Fi ");
             Serial.print(SSID);
             Serial.print(" and open http://");
             printAddress(wifi);
-            Serial.print("TINY: model ");
+            Serial.print("JLM1: model ");
             Serial.println(MODEL.isLoaded() ? "online" : "offline");
             Delay.millis(10000);
         }

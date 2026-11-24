@@ -33,14 +33,14 @@ public final class LanguageModelSecretStoreChat {
     public static void main(String[] args) throws IOException {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
-        Serial.println("TINY: loading JUNO.BIN into PSRAM");
-        Serial.print("TINY: model load status ");
+        Serial.println("JLM1: loading JUNO.BIN into PSRAM");
+        Serial.print("JLM1: model load status ");
         Serial.println(LanguageModelStatus.describe(MODEL.begin()));
 
         Wifi wifi = MCU.getWifi();
         if (!joinWifi(wifi, MCU.getSecretStore())) {
             while (true) {
-                Serial.println("TINY: Wi-Fi unavailable; store wifi.ssid and wifi.password in the Secret Store");
+                Serial.println("JLM1: Wi-Fi unavailable; store wifi.ssid and wifi.password in the Secret Store");
                 Delay.millis(10000);
             }
         }
@@ -48,9 +48,9 @@ public final class LanguageModelSecretStoreChat {
         LanguageModelWebChat.register(server);
         server.start();
         while (true) {
-            Serial.print("TINY: open http://");
+            Serial.print("JLM1: open http://");
             printAddress(wifi);
-            Serial.print("TINY: model ");
+            Serial.print("JLM1: model ");
             Serial.println(MODEL.isLoaded() ? "online" : "offline");
             Delay.millis(10000);
         }
@@ -61,12 +61,12 @@ public final class LanguageModelSecretStoreChat {
         String ssid = secrets.getString("wifi.ssid");
         String password = secrets.getString("wifi.password");
         if (ssid == null || password == null) {
-            Serial.println("TINY: wifi.ssid or wifi.password is missing from the Secret Store");
+            Serial.println("JLM1: wifi.ssid or wifi.password is missing from the Secret Store");
             return false;
         }
         wifi.begin(ssid, password);
         for (int attempt = 0; attempt < MAX_CONNECTION_ATTEMPTS && wifi.status() != Wifi.STATUS_CONNECTED; attempt++) {
-            Serial.print("TINY: Wi-Fi status ");
+            Serial.print("JLM1: Wi-Fi status ");
             Serial.println(wifi.status());
             Delay.millis(1000);
         }

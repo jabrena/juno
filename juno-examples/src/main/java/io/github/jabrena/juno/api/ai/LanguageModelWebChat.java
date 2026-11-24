@@ -27,7 +27,7 @@ public final class LanguageModelWebChat {
     // The juno-site theme (LEGO Mindstorms RCX colors), inline: on the access point there is no internet for assets.
     private static final String PAGE = """
             <!doctype html><html lang="en"><head><meta charset="utf-8">
-            <meta name="viewport" content="width=device-width,initial-scale=1"><title>TINY on Juno</title><style>
+            <meta name="viewport" content="width=device-width,initial-scale=1"><title>JLM1 on Juno</title><style>
             :root{--pop:#ffcd03;--pop-tint:#fffbeb;--pop-line:#ffea99;--blue:#0055bf;--blue-dark:#00449a;
             --black:#1b2a34;--red:#c91a09;--green:#237841;--bg:#fff;--text:#1b2a34;--muted:#5b6b78;--line:#e3e8ec;
             --answer:#fffbeb;--answer-line:#ffea99;--field:#fff}
@@ -53,10 +53,10 @@ public final class LanguageModelWebChat {
             button{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:10px 18px;font:inherit;
             font-weight:700;cursor:pointer}button:hover{background:var(--blue-dark)}button:disabled{opacity:.5;
             cursor:wait}</style></head><body><header><div class="bar"><span class="brick">Juno</span>
-            <span class="brand">TINY</span><span class="status"><span id="dot" class="dot"></span>
+            <span class="brand">JLM1</span><span class="status"><span id="dot" class="dot"></span>
             <span id="state">connecting</span></span></div></header><main><div id="log">
             <p class="hint">A small language model running on this board, from PSRAM. Ask about Juno and its boards.</p>
-            </div><form id="f"><input id="q" maxlength="72" autocomplete="off" placeholder="Ask TINY" autofocus>
+            </div><form id="f"><input id="q" maxlength="72" autocomplete="off" placeholder="Ask JLM1" autofocus>
             <button id="send">Send</button></form></main><script>
             const $=id=>document.getElementById(id),log=$('log'),q=$('q'),send=$('send');
             fetch('/api/status').then(r=>r.json()).then(s=>{$('dot').classList.toggle('on',s.loaded);

@@ -31,12 +31,12 @@ public final class LanguageModelSdCardChat {
         Delay.millis(2000);
         SdCard card = new NanoConnectorCarrier(MCU.getGpio()).getSdCard();
         while (!card.begin()) {
-            Serial.println("TINY: no microSD card in the Nano Connector Carrier");
+            Serial.println("JLM1: no microSD card in the Nano Connector Carrier");
             Delay.millis(INTERVAL_MS);
         }
         ModelStatus status = MODEL.begin(card, MODEL_FILE);
         while (true) {
-            Serial.print("TINY: ");
+            Serial.print("JLM1: ");
             Serial.print(MODEL_FILE);
             Serial.print(" load status ");
             Serial.println(LanguageModelStatus.describe(status));
