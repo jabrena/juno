@@ -26,11 +26,6 @@ on:
   schedule:
     - cron: "17 2 * * *"
   workflow_dispatch:
-    inputs:
-      tny2_steps:
-        description: "Training steps for the Publish TNY2 model job"
-        required: false
-        default: "3000"
   release:
     types: [published]
 
@@ -576,123 +571,20 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-  # Model phase, like the toolchain images but published as a GitHub Release: the tag is a digest of everything that
-  # shapes JUNO.BIN (the trainer, the facts, the module pom and the step count), so training runs only when one of them
-  # changes and an unchanged model is never rebuilt. The model, its generated Tny2ModelImage and the training log are
-  # attached to a pre-release tny2-model-<digest>, downloadable without a login. Releasing them into the repository stays
-  # a reviewed commit, and the default build never trains.
-  tny2-model:
-    name: Publish TNY2 model
+  # TNY2 model builder: compiles juno-third-parties/juno-tny2 only. It trains no model and publishes nothing; the
+  # model is built and released by hand with -Ptny2-model.
+  tny2-compile:
+    name: Compile TNY2 model builder
     needs: changes
     if: needs.changes.result == 'success'
     runs-on: ubuntu-latest
-    timeout-minutes: 90
-    permissions:
-      contents: write
-    outputs:
-      tag: ${{ steps.reference.outputs.tag }}
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v7
         with:
           submodules: true
-      - id: reference
-        env:
-          TNY2_STEPS: ${{ inputs.tny2_steps || '3000' }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          digest="$({
-            git ls-files -z -- \
-              juno-third-parties/juno-tny2/pom.xml \
-              juno-third-parties/juno-tny2/src/main/java/io/github/jabrena/juno/tny2 \
-              juno-third-parties/juno-tny2/src/main/resources/tny2/facts \
-              | LC_ALL=C sort -z | xargs -0 sha256sum
-            echo "steps=$TNY2_STEPS"
-          } | sha256sum | cut -c1-16)"
-          echo "tag=tny2-model-$digest" >> "$GITHUB_OUTPUT"
-          echo "steps=$TNY2_STEPS" >> "$GITHUB_OUTPUT"
-      - id: release
-        env:
-          TAG: ${{ steps.reference.outputs.tag }}
-        shell: bash
-        run: |
-          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
-            echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "::notice::Release $TAG is already published; the TNY2 model inputs did not change"
-          else
-            echo "exists=false" >> "$GITHUB_OUTPUT"
-          fi
       - uses: ./.github/actions/setup-maven
-        if: steps.release.outputs.exists != 'true'
-      - name: Train JUNO.BIN and generate its image
-        if: steps.release.outputs.exists != 'true'
-        env:
-          TNY2_STEPS: ${{ steps.reference.outputs.steps }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          ./mvnw --batch-mode --no-transfer-progress -pl juno-third-parties/juno-tny2 -Ptny2-model process-classes \
-            -Dtny2.steps="$TNY2_STEPS" | tee "$RUNNER_TEMP/tny2-training.log"
-      - name: Ask the trained model and compare it with the tracked release
-        if: steps.release.outputs.exists != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          model=juno-third-parties/juno-tny2/target/tny2/JUNO.BIN
-          builder=(java -cp juno-third-parties/juno-tny2/target/classes io.github.jabrena.juno.tny2.cli.Tny2Builder)
-          {
-            for question in "What is Juno?" "Which boards does Juno support?" "Which JDK does Juno need?" "??"; do
-              echo "$question -> $("${builder[@]}" ask "$model" "$question")"
-            done
-          } | tee "$RUNNER_TEMP/tny2-answers.txt" | tee -a "$RUNNER_TEMP/tny2-training.log"
-          if cmp -s "$model" juno-third-parties/juno-tny2/src/main/resources/tny2/JUNO.BIN; then
-            echo "::notice::The trained model is identical to the tracked JUNO.BIN"
-          else
-            echo "::notice::The trained model differs from the tracked JUNO.BIN; download the release to adopt it"
-          fi
-          cp "$RUNNER_TEMP/tny2-training.log" juno-third-parties/juno-tny2/target/tny2/
-      - name: Publish the model as a pre-release
-        # A fork's pull request gets a read-only token, so it trains and checks the model but cannot publish it.
-        if: >-
-          steps.release.outputs.exists != 'true'
-          && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-        env:
-          TAG: ${{ steps.reference.outputs.tag }}
-          TNY2_STEPS: ${{ steps.reference.outputs.steps }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          out=juno-third-parties/juno-tny2/target/tny2
-          {
-            echo "TNY2 model trained by CI from juno-tny2's facts at $GITHUB_SHA, $TNY2_STEPS steps."
-            echo ""
-            grep "questions answered exactly" "$RUNNER_TEMP/tny2-training.log" | sed 's/^Wrote [^:]*: /JUNO.BIN: /'
-            echo ""
-            echo "Sample answers:"
-            echo ""
-            sed 's/^/    /' "$RUNNER_TEMP/tny2-answers.txt"
-            echo ""
-            echo "To adopt it, copy JUNO.BIN to juno-third-parties/juno-tny2/src/main/resources/tny2/ and"
-            echo "Tny2ModelImage.java to juno-third-parties/juno-tny2/src/main/java/io/github/jabrena/juno/thirdparty/tny2/."
-          } > "$RUNNER_TEMP/tny2-notes.md"
-          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --latest=false \
-            --title "TNY2 model $TAG" --notes-file "$RUNNER_TEMP/tny2-notes.md" \
-            "$out/JUNO.BIN" "$out/Tny2ModelImage.java" "$out/tny2-training.log"
-      - name: Report the published model
-        env:
-          TAG: ${{ steps.reference.outputs.tag }}
-        shell: bash
-        run: |
-          {
-            echo "### TNY2 model"
-            echo ""
-            echo "Release [\`$TAG\`]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$TAG)"
-            echo ""
-            echo "Download with \`gh release download $TAG --repo $GITHUB_REPOSITORY\` or"
-            echo "\`curl -LO $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/download/$TAG/JUNO.BIN\`."
-          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Compile juno-tny2
+        run: ./mvnw --batch-mode --no-transfer-progress -pl juno-third-parties/juno-tny2 compile
 
   integration-build:
     name: Prepare integration build outputs

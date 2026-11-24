@@ -99,11 +99,9 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 ./mvnw -pl juno-third-parties/juno-rcx-firmware compile
 java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.juno.backend.h8300.RcxRemoteFirmware
 
-# Train JUNO.BIN on demand (the default build never trains): writes it and its Tny2ModelImage into
-# juno-third-parties/juno-tny2/target/tny2, failing below 95% of the facts answered; CI's "Publish TNY2 model" job runs
-# the same whenever the trainer, facts or step count change, and attaches the result to a GitHub pre-release
-# tny2-model-<digest>; an unchanged model is never retrained. Adopt one by copying both over the tracked files.
-./mvnw -pl juno-third-parties/juno-tny2 -Ptny2-model process-classes -Dtny2.steps=3000
+# Train JUNO.BIN on demand (the default build never trains; CI only compiles juno-tny2). The command writes JUNO.BIN and its
+# Tny2ModelImage into juno-third-parties/juno-tny2/target/tny2, failing below 95% of the facts answered.
+./mvnw -pl juno-third-parties/juno-tny2 -Ptny2-model process-classes -Dtny2.steps=8000
 java -cp juno-third-parties/juno-tny2/target/classes io.github.jabrena.juno.tny2.cli.Tny2Builder \
   ask juno-third-parties/juno-tny2/target/tny2/JUNO.BIN "What is Juno?"
 
