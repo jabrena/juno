@@ -78,7 +78,7 @@
 
     <profiles>
         <!-- On demand only: trains JUNO.BIN from the bundled facts and generates its Tny2ModelImage into
-             target/tny2; a default build never trains. CI runs it in its "Publish TNY2 model" job.
+             target/tny2; a default build never trains. CI only compiles juno-tny2; the model is never trained in CI.
              ./mvnw -pl juno-third-parties/juno-tny2 -Ptny2-model process-classes [-Dtny2.steps=3000]
              To release the result, copy target/tny2/JUNO.BIN to src/main/resources/tny2/ and
              target/tny2/Tny2ModelImage.java to src/main/java/io/github/jabrena/juno/thirdparty/tny2/. -->
@@ -88,6 +88,12 @@
                 <tny2.steps>3000</tny2.steps>
                 <tny2.seed>1</tny2.seed>
                 <tny2.minAccuracy>0.95</tny2.minAccuracy>
+                <!-- TINY 2.1's shape: a 382 KB JUNO.BIN that runs on the Nano ESP32. The engine's largest shape is
+                     -Dtny2.width=128 -Dtny2.layers=8 -Dtny2.hidden=512 (1.6 M parameters, 1.65 MB). -->
+                <tny2.width>96</tny2.width>
+                <tny2.layers>4</tny2.layers>
+                <tny2.heads>4</tny2.heads>
+                <tny2.hidden>256</tny2.hidden>
                 <tny2.outputDirectory>${project.build.directory}/tny2</tny2.outputDirectory>
             </properties>
             <build>
@@ -119,6 +125,14 @@
                                         <argument>${tny2.seed}</argument>
                                         <argument>--min-accuracy</argument>
                                         <argument>${tny2.minAccuracy}</argument>
+                                        <argument>--width</argument>
+                                        <argument>${tny2.width}</argument>
+                                        <argument>--layers</argument>
+                                        <argument>${tny2.layers}</argument>
+                                        <argument>--heads</argument>
+                                        <argument>${tny2.heads}</argument>
+                                        <argument>--hidden</argument>
+                                        <argument>${tny2.hidden}</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
