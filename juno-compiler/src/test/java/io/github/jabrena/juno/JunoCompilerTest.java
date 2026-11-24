@@ -140,7 +140,7 @@ class JunoCompilerTest {
                     public final class NanoLanguageModel {
                         public static void main(String[] args) {
                             LanguageModel model = MCU.getLanguageModel();
-                            Serial.println(model.load(7) == ModelStatus.OK);
+                            Serial.println(model.begin() == ModelStatus.OK);
                             Serial.println(model.isLoaded());
                             Serial.println(model.width() + model.layers());
                             byte[] question = new byte[8];
@@ -156,12 +156,39 @@ class JunoCompilerTest {
 
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoLanguageModel");
 
-            assertThat(result.runtimeShim()).contains("juno_language_model_load", "juno_language_model_ask_bytes",
+            assertThat(result.runtimeShim()).contains("juno_language_model_begin_default",
+                    "juno_lm_default_model[381808]", "juno_lm_load_bytes", "juno_language_model_ask_bytes",
                     "juno_language_model_next_char", "juno_language_model_release", "juno_psram_find",
                     "#include <esp_heap_caps.h>").doesNotContain("NativeLanguageModel");
             assertThat(result.runtimeShim().split("int32_t juno_language_model_load", -1)).hasSize(2);
             assertThat(result.assembly()).contains("juno_language_model_ask", "juno_language_model_is_loaded",
                     "juno_language_model_width", "juno_language_model_layers");
+        }
+
+        @Test
+        @DisplayName("Links the bundled model only into a program that calls begin(), not one that loads from an SD card")
+        void shouldLinkTheBundledModelOnlyForBegin() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    @Board(ArduinoNanoEsp32Board.class)
+                    public final class NanoSdLanguageModel {
+                        public static void main(String[] args) {
+                            Serial.println(MCU.getLanguageModel().begin(
+                                    new NanoConnectorCarrier(MCU.getGpio()).getSdCard(), "/JUNO.BIN").ordinal());
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoSdLanguageModel", source);
+
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoSdLanguageModel");
+
+            assertThat(result.runtimeShim()).contains("juno_language_model_load", "juno_lm_load_bytes", "juno_psram_write")
+                    .doesNotContain("juno_lm_default_model", "juno_language_model_begin_default");
         }
 
         @Test
@@ -197,7 +224,7 @@ class JunoCompilerTest {
                     @Board(ArduinoUnoR4WiFiBoard.class)
                     public final class UnoLanguageModel {
                         public static void main(String[] args) {
-                            MCU.getLanguageModel().load(1);
+                            MCU.getLanguageModel().begin();
                         }
                     }
                     """;

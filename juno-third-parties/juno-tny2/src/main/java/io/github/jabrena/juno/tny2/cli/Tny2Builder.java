@@ -14,7 +14,7 @@ import java.io.IOException;
  * </pre>
  *
  * Exits with 0 on success, 2 for wrong arguments and 1 for an unreadable or invalid file, or a trained model below
- * {@code --min-accuracy}. Maven runs the same {@code train} and {@code image} on demand with
+ * {@code --min-accuracy}. Maven runs the same {@code train} on demand with
  * {@code ./mvnw -pl juno-third-parties/juno-tny2 -Ptny2-model process-classes}.
  */
 public final class Tny2Builder {

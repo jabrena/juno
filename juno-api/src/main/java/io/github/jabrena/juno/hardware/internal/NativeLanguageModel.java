@@ -2,6 +2,12 @@ package io.github.jabrena.juno.hardware.internal;
 
 import io.github.jabrena.juno.ai.LanguageModel;
 import io.github.jabrena.juno.ai.ModelStatus;
+import io.github.jabrena.juno.hardware.Psram;
+import io.github.jabrena.juno.hardware.device.sd.SdCard;
+import org.jspecify.annotations.Nullable;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * The board's TNY2 engine behind {@link io.github.jabrena.juno.hardware.MCU#getLanguageModel()}: one model per
@@ -9,6 +15,7 @@ import io.github.jabrena.juno.ai.ModelStatus;
  */
 public final class NativeLanguageModel implements LanguageModel {
     private static final NativeLanguageModel INSTANCE = new NativeLanguageModel();
+    private static final int CHUNK_BYTES = 1024;
 
     private NativeLanguageModel() {
     }
@@ -19,8 +26,55 @@ public final class NativeLanguageModel implements LanguageModel {
     }
 
     @Override
-    public ModelStatus load(int psramHandle) {
-        return status(loadModel(psramHandle));
+    public ModelStatus begin() {
+        return status(beginDefault());
+    }
+
+    @Override
+    public ModelStatus begin(SdCard card, String path) {
+        int size = card.size(path);
+        if (size <= 0) {
+            return ModelStatus.UNREADABLE;
+        }
+        int handle = Psram.allocate(size);
+        if (handle < 0) {
+            return ModelStatus.EXHAUSTED;
+        }
+        try (InputStream file = card.open(path)) {
+            boolean copied = copy(file, size, (offset, chunk, length) -> Psram.write(handle, offset, chunk, 0, length));
+            return copied ? status(loadModel(handle)) : ModelStatus.UNREADABLE;
+        } catch (IOException unreadable) {
+            return ModelStatus.UNREADABLE;
+        } finally {
+            Psram.release(handle);
+        }
+    }
+
+    /** Where {@link #copy} puts each chunk it reads: on the board, the model's PSRAM buffer. */
+    @FunctionalInterface
+    interface ChunkSink {
+        void write(int offset, byte[] chunk, int length);
+    }
+
+    /**
+     * Reads {@code size} bytes of {@code file} 1 KiB at a time into {@code sink}; {@code false} when the file is
+     * missing or ends early.
+     */
+    static boolean copy(@Nullable InputStream file, int size, ChunkSink sink) throws IOException {
+        if (file == null) {
+            return false;
+        }
+        byte[] chunk = new byte[CHUNK_BYTES];
+        int offset = 0;
+        while (offset < size) {
+            int read = file.read(chunk, 0, Math.min(CHUNK_BYTES, size - offset));
+            if (read <= 0) {
+                return false;
+            }
+            sink.write(offset, chunk, read);
+            offset += read;
+        }
+        return true;
     }
 
     @Override
@@ -50,7 +104,7 @@ public final class NativeLanguageModel implements LanguageModel {
         releaseModel();
     }
 
-    /** The engine's result code as a {@link ModelStatus}: 0 is {@link ModelStatus#OK}, -1 to -5 the errors in order. */
+    /** The engine's result code as a {@link ModelStatus}: 0 is {@link ModelStatus#OK}, -1 to -5 the engine errors. */
     static ModelStatus status(int code) {
         return switch (code) {
             case 0 -> ModelStatus.OK;
@@ -62,6 +116,10 @@ public final class NativeLanguageModel implements LanguageModel {
         };
     }
 
+    /** Loads the bundled model the compiler links into the firmware. */
+    native int beginDefault();
+
+    /** Loads the TNY2 file held in a PSRAM buffer. */
     native int loadModel(int psramHandle);
 
     native int askText(String question, int creativity);

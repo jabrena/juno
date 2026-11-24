@@ -42,6 +42,8 @@
         <dependency>
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-tny2</artifactId>
+            <!-- Test scope: Tny2QemuIT checks the board's answers against the Java engine and the bundled model. -->
+            <scope>test</scope>
         </dependency>
         <!-- Eclipse Collections is present while compiling and linking examples, but is not a board runtime dependency. -->
         <dependency>

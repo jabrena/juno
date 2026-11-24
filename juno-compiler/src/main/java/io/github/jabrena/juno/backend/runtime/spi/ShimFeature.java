@@ -133,5 +133,7 @@ public enum ShimFeature {
     /** {@code MCU.getLanguageModel()}: the TNY2 engine, which keeps its model in PSRAM through the PSRAM service. */
     LANGUAGE_MODEL,
     /** {@code Serial.write(int)}: one raw byte, emitted only for a program that writes bytes. */
-    SERIAL_WRITE
+    SERIAL_WRITE,
+    /** {@code LanguageModel.begin()}: the bundled JUNO.BIN as a flash table, loaded by the TNY2 engine. */
+    LANGUAGE_MODEL_DEFAULT
 }

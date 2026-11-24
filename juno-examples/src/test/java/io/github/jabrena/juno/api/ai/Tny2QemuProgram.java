@@ -8,7 +8,7 @@ import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
 /**
- * The board side of {@code Tny2QemuIT}: loads JUNO.BIN into PSRAM, asks each of {@link #QUESTIONS} and prints
+ * The board side of {@code Tny2QemuIT}: begins the bundled model, asks each of {@link #QUESTIONS} and prints
  * {@code question -> answer} per line, once, so the emulator transcript can be compared with the Java engine.
  */
 @Board({ArduinoNanoEsp32Board.class})
@@ -24,7 +24,7 @@ public final class Tny2QemuProgram {
     public static void main(String[] args) {
         LanguageModel model = MCU.getLanguageModel();
         Serial.print("load ");
-        Serial.println(Tny2ModelLoader.describe(Tny2ModelLoader.load(model)));
+        Serial.println(Tny2Status.describe(model.begin()));
         for (String question : QUESTIONS) {
             Serial.print(question);
             Serial.print(" -> ");

@@ -1,7 +1,5 @@
-package io.github.jabrena.juno.thirdparty.tny2;
+package io.github.jabrena.juno.tny2;
 
-import io.github.jabrena.juno.tny2.Tny2Model;
-import io.github.jabrena.juno.tny2.Tny2Reader;
 import io.github.jabrena.juno.tny2.corpus.Fact;
 import io.github.jabrena.juno.tny2.corpus.FactsReader;
 import io.github.jabrena.juno.tny2.training.Tny2Evaluation;

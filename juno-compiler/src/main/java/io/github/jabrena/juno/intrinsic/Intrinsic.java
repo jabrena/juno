@@ -282,6 +282,7 @@ public enum Intrinsic {
     LANGUAGE_MODEL_ASK_BYTES,
     LANGUAGE_MODEL_NEXT_CHAR,
     LANGUAGE_MODEL_RELEASE,
+    LANGUAGE_MODEL_BEGIN_DEFAULT,
     SERIAL_WRITE,
     SMTP_SEND,
     SMTP_SEND_TLS,
@@ -597,7 +598,7 @@ public enum Intrinsic {
     /** The TNY2 engine calls behind {@code NativeLanguageModel}: one model per program, so they ignore their receiver. */
     private static final Set<Intrinsic> LANGUAGE_MODEL_OPERATIONS = EnumSet.of(LANGUAGE_MODEL_LOAD,
             LANGUAGE_MODEL_IS_LOADED, LANGUAGE_MODEL_WIDTH, LANGUAGE_MODEL_LAYERS, LANGUAGE_MODEL_ASK,
-            LANGUAGE_MODEL_ASK_BYTES, LANGUAGE_MODEL_NEXT_CHAR, LANGUAGE_MODEL_RELEASE);
+            LANGUAGE_MODEL_ASK_BYTES, LANGUAGE_MODEL_NEXT_CHAR, LANGUAGE_MODEL_RELEASE, LANGUAGE_MODEL_BEGIN_DEFAULT);
 
     /**
      * The families that touch only Juno's own runtime: monitors, locks and the other {@code java.util.concurrent}

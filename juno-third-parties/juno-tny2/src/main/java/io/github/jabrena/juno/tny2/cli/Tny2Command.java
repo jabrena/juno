@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 /** One {@code Tny2Builder} command, parsed and ready to run. */
-public sealed interface Tny2Command permits TrainCommand, AskCommand, InspectCommand, ImageCommand {
+public sealed interface Tny2Command permits TrainCommand, AskCommand, InspectCommand {
 
     void run(PrintStream out) throws IOException;
 }

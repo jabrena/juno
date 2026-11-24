@@ -1,15 +1,17 @@
 package io.github.jabrena.juno.ai;
 
+import io.github.jabrena.juno.hardware.device.sd.SdCard;
+
 /**
  * A TNY2 character-level language model held in PSRAM, answering one question at a time, one character at a time.
  *
  * <p>Take the model from its board once, at startup, with
- * {@link io.github.jabrena.juno.hardware.MCU#getLanguageModel()}. Copy the TNY2 file into a
- * {@link io.github.jabrena.juno.hardware.Psram} buffer (for example from a generated {@code Tny2ModelImage} in flash),
- * {@link #load(int)} it, and release the buffer: the model keeps its own PSRAM copy of the weights and its attention
- * cache. Then {@link #ask(String, int)} a question and call {@link #nextChar()} until it returns {@link #END}. Each
- * character is handed over as soon as it is generated, so the same loop can print it to the serial port, write it to
- * an HTTP response or send it over TCP, and nothing is allocated per answer.
+ * {@link io.github.jabrena.juno.hardware.MCU#getLanguageModel()}, and {@link #begin()} it: the compiler links the
+ * bundled JUNO.BIN, trained from the Juno facts, into the firmware, and the engine copies it into PSRAM with its
+ * attention cache. {@link #begin(SdCard, String)} loads another TNY2 file from an SD card instead, so a model can
+ * change without reflashing. Then {@link #ask(String, int)} a question and call {@link #nextChar()} until it returns
+ * {@link #END}. Each character is handed over as soon as it is generated, so the same loop can print it to the serial
+ * port, write it to an HTTP response or send it over TCP, and nothing is allocated per answer.
  *
  * <p>A question is printable ASCII, at most {@link #MAX_QUESTION} characters; longer text is cut. The engine reads it
  * the way the model was trained: in lower case, with {@code ? ! , ;} and quotes as spaces and runs of spaces collapsed,
@@ -29,10 +31,18 @@ public interface LanguageModel {
     int MAX_CREATIVITY = 9;
 
     /**
-     * Copies and validates the TNY2 model in the PSRAM buffer {@code psramHandle}, replacing any model loaded before.
-     * Returns {@link ModelStatus#OK}, or why it could not.
+     * Loads the bundled JUNO.BIN, which the compiler links into the firmware of a program that calls this method,
+     * replacing any model loaded before. Returns {@link ModelStatus#OK}, or why it could not.
      */
-    ModelStatus load(int psramHandle);
+    ModelStatus begin();
+
+    /**
+     * Loads the TNY2 file at {@code path} on {@code card}, which must already be mounted with its own
+     * {@link SdCard#begin()}, replacing any model loaded before. The file is copied into PSRAM through a 1 KiB buffer,
+     * so call it once, at startup. Returns {@link ModelStatus#OK}, {@link ModelStatus#UNREADABLE} for a missing or
+     * unreadable file, or why the engine refused it.
+     */
+    ModelStatus begin(SdCard card, String path);
 
     /** Whether a model is loaded. */
     boolean isLoaded();

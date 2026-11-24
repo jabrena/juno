@@ -55,16 +55,14 @@ class CommandLineTest {
     }
 
     @Test
-    @DisplayName("Parses ask, inspect and image")
-    void shouldParseAskInspectAndImage() {
+    @DisplayName("Parses ask and inspect")
+    void shouldParseAskAndInspect() {
         // When & Then
         assertThat(commandLine.parse("ask", "m.bin", "Hello")).isEqualTo(new AskCommand(Path.of("m.bin"), "Hello", 0,
                 1));
         assertThat(commandLine.parse("ask", "m.bin", "Hello", "--creativity", "4", "--seed", "3"))
                 .isEqualTo(new AskCommand(Path.of("m.bin"), "Hello", 4, 3));
         assertThat(commandLine.parse("inspect", "m.bin")).isEqualTo(new InspectCommand(Path.of("m.bin")));
-        assertThat(commandLine.parse("image", "m.bin", "Out.java"))
-                .isEqualTo(new ImageCommand(Path.of("m.bin"), Path.of("Out.java")));
     }
 
     @Test
@@ -82,12 +80,12 @@ class CommandLineTest {
                 .hasMessage("--seed must be a whole number, not x");
         assertThatThrownBy(() -> commandLine.parse("train", "f", "o", "--lr", "fast"))
                 .hasMessage("--lr must be a number, not fast");
-        assertThat(CommandLine.USAGE).contains("train", "ask", "inspect", "image");
+        assertThat(CommandLine.USAGE).contains("train", "ask", "inspect").doesNotContain("image");
     }
 
     @Test
-    @DisplayName("Trains, inspects, asks and images a model end to end")
-    void shouldTrainInspectAskAndImageAModel() throws Exception {
+    @DisplayName("Trains, inspects and asks a model end to end")
+    void shouldTrainInspectAndAskAModel() throws Exception {
         // Given
         Path facts = directory.resolve("facts.txt");
         Files.writeString(facts, "Hello => Hi!\nWhat is Juno? => A compiler.\n");
@@ -100,7 +98,6 @@ class CommandLineTest {
                 "--log-every", "0");
         String inspected = run("inspect", model.toString());
         String answered = run("ask", model.toString(), "Hello");
-        String imaged = run("image", model.toString(), directory.resolve("Tny2ModelImage.java").toString());
 
         // Then
         assertThat(trained).startsWith("Training Tny2Config[width=16, layers=1, heads=2, hidden=32]")
@@ -110,8 +107,6 @@ class CommandLineTest {
                 "PSRAM on the board: %d bytes of weights + %d bytes of attention cache"
                         .formatted(Files.size(model), 128 * (2 * 16 + 8)));
         assertThat(answered).isEqualTo("Hi!" + System.lineSeparator());
-        assertThat(imaged).startsWith("Wrote ").contains(Files.size(model) + " model bytes");
-        assertThat(directory.resolve("Tny2ModelImage.java")).exists();
     }
 
     @Test

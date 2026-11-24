@@ -422,6 +422,8 @@ public final class IntrinsicLowering {
                 List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.LANGUAGE_MODEL);
         shim(Intrinsic.LANGUAGE_MODEL_NEXT_CHAR, "juno_language_model_next_char", Result.WORD, List.of(),
                 ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_BEGIN_DEFAULT, "juno_language_model_begin_default", Result.WORD, List.of(),
+                ShimFeature.LANGUAGE_MODEL, ShimFeature.LANGUAGE_MODEL_DEFAULT);
         shim(Intrinsic.LANGUAGE_MODEL_RELEASE, "juno_language_model_release", Result.WORD, List.of(),
                 ShimFeature.LANGUAGE_MODEL);
     }
@@ -766,8 +768,8 @@ public final class IntrinsicLowering {
         shim(Intrinsic.SD_EXISTS, "juno_sd_exists", Result.WORD, List.of(literal(0)), ShimFeature.SD);
         shim(Intrinsic.SD_CREATE_DIRECTORY, "juno_sd_create_directory", Result.WORD,
                 List.of(new Parameter(0, List.of(0))), ShimFeature.SD);
-        shim(Intrinsic.SD_SIZE, "juno_sd_size", Result.WORD, List.of(literal(0)), ShimFeature.SD);
-        shim(Intrinsic.SD_OPEN, "juno_sd_open", Result.WORD, List.of(literal(0)), ShimFeature.SD);
+        shim(Intrinsic.SD_SIZE, "juno_sd_size", Result.WORD, List.of(STRING_ARGUMENT), ShimFeature.SD);
+        shim(Intrinsic.SD_OPEN, "juno_sd_open", Result.WORD, List.of(STRING_ARGUMENT), ShimFeature.SD);
         shim(Intrinsic.SD_OPEN_FILE, "juno_sd_open_file", Result.WORD,
                 parameters(List.of(0, 1), 0, 1), ShimFeature.SD);
         shim(Intrinsic.SD_LIST, "juno_sd_list", Result.WORD,

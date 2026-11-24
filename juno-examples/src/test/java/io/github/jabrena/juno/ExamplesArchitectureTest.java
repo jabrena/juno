@@ -7,7 +7,6 @@ import com.tngtech.archunit.core.importer.ClassFileImporter;
 import com.tngtech.archunit.core.importer.Location;
 import io.github.jabrena.juno.annotations.Watchdog;
 import io.github.jabrena.juno.thirdparty.lego.rcxfirmware.RcxFirmwareImage;
-import io.github.jabrena.juno.thirdparty.tny2.Tny2ModelImage;
 import org.junit.jupiter.api.Test;
 
 import java.net.URISyntaxException;
@@ -32,14 +31,9 @@ class ExamplesArchitectureTest {
         Set<String> examplesNames = names(examples);
         Set<String> apiNames = names(new ClassFileImporter().importLocations(Set.of(apiLocation())));
         Set<String> rcxFirmwareNames = names(new ClassFileImporter().importLocations(Set.of(rcxFirmwareLocation())));
-        // Only juno-tny2's board-side model image: its trainer and CLI run on the build machine.
-        Set<String> tny2ImageNames = names(new ClassFileImporter().importLocations(Set.of(tny2Location()))).stream()
-                .filter(name -> name.startsWith(Tny2ModelImage.class.getPackageName() + "."))
-                .collect(Collectors.toSet());
-        rcxFirmwareNames.addAll(tny2ImageNames);
 
         DescribedPredicate<JavaClass> allowedClasses = DescribedPredicate.describe(
-                "juno-api, the RCX firmware image, the TNY2 model image, the examples or the JDK",
+                "juno-api, the RCX firmware image, the examples or the JDK",
                 type -> isJdkOrIn(type.getBaseComponentType(), apiNames, rcxFirmwareNames, examplesNames));
 
         classes().should().onlyDependOnClassesThat(allowedClasses)
@@ -114,7 +108,4 @@ class ExamplesArchitectureTest {
         return Location.of(RcxFirmwareImage.class.getProtectionDomain().getCodeSource().getLocation().toURI());
     }
 
-    private static Location tny2Location() throws URISyntaxException {
-        return Location.of(Tny2ModelImage.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-    }
 }

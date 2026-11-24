@@ -1,5 +1,5 @@
 /**
- * The {@code Tny2Builder} command line: train, ask, inspect and image.
+ * The {@code Tny2Builder} command line: train, ask and inspect.
  */
 @NullMarked
 package io.github.jabrena.juno.tny2.cli;

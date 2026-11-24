@@ -38,7 +38,8 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   Java image; it depends on neither `juno-api` nor `juno-compiler`.
 - `juno-third-parties/juno-tny2/` – the independent TNY2 model builder: trains a TINY 2.1-compatible character-level
   transformer from facts files in pure Java, quantizes and writes the TNY2 file, runs it exactly as the board engine
-  does, and generates its flash image (`Tny2ModelImage`); it depends on neither `juno-api` nor `juno-compiler`.
+  does; its tracked `src/main/resources/tny2/JUNO.BIN` is the model `LanguageModel.begin()` links into a program,
+  read by `juno-compiler` as a runtime resource. It depends on neither `juno-api` nor `juno-compiler`.
 - `juno-examples/` – example programs buildable with `arduino-cli`, including the RCX firmware downloader; depends
   on `juno-api` and the generated image from `juno-third-parties/juno-rcx-firmware`.
 - `juno-site/` – documentation site: edit prose in `src/main/resources/content/`, never hand-edit `docs/`. Images
@@ -99,8 +100,9 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 ./mvnw -pl juno-third-parties/juno-rcx-firmware compile
 java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.juno.backend.h8300.RcxRemoteFirmware
 
-# Train JUNO.BIN on demand (the default build never trains; CI only compiles juno-tny2). The command writes JUNO.BIN and its
-# Tny2ModelImage into juno-third-parties/juno-tny2/target/tny2, failing below 95% of the facts answered.
+# Train JUNO.BIN on demand (the default build never trains; CI only compiles juno-tny2). The command writes JUNO.BIN into
+# juno-third-parties/juno-tny2/target/tny2, failing below 95% of the facts answered; copy it over
+# src/main/resources/tny2/JUNO.BIN to make it the model LanguageModel.begin() links into programs.
 ./mvnw -pl juno-third-parties/juno-tny2 -Ptny2-model process-classes -Dtny2.steps=8000
 java -cp juno-third-parties/juno-tny2/target/classes io.github.jabrena.juno.tny2.cli.Tny2Builder \
   ask juno-third-parties/juno-tny2/target/tny2/JUNO.BIN "What is Juno?"

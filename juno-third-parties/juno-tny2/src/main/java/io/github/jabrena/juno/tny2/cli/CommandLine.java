@@ -21,7 +21,6 @@ public final class CommandLine {
                     [--weight-decay X] [--dropout 0-1] [--eval-every N]
               ask <model.bin> <question> [--creativity 0-9] [--seed N]
               inspect <model.bin>
-              image <model.bin> <Tny2ModelImage.java>
             """;
     private static final String PREFIX = "--";
     private static final int DEFAULT_STEPS = 2000;
@@ -30,8 +29,7 @@ public final class CommandLine {
                     "resume", "log-every", "min-accuracy", "held-out", "min-held-out", "weight-decay", "dropout",
                     "eval-every"),
             "ask", Set.of("creativity", "seed"),
-            "inspect", Set.of(),
-            "image", Set.of());
+            "inspect", Set.of());
 
     /** Thrown for arguments that do not form a command; its message says what is wrong. */
     public static final class UsageException extends RuntimeException {
@@ -56,8 +54,7 @@ public final class CommandLine {
             case "train" -> train(arguments);
             case "ask" -> new AskCommand(Path.of(arguments.positional(0)), arguments.positional(1),
                     arguments.integer("creativity", 0), arguments.integer("seed", 1));
-            case "inspect" -> new InspectCommand(Path.of(arguments.positional(0)));
-            default -> new ImageCommand(Path.of(arguments.positional(0)), Path.of(arguments.positional(1)));
+            default -> new InspectCommand(Path.of(arguments.positional(0)));
         };
     }
 

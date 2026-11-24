@@ -46,7 +46,7 @@ class LanguageModelTest {
         // When & Then
         assertThat(ModelStatus.values()).containsExactly(ModelStatus.OK,
                 ModelStatus.INVALID_HANDLE, ModelStatus.INVALID_MODEL, ModelStatus.EXHAUSTED,
-                ModelStatus.NOT_LOADED, ModelStatus.INVALID_ARGUMENT);
+                ModelStatus.NOT_LOADED, ModelStatus.INVALID_ARGUMENT, ModelStatus.UNREADABLE);
         assertThat(LanguageModel.END).isNegative();
         assertThat(LanguageModel.MAX_QUESTION).isEqualTo(72);
         assertThat(LanguageModel.MAX_CREATIVITY).isEqualTo(9);

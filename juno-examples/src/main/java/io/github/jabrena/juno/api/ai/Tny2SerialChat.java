@@ -31,10 +31,10 @@ public final class Tny2SerialChat {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         Serial.println("TINY: loading JUNO.BIN into PSRAM");
-        ModelStatus status = Tny2ModelLoader.load(MODEL);
+        ModelStatus status = MODEL.begin();
         while (status != ModelStatus.OK) {
             Serial.print("TINY: model load failed: ");
-            Serial.println(Tny2ModelLoader.describe(status));
+            Serial.println(Tny2Status.describe(status));
             Delay.millis(5000);
         }
         Serial.print("TINY: model online, layers=");
@@ -84,7 +84,7 @@ public final class Tny2SerialChat {
     private static void answer(ModelStatus status) {
         if (status != ModelStatus.OK) {
             Serial.print("error: ");
-            Serial.println(Tny2ModelLoader.describe(status));
+            Serial.println(Tny2Status.describe(status));
             return;
         }
         for (int c = MODEL.nextChar(); c != LanguageModel.END; c = MODEL.nextChar()) {

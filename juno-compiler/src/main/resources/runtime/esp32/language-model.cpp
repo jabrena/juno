@@ -1,6 +1,6 @@
 // TNY2 language-model engine (TINY 2.1, MIT): a character-level transformer whose weights are signed bytes with one
-// float scale per row. juno_language_model_load copies a TNY2 file out of a PSRAM handle into one PSRAM block that
-// also holds the attention cache; asking feeds the question one character per position, then nextChar picks and
+// float scale per row. juno_lm_load_bytes copies a TNY2 file, from a PSRAM handle or the bundled flash table, into one
+// PSRAM block that also holds the attention cache; asking feeds the question one character per position, then nextChar picks and
 // feeds one answer character per call, so the program streams the answer wherever it wants.
 #include <math.h>
 #include <string.h>
@@ -116,11 +116,11 @@ extern "C" int32_t juno_language_model_release() {
   return 0;
 }
 
-extern "C" int32_t juno_language_model_load(int32_t handle) {
-  JunoPsramSlot* slot = juno_psram_find(handle);
-  if (slot == nullptr) return -1;
+// Parses a TNY2 file into the engine's PSRAM block: from a PSRAM buffer the program filled (an SD-card file), or
+// from the flash table of the bundled model.
+static int32_t juno_lm_load_bytes(const uint8_t* data, uint32_t size) {
   juno_language_model_release();
-  JunoLmReader reader = {static_cast<const uint8_t*>(slot->pointer), slot->capacity, 0};
+  JunoLmReader reader = {data, size, 0};
   char magic[4];
   if (!juno_lm_read(reader, magic, 4) || memcmp(magic, "TNY2", 4) != 0) return -2;
   int32_t width = juno_lm_read16(reader), layers = juno_lm_read16(reader), heads = juno_lm_read16(reader);
@@ -166,6 +166,12 @@ extern "C" int32_t juno_language_model_load(int32_t handle) {
   juno_lm_head_width = width / heads;
   juno_lm_attention_divisor = sqrtf(static_cast<float>(juno_lm_head_width));
   return 0;
+}
+
+extern "C" int32_t juno_language_model_load(int32_t handle) {
+  JunoPsramSlot* slot = juno_psram_find(handle);
+  if (slot == nullptr) return -1;
+  return juno_lm_load_bytes(static_cast<const uint8_t*>(slot->pointer), slot->capacity);
 }
 
 extern "C" int32_t juno_language_model_is_loaded() { return juno_lm_layer_count > 0 ? 1 : 0; }

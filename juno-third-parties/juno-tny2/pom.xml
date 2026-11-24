@@ -13,7 +13,7 @@
 
     <artifactId>juno-tny2</artifactId>
     <name>Juno TNY2 Model Builder</name>
-    <description>Trains, quantizes and exports TNY2 character-level transformer models, and generates the flash image that board programs load into PSRAM</description>
+    <description>Trains, quantizes and exports TNY2 character-level transformer models; its JUNO.BIN is the model LanguageModel.begin() links into a program</description>
 
     <properties>
         <maven.javadoc.skip>true</maven.javadoc.skip>
@@ -77,11 +77,11 @@
     </build>
 
     <profiles>
-        <!-- On demand only: trains JUNO.BIN from the bundled facts and generates its Tny2ModelImage into
-             target/tny2; a default build never trains. CI only compiles juno-tny2; the model is never trained in CI.
+        <!-- On demand only: trains JUNO.BIN from the bundled facts into target/tny2; a default build never trains, and
+             CI never trains a model.
              ./mvnw -pl juno-third-parties/juno-tny2 -Ptny2-model process-classes [-Dtny2.steps=3000]
-             To release the result, copy target/tny2/JUNO.BIN to src/main/resources/tny2/ and
-             target/tny2/Tny2ModelImage.java to src/main/java/io/github/jabrena/juno/thirdparty/tny2/. -->
+             To release the result, copy target/tny2/JUNO.BIN to src/main/resources/tny2/: it is the model
+             LanguageModel.begin() links into a program's firmware. -->
         <profile>
             <id>tny2-model</id>
             <properties>
@@ -140,20 +140,6 @@
                                         <argument>${project.basedir}/src/main/resources/tny2/heldout</argument>
                                         <argument>--min-held-out</argument>
                                         <argument>${tny2.minHeldOutAccuracy}</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>generate-image</id>
-                                <phase>process-classes</phase>
-                                <goals>
-                                    <goal>java</goal>
-                                </goals>
-                                <configuration>
-                                    <arguments>
-                                        <argument>image</argument>
-                                        <argument>${tny2.outputDirectory}/JUNO.BIN</argument>
-                                        <argument>${tny2.outputDirectory}/Tny2ModelImage.java</argument>
                                     </arguments>
                                 </configuration>
                             </execution>

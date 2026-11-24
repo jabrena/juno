@@ -98,6 +98,9 @@ public final class IntrinsicRegistry {
      * compiles, while {@code Serial.print("text")} generates exactly what it always has.
      */
     private static final Set<IntrinsicParameter> LITERAL_WHEN_KNOWN_PARAMETERS = Set.of(
+            // LanguageModel.begin(SdCard, String) passes its path on, so these take runtime paths too.
+            new IntrinsicParameter(Intrinsic.SD_SIZE, 0),
+            new IntrinsicParameter(Intrinsic.SD_OPEN, 0),
             new IntrinsicParameter(Intrinsic.STRING_BUILDER_APPEND_STRING, 0),
             new IntrinsicParameter(Intrinsic.SERIAL_PRINT_STRING, 0),
             new IntrinsicParameter(Intrinsic.SERIAL_PRINTLN_STRING, 0),
@@ -555,6 +558,8 @@ public final class IntrinsicRegistry {
                     Intrinsic.LANGUAGE_MODEL_NEXT_CHAR),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeLanguageModel", "releaseModel", "()I"),
                     Intrinsic.LANGUAGE_MODEL_RELEASE),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeLanguageModel", "beginDefault", "()I"),
+                    Intrinsic.LANGUAGE_MODEL_BEGIN_DEFAULT),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/email/Smtp", "send",
                     "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;"
                             + "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I"), Intrinsic.SMTP_SEND),
