@@ -4,6 +4,7 @@ import io.github.jabrena.juno.ir.IrInstruction;
 import io.github.jabrena.juno.ir.JunoType;
 import io.github.jabrena.juno.ir.Value;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
 
@@ -177,6 +178,38 @@ final class OperandStack {
         facts.recordPop(slot(depth - 1), top);
         store(slot(depth), top);
         depth++;
+    }
+
+    /**
+     * The rest of the JVM's dup family, on slots as the JVM counts them: copies the top {@code copied} slots and
+     * inserts the copy below the {@code skipped} slots under them. {@code dup_x1} is (1, 1), {@code dup_x2} (1, 2),
+     * {@code dup2} (2, 0), {@code dup2_x1} (2, 1) and {@code dup2_x2} (2, 2). A {@code double} moves as the one
+     * 64-bit value it is; a {@code long}'s halves move as two slots. Every slot is loaded before any is stored, so the
+     * shuffle may overwrite the slots it reads.
+     */
+    void duplicate(int copied, int skipped) {
+        int window = copied + skipped;
+        List<Value> items = new ArrayList<>();
+        int split = -1;
+        for (int position = depth - window; position < depth; ) {
+            if (position == depth - copied) {
+                split = items.size();
+            }
+            JunoType type = facts.slotType(slot(position));
+            Value value = values.of(type == null ? JunoType.INT32 : type);
+            code.emit(new IrInstruction.LoadLocal(value, slot(position)));
+            facts.recordPop(slot(position), value);
+            items.add(value);
+            position += type == JunoType.FLOAT64 ? 2 : 1;
+        }
+        if (split < 0) {
+            throw new IllegalStateException("a dup splits a two-slot value: copied " + copied + ", skipped " + skipped);
+        }
+        depth -= window;
+        List<Value> copies = items.subList(split, items.size());
+        copies.forEach(this::push);
+        items.subList(0, split).forEach(this::push);
+        copies.forEach(this::push);
     }
 
     /** Reads the int in the slot {@code slotsFromTop} below the top (1 is the top itself) without popping it. */
