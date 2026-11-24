@@ -1,9 +1,9 @@
-package io.github.jabrena.juno.api.hardware.ai;
+package io.github.jabrena.juno.api.ai;
 
+import io.github.jabrena.juno.ai.LanguageModel;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.ai.LanguageModel;
 import io.github.jabrena.juno.hardware.serial.BaudRate;
 import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.hardware.time.Clock;

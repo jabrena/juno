@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware.internal;
 
-import io.github.jabrena.juno.hardware.ai.LanguageModel;
+import io.github.jabrena.juno.ai.LanguageModel;
 
 /**
  * The board's TNY2 engine behind {@link io.github.jabrena.juno.hardware.MCU#getLanguageModel()}: one model per

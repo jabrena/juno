@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.hardware.ai;
+package io.github.jabrena.juno.ai;
 
 /**
  * A TNY2 character-level language model held in PSRAM, answering one question at a time, one character at a time.

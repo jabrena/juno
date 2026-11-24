@@ -1,9 +1,9 @@
-package io.github.jabrena.juno.api.hardware.ai;
+package io.github.jabrena.juno.api.ai;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
+import io.github.jabrena.juno.ai.LanguageModel;
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.ai.LanguageModel;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.hardware.ai;
+package io.github.jabrena.juno.ai;
 
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.internal.NativeLanguageModel;

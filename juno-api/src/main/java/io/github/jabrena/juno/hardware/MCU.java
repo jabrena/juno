@@ -1,6 +1,6 @@
 package io.github.jabrena.juno.hardware;
 
-import io.github.jabrena.juno.hardware.ai.LanguageModel;
+import io.github.jabrena.juno.ai.LanguageModel;
 import io.github.jabrena.juno.hardware.audio.Audio;
 import io.github.jabrena.juno.hardware.device.camera.Camera;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;

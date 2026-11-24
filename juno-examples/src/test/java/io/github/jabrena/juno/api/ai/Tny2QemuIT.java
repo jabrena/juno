@@ -1,4 +1,4 @@
-package io.github.jabrena.juno.api.hardware.ai;
+package io.github.jabrena.juno.api.ai;
 
 import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.JunoCompiler;

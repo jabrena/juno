@@ -1,7 +1,7 @@
-package io.github.jabrena.juno.api.hardware.ai;
+package io.github.jabrena.juno.api.ai;
 
+import io.github.jabrena.juno.ai.LanguageModel;
 import io.github.jabrena.juno.hardware.Psram;
-import io.github.jabrena.juno.hardware.ai.LanguageModel;
 import io.github.jabrena.juno.thirdparty.tny2.Tny2ModelImage;
 
 /**

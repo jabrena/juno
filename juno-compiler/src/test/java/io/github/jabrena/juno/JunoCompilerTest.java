@@ -133,7 +133,7 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.MCU;
-                    import io.github.jabrena.juno.hardware.ai.LanguageModel;
+                    import io.github.jabrena.juno.ai.LanguageModel;
                     import io.github.jabrena.juno.hardware.serial.Serial;
                     @Board(ArduinoNanoEsp32Board.class)
                     public final class NanoLanguageModel {
