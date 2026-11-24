@@ -408,23 +408,28 @@ public final class IntrinsicLowering {
         shim(Intrinsic.PSRAM_WRITE, "juno_psram_write", Result.WORD,
                 List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5)), ShimFeature.PSRAM);
         shim(Intrinsic.PSRAM_RELEASE, "juno_psram_release", Result.WORD, List.of(arg(0)), ShimFeature.PSRAM);
-        shim(Intrinsic.LANGUAGE_MODEL_LOAD, "juno_language_model_load", Result.WORD, List.of(arg(0)),
-                ShimFeature.LANGUAGE_MODEL);
-        shim(Intrinsic.LANGUAGE_MODEL_IS_LOADED, "juno_language_model_is_loaded", Result.WORD, List.of(),
-                ShimFeature.LANGUAGE_MODEL);
-        shim(Intrinsic.LANGUAGE_MODEL_WIDTH, "juno_language_model_width", Result.WORD, List.of(),
-                ShimFeature.LANGUAGE_MODEL);
-        shim(Intrinsic.LANGUAGE_MODEL_LAYERS, "juno_language_model_layers", Result.WORD, List.of(),
-                ShimFeature.LANGUAGE_MODEL);
-        shim(Intrinsic.LANGUAGE_MODEL_ASK, "juno_language_model_ask", Result.WORD, List.of(arg(0), arg(1)),
-                ShimFeature.LANGUAGE_MODEL);
-        shim(Intrinsic.LANGUAGE_MODEL_ASK_BYTES, "juno_language_model_ask_bytes", Result.WORD,
-                List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.LANGUAGE_MODEL);
-        shim(Intrinsic.LANGUAGE_MODEL_NEXT_CHAR, "juno_language_model_next_char", Result.WORD, List.of(),
-                ShimFeature.LANGUAGE_MODEL);
-        shim(Intrinsic.LANGUAGE_MODEL_BEGIN_DEFAULT, "juno_language_model_begin_default", Result.WORD, List.of(),
+        shim(Intrinsic.LANGUAGE_MODEL_BUNDLED, "juno_lm_bundled_model", Result.WORD, List.of(),
                 ShimFeature.LANGUAGE_MODEL, ShimFeature.LANGUAGE_MODEL_DEFAULT);
-        shim(Intrinsic.LANGUAGE_MODEL_RELEASE, "juno_language_model_release", Result.WORD, List.of(),
+        shim(Intrinsic.LANGUAGE_MODEL_READ_FLOATS, "juno_lm_read_floats", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4)), ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_MULTIPLY_ROWS, "juno_lm_multiply_rows", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8)),
+                ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_ACCUMULATE_ROWS, "juno_lm_accumulate_rows", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8), arg(9)),
+                ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_QUANTIZE_ROW, "juno_lm_quantize_row", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_EXPONENTIALS, "juno_lm_exponentials", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3)), ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_ATTEND, "juno_lm_attend", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5), arg(6), arg(7), arg(8), arg(9), arg(10)),
+                ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_RMS_NORM, "juno_lm_rms_norm", Result.WORD,
+                List.of(arg(0), arg(1), arg(2), arg(3), arg(4)), ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_ADD, "juno_lm_add", Result.WORD, List.of(arg(0), arg(1), arg(2)),
+                ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.LANGUAGE_MODEL_RELU, "juno_lm_relu", Result.WORD, List.of(arg(0), arg(1)),
                 ShimFeature.LANGUAGE_MODEL);
     }
 

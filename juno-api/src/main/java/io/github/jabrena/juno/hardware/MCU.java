@@ -8,6 +8,7 @@ import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.hid.Mouse;
 import io.github.jabrena.juno.hardware.i2c.I2c;
+import io.github.jabrena.juno.hardware.internal.JlmLanguageModel;
 import io.github.jabrena.juno.hardware.internal.NativeAudio;
 import io.github.jabrena.juno.hardware.internal.NativeBattery;
 import io.github.jabrena.juno.hardware.internal.NativeBluetoothLe;
@@ -19,7 +20,6 @@ import io.github.jabrena.juno.hardware.internal.NativeDisplay;
 import io.github.jabrena.juno.hardware.internal.NativeGpio;
 import io.github.jabrena.juno.hardware.internal.NativeI2c;
 import io.github.jabrena.juno.hardware.internal.NativeKeyboard;
-import io.github.jabrena.juno.hardware.internal.NativeLanguageModel;
 import io.github.jabrena.juno.hardware.internal.NativeLedMatrix;
 import io.github.jabrena.juno.hardware.internal.NativeMouse;
 import io.github.jabrena.juno.hardware.internal.NativeOnboardSdCard;
@@ -96,7 +96,7 @@ public final class MCU {
 
     /** The board's JLM1 language-model engine, which runs a model from PSRAM. */
     public static LanguageModel getLanguageModel() {
-        return NativeLanguageModel.languageModel();
+        return JlmLanguageModel.languageModel();
     }
 
     /** The card in the selected board's onboard SD socket. */
