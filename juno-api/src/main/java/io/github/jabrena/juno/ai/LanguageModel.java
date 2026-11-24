@@ -19,24 +19,6 @@ package io.github.jabrena.juno.ai;
  * {@link #nextChar()} takes about the same 30 ms.
  */
 public interface LanguageModel {
-    /** Success of {@link #load(int)}, {@link #ask(String, int)} and {@link #release()}. */
-    int OK = 0;
-
-    /** {@link #load(int)}: the PSRAM handle is unknown or released. */
-    int ERROR_INVALID_HANDLE = -1;
-
-    /** {@link #load(int)}: the buffer is not a complete TNY2 model the engine accepts. */
-    int ERROR_INVALID_MODEL = -2;
-
-    /** {@link #load(int)}: PSRAM has no room for the weights and the attention cache. */
-    int ERROR_EXHAUSTED = -3;
-
-    /** {@link #ask(String, int)}: no model is loaded. */
-    int ERROR_NOT_LOADED = -4;
-
-    /** {@link #ask(String, int)}: the question is empty or the creativity is outside 0 to {@link #MAX_CREATIVITY}. */
-    int ERROR_INVALID_ARGUMENT = -5;
-
     /** What {@link #nextChar()} returns when the answer is complete or no question was asked. */
     int END = -1;
 
@@ -48,9 +30,9 @@ public interface LanguageModel {
 
     /**
      * Copies and validates the TNY2 model in the PSRAM buffer {@code psramHandle}, replacing any model loaded before.
-     * Returns {@link #OK} or a negative error.
+     * Returns {@link ModelStatus#OK}, or why it could not.
      */
-    int load(int psramHandle);
+    ModelStatus load(int psramHandle);
 
     /** Whether a model is loaded. */
     boolean isLoaded();
@@ -63,17 +45,17 @@ public interface LanguageModel {
 
     /**
      * Starts answering {@code question}, discarding any answer in progress. Creativity 0 picks the most likely
-     * character every time; up to {@link #MAX_CREATIVITY} samples among the likely ones. Returns {@link #OK} or a
-     * negative error.
+     * character every time; up to {@link #MAX_CREATIVITY} samples among the likely ones. Returns {@link ModelStatus#OK},
+     * or why the question was not accepted.
      */
-    int ask(String question, int creativity);
+    ModelStatus ask(String question, int creativity);
 
     /** Like {@link #ask(String, int)}, for the first {@code length} bytes of {@code question}, such as a request body. */
-    int ask(byte[] question, int length, int creativity);
+    ModelStatus ask(byte[] question, int length, int creativity);
 
     /** The answer's next character, or {@link #END} when it is complete. */
     int nextChar();
 
-    /** Frees the model's PSRAM; {@link #isLoaded()} is false afterwards. Returns {@link #OK}. */
-    int release();
+    /** Frees the model's PSRAM; {@link #isLoaded()} is false afterwards. */
+    void release();
 }

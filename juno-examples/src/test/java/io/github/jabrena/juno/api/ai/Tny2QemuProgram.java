@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.api.ai;
 
 import io.github.jabrena.juno.ai.LanguageModel;
+import io.github.jabrena.juno.ai.ModelStatus;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
@@ -23,11 +24,11 @@ public final class Tny2QemuProgram {
     public static void main(String[] args) {
         LanguageModel model = MCU.getLanguageModel();
         Serial.print("load ");
-        Serial.println(Tny2ModelLoader.load(model));
+        Serial.println(Tny2ModelLoader.describe(Tny2ModelLoader.load(model)));
         for (String question : QUESTIONS) {
             Serial.print(question);
             Serial.print(" -> ");
-            if (model.ask(question, 0) == LanguageModel.OK) {
+            if (model.ask(question, 0) == ModelStatus.OK) {
                 for (int c = model.nextChar(); c != LanguageModel.END; c = model.nextChar()) {
                     Serial.write(c);
                 }

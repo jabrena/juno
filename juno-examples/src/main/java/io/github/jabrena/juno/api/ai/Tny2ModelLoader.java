@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.api.ai;
 
 import io.github.jabrena.juno.ai.LanguageModel;
+import io.github.jabrena.juno.ai.ModelStatus;
 import io.github.jabrena.juno.hardware.Psram;
 import io.github.jabrena.juno.thirdparty.tny2.Tny2ModelImage;
 
@@ -15,11 +16,14 @@ public final class Tny2ModelLoader {
     private Tny2ModelLoader() {
     }
 
-    /** Returns {@link LanguageModel#OK}, or the negative {@link Psram} or {@link LanguageModel} error. */
-    public static int load(LanguageModel model) {
+    /**
+     * Returns {@link ModelStatus#OK}, {@link ModelStatus#EXHAUSTED} when PSRAM has no buffer for the copy, or what the engine
+     * reports; a copy whose checksum does not match the image is {@link ModelStatus#INVALID_MODEL}.
+     */
+    public static ModelStatus load(LanguageModel model) {
         int handle = Psram.allocate(Tny2ModelImage.LENGTH);
         if (handle < 0) {
-            return handle;
+            return ModelStatus.EXHAUSTED;
         }
         byte[] chunk = new byte[CHUNK_BYTES];
         int checksum = 0;
@@ -31,8 +35,20 @@ public final class Tny2ModelLoader {
             }
             Psram.write(handle, offset, chunk, 0, length);
         }
-        int status = checksum == Tny2ModelImage.CHECKSUM ? model.load(handle) : LanguageModel.ERROR_INVALID_MODEL;
+        ModelStatus status = checksum == Tny2ModelImage.CHECKSUM ? model.load(handle) : ModelStatus.INVALID_MODEL;
         Psram.release(handle);
         return status;
+    }
+
+    /** A status as text for the serial log. */
+    public static String describe(ModelStatus status) {
+        return switch (status) {
+            case OK -> "OK";
+            case INVALID_HANDLE -> "invalid PSRAM handle";
+            case INVALID_MODEL -> "invalid model";
+            case EXHAUSTED -> "PSRAM exhausted";
+            case NOT_LOADED -> "no model loaded";
+            case INVALID_ARGUMENT -> "invalid question";
+        };
     }
 }

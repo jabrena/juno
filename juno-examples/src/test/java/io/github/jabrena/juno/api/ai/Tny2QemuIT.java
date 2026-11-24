@@ -77,7 +77,7 @@ class Tny2QemuIT {
             bytes[i] = Tny2ModelImage.byteAt(i);
         }
         Tny2Inference engine = new Tny2Inference(new Tny2Reader().read(bytes));
-        StringBuilder expected = new StringBuilder("load 0\n");
+        StringBuilder expected = new StringBuilder("load OK\n");
         for (String question : Tny2QemuProgram.QUESTIONS) {
             expected.append(question).append(" -> ").append(engine.answer(question)).append('\n');
         }

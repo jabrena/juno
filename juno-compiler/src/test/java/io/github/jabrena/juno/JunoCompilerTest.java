@@ -134,20 +134,21 @@ class JunoCompilerTest {
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.ai.LanguageModel;
+                    import io.github.jabrena.juno.ai.ModelStatus;
                     import io.github.jabrena.juno.hardware.serial.Serial;
                     @Board(ArduinoNanoEsp32Board.class)
                     public final class NanoLanguageModel {
                         public static void main(String[] args) {
                             LanguageModel model = MCU.getLanguageModel();
-                            Serial.println(model.load(7));
+                            Serial.println(model.load(7) == ModelStatus.OK);
                             Serial.println(model.isLoaded());
                             Serial.println(model.width() + model.layers());
                             byte[] question = new byte[8];
-                            Serial.println(model.ask("Hello", 0) + model.ask(question, 3, 1));
+                            Serial.println(model.ask("Hello", 0) == model.ask(question, 3, 1));
                             for (int c = model.nextChar(); c != LanguageModel.END; c = model.nextChar()) {
                                 Serial.println(c);
                             }
-                            Serial.println(model.release());
+                            model.release();
                         }
                     }
                     """;

@@ -33,13 +33,20 @@ class LanguageModelTest {
     }
 
     @Test
-    @DisplayName("Errors are negative and distinct, and END is not a character")
-    void shouldKeepErrorsNegativeAndDistinct() {
+    @DisplayName("Releasing reaches the native engine")
+    void shouldReleaseThroughTheNativeEngine() {
+        // When & Then: off the board the native engine is absent, so reaching it proves the wrapper delegates
+        assertThatThrownBy(() -> MCU.getLanguageModel().release()).isInstanceOf(UnsatisfiedLinkError.class)
+                .hasMessageContaining("releaseModel");
+    }
+
+    @Test
+    @DisplayName("Outcomes are a closed set, and END and the limits stay plain numbers")
+    void shouldKeepOutcomesAsAnEnumAndLimitsAsNumbers() {
         // When & Then
-        assertThat(LanguageModel.OK).isZero();
-        assertThat(java.util.List.of(LanguageModel.ERROR_INVALID_HANDLE, LanguageModel.ERROR_INVALID_MODEL,
-                LanguageModel.ERROR_EXHAUSTED, LanguageModel.ERROR_NOT_LOADED, LanguageModel.ERROR_INVALID_ARGUMENT))
-                .doesNotHaveDuplicates().allMatch(code -> code < 0);
+        assertThat(ModelStatus.values()).containsExactly(ModelStatus.OK,
+                ModelStatus.INVALID_HANDLE, ModelStatus.INVALID_MODEL, ModelStatus.EXHAUSTED,
+                ModelStatus.NOT_LOADED, ModelStatus.INVALID_ARGUMENT);
         assertThat(LanguageModel.END).isNegative();
         assertThat(LanguageModel.MAX_QUESTION).isEqualTo(72);
         assertThat(LanguageModel.MAX_CREATIVITY).isEqualTo(9);

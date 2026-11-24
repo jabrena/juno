@@ -35,7 +35,7 @@ public final class Tny2SecretStoreChat {
         Delay.millis(2000);
         Serial.println("TINY: loading JUNO.BIN into PSRAM");
         Serial.print("TINY: model load status ");
-        Serial.println(Tny2ModelLoader.load(MODEL));
+        Serial.println(Tny2ModelLoader.describe(Tny2ModelLoader.load(MODEL)));
 
         Wifi wifi = MCU.getWifi();
         if (!joinWifi(wifi, MCU.getSecretStore())) {

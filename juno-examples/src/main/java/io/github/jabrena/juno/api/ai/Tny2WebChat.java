@@ -3,6 +3,7 @@ package io.github.jabrena.juno.api.ai;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import io.github.jabrena.juno.ai.LanguageModel;
+import io.github.jabrena.juno.ai.ModelStatus;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
@@ -105,7 +106,7 @@ public final class Tny2WebChat {
             return;
         }
         int length = readBody(exchange.getRequestBody());
-        if (MODEL.ask(QUESTION, length, 0) != LanguageModel.OK) {
+        if (MODEL.ask(QUESTION, length, 0) != ModelStatus.OK) {
             send(exchange, HTTP_UNAVAILABLE, "text/plain", "The model cannot answer that.");
             return;
         }

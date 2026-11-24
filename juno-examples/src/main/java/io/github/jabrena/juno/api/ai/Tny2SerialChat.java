@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.api.ai;
 
 import io.github.jabrena.juno.ai.LanguageModel;
+import io.github.jabrena.juno.ai.ModelStatus;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
@@ -30,10 +31,10 @@ public final class Tny2SerialChat {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         Serial.println("TINY: loading JUNO.BIN into PSRAM");
-        int status = Tny2ModelLoader.load(MODEL);
-        while (status != LanguageModel.OK) {
+        ModelStatus status = Tny2ModelLoader.load(MODEL);
+        while (status != ModelStatus.OK) {
             Serial.print("TINY: model load failed: ");
-            Serial.println(status);
+            Serial.println(Tny2ModelLoader.describe(status));
             Delay.millis(5000);
         }
         Serial.print("TINY: model online, layers=");
@@ -80,10 +81,10 @@ public final class Tny2SerialChat {
     }
 
     /** Streams the answer of a question just asked, or prints why it was not asked. */
-    private static void answer(int status) {
-        if (status != LanguageModel.OK) {
-            Serial.print("error ");
-            Serial.println(status);
+    private static void answer(ModelStatus status) {
+        if (status != ModelStatus.OK) {
+            Serial.print("error: ");
+            Serial.println(Tny2ModelLoader.describe(status));
             return;
         }
         for (int c = MODEL.nextChar(); c != LanguageModel.END; c = MODEL.nextChar()) {
