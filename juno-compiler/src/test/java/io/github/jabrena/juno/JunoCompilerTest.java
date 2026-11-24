@@ -157,7 +157,7 @@ class JunoCompilerTest {
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoLanguageModel");
 
             assertThat(result.runtimeShim()).contains("juno_language_model_begin_default",
-                    "juno_lm_default_model[381808]", "juno_lm_load_bytes", "juno_language_model_ask_bytes",
+                    "juno_lm_default_model[381907]", "juno_lm_load_bytes", "juno_language_model_ask_bytes",
                     "juno_language_model_next_char", "juno_language_model_release", "juno_psram_find",
                     "#include <esp_heap_caps.h>").doesNotContain("NativeLanguageModel");
             assertThat(result.runtimeShim().split("int32_t juno_language_model_load", -1)).hasSize(2);

@@ -1,19 +1,21 @@
-// TNY2 language-model engine (TINY 2.1, MIT): a character-level transformer whose weights are signed bytes with one
-// float scale per row. juno_lm_load_bytes copies a TNY2 file, from a PSRAM handle or the bundled flash table, into one
+// JLM1 language-model engine: a character-level transformer whose weights are signed bytes with one float scale per
+// row, after the design of TINY 2.1 (MIT). A JLM1 header declares the dimensions, the context and the alphabet. juno_lm_load_bytes copies a JLM1 file, from a PSRAM handle or the bundled flash table, into one
 // PSRAM block that also holds the attention cache; asking feeds the question one character per position, then nextChar picks and
 // feeds one answer character per call, so the program streams the answer wherever it wants.
 #include <math.h>
 #include <string.h>
 
-static constexpr int32_t JUNO_LM_VOCAB = 97;
-static constexpr int32_t JUNO_LM_CONTEXT = 128;
+// The alphabet is distinct printable ASCII with the space, so a vocabulary holds at most 2 + 95 tokens.
+static constexpr int32_t JUNO_LM_MAX_VOCAB = 97;
+static constexpr int32_t JUNO_LM_MAX_CONTEXT = 128;
 static constexpr int32_t JUNO_LM_MAX_WIDTH = 128;
 static constexpr int32_t JUNO_LM_MAX_HIDDEN = 512;
 static constexpr int32_t JUNO_LM_MAX_LAYERS = 8;
 static constexpr int32_t JUNO_LM_MAX_QUESTION = 72;
+static constexpr int32_t JUNO_LM_MIN_CONTEXT = JUNO_LM_MAX_QUESTION + 2;
 static constexpr int32_t JUNO_LM_END = 1;
-static constexpr int32_t JUNO_LM_TOKEN_OFFSET = 30;
-// The same rule as Tny2Inference: if any of the first LOOKAHEAD picks, counting a closing END, is less certain than the
+static constexpr int32_t JUNO_LM_RESERVED = 2;
+// The same rule as JlmInference: if any of the first LOOKAHEAD picks, counting a closing END, is less certain than the
 // floor, the answer is "I do not know." instead of a guess. ask() makes those picks before nextChar streams anything.
 static constexpr int32_t JUNO_LM_LOOKAHEAD = 8;
 static constexpr float JUNO_LM_CONFIDENCE_FLOOR = 0.5f;
@@ -47,6 +49,11 @@ static uint8_t* juno_lm_block = nullptr;
 static uint32_t juno_lm_block_used = 0;
 static int32_t juno_lm_width = 0, juno_lm_layer_count = 0, juno_lm_heads = 0, juno_lm_head_width = 0;
 static int32_t juno_lm_hidden = 0;
+static int32_t juno_lm_context = 0, juno_lm_vocab = 0;
+// The character of each token from JUNO_LM_RESERVED up, and the token of each printable character (index c - 32); 0
+// marks a character outside the alphabet, which reads as the space.
+static char juno_lm_alphabet[JUNO_LM_MAX_VOCAB - JUNO_LM_RESERVED];
+static uint8_t juno_lm_token_of[JUNO_LM_MAX_VOCAB - JUNO_LM_RESERVED];
 static float juno_lm_attention_divisor = 1.0f;
 static JunoLmTable juno_lm_embedding, juno_lm_position_table;
 static JunoLmLayer juno_lm_layers[JUNO_LM_MAX_LAYERS];
@@ -62,8 +69,8 @@ static bool juno_lm_pending_ended = false;
 static const char* juno_lm_fallback = nullptr;
 static float juno_lm_state[JUNO_LM_MAX_WIDTH], juno_lm_normalized[JUNO_LM_MAX_WIDTH], juno_lm_query[JUNO_LM_MAX_WIDTH];
 static float juno_lm_temporary[JUNO_LM_MAX_WIDTH], juno_lm_attended[JUNO_LM_MAX_WIDTH];
-static float juno_lm_hidden_values[JUNO_LM_MAX_HIDDEN], juno_lm_weights[JUNO_LM_CONTEXT];
-static float juno_lm_scores[JUNO_LM_VOCAB];
+static float juno_lm_hidden_values[JUNO_LM_MAX_HIDDEN], juno_lm_weights[JUNO_LM_MAX_CONTEXT];
+static float juno_lm_scores[JUNO_LM_MAX_VOCAB];
 
 static uint32_t juno_lm_align(uint32_t size) { return (size + 3u) & ~3u; }
 
@@ -112,32 +119,45 @@ extern "C" int32_t juno_language_model_release() {
   juno_lm_block = nullptr;
   juno_lm_block_used = 0;
   juno_lm_width = juno_lm_layer_count = juno_lm_heads = juno_lm_head_width = juno_lm_hidden = 0;
+  juno_lm_context = juno_lm_vocab = 0;
   juno_lm_answering = false;
   return 0;
 }
 
-// Parses a TNY2 file into the engine's PSRAM block: from a PSRAM buffer the program filled (an SD-card file), or
+// Parses a JLM1 file into the engine's PSRAM block: from a PSRAM buffer the program filled (an SD-card file), or
 // from the flash table of the bundled model.
 static int32_t juno_lm_load_bytes(const uint8_t* data, uint32_t size) {
   juno_language_model_release();
   JunoLmReader reader = {data, size, 0};
   char magic[4];
-  if (!juno_lm_read(reader, magic, 4) || memcmp(magic, "TNY2", 4) != 0) return -2;
+  if (!juno_lm_read(reader, magic, 4) || memcmp(magic, "JLM1", 4) != 0) return -2;
   int32_t width = juno_lm_read16(reader), layers = juno_lm_read16(reader), heads = juno_lm_read16(reader);
-  int32_t hidden = juno_lm_read16(reader);
+  int32_t hidden = juno_lm_read16(reader), context = juno_lm_read16(reader), vocab = juno_lm_read16(reader);
   if (width < 8 || width > JUNO_LM_MAX_WIDTH || layers < 1 || layers > JUNO_LM_MAX_LAYERS || heads < 1
-      || width % heads != 0 || hidden < 8 || hidden > JUNO_LM_MAX_HIDDEN) return -2;
+      || width % heads != 0 || hidden < 8 || hidden > JUNO_LM_MAX_HIDDEN || context < JUNO_LM_MIN_CONTEXT
+      || context > JUNO_LM_MAX_CONTEXT || vocab <= JUNO_LM_RESERVED || vocab > JUNO_LM_MAX_VOCAB) return -2;
+  // The alphabet: distinct printable ASCII characters that include the space, as JlmVocabulary checks.
+  memset(juno_lm_token_of, 0, sizeof(juno_lm_token_of));
+  if (!juno_lm_read(reader, juno_lm_alphabet, static_cast<uint32_t>(vocab - JUNO_LM_RESERVED))) return -2;
+  for (int32_t token = JUNO_LM_RESERVED; token < vocab; token++) {
+    unsigned char c = static_cast<unsigned char>(juno_lm_alphabet[token - JUNO_LM_RESERVED]);
+    if (c < 32 || c > 126 || juno_lm_token_of[c - 32] != 0) return -2;
+    juno_lm_token_of[c - 32] = static_cast<uint8_t>(token);
+  }
+  if (juno_lm_token_of[0] == 0) return -2;
   uint32_t per_layer = 2u * juno_lm_align(static_cast<uint32_t>(width) * 4u) + 4u * juno_lm_table_bytes(width, width)
       + juno_lm_table_bytes(hidden, width) + juno_lm_table_bytes(width, hidden)
-      + 2u * juno_lm_align(static_cast<uint32_t>(JUNO_LM_CONTEXT * width)) + 2u * JUNO_LM_CONTEXT * 4u;
-  uint32_t total = juno_lm_table_bytes(JUNO_LM_VOCAB, width) + juno_lm_table_bytes(JUNO_LM_CONTEXT, width)
+      + 2u * juno_lm_align(static_cast<uint32_t>(context * width)) + 2u * static_cast<uint32_t>(context) * 4u;
+  uint32_t total = juno_lm_table_bytes(vocab, width) + juno_lm_table_bytes(context, width)
       + static_cast<uint32_t>(layers) * per_layer + juno_lm_align(static_cast<uint32_t>(width) * 4u);
   juno_lm_block = static_cast<uint8_t*>(heap_caps_malloc(total, JUNO_PSRAM_CAPS));
   if (juno_lm_block == nullptr) return -3;
   juno_lm_width = width;
   juno_lm_hidden = hidden;
-  bool ok = juno_lm_read_table(reader, juno_lm_embedding, JUNO_LM_VOCAB, width)
-      && juno_lm_read_table(reader, juno_lm_position_table, JUNO_LM_CONTEXT, width);
+  juno_lm_context = context;
+  juno_lm_vocab = vocab;
+  bool ok = juno_lm_read_table(reader, juno_lm_embedding, vocab, width)
+      && juno_lm_read_table(reader, juno_lm_position_table, context, width);
   for (int32_t l = 0; l < layers && ok; l++) {
     JunoLmLayer& layer = juno_lm_layers[l];
     layer.attention_gain = juno_lm_read_gains(reader);
@@ -148,10 +168,10 @@ static int32_t juno_lm_load_bytes(const uint8_t* data, uint32_t size) {
     layer.feed_forward_gain = juno_lm_read_gains(reader);
     ok = layer.feed_forward_gain != nullptr && juno_lm_read_table(reader, layer.up, hidden, width)
         && juno_lm_read_table(reader, layer.down, width, hidden);
-    layer.key_cache = static_cast<int8_t*>(juno_lm_take(static_cast<uint32_t>(JUNO_LM_CONTEXT * width)));
-    layer.value_cache = static_cast<int8_t*>(juno_lm_take(static_cast<uint32_t>(JUNO_LM_CONTEXT * width)));
-    layer.key_scales = static_cast<float*>(juno_lm_take(JUNO_LM_CONTEXT * 4u));
-    layer.value_scales = static_cast<float*>(juno_lm_take(JUNO_LM_CONTEXT * 4u));
+    layer.key_cache = static_cast<int8_t*>(juno_lm_take(static_cast<uint32_t>(context * width)));
+    layer.value_cache = static_cast<int8_t*>(juno_lm_take(static_cast<uint32_t>(context * width)));
+    layer.key_scales = static_cast<float*>(juno_lm_take(static_cast<uint32_t>(context) * 4u));
+    layer.value_scales = static_cast<float*>(juno_lm_take(static_cast<uint32_t>(context) * 4u));
   }
   if (ok) {
     juno_lm_final_gain = juno_lm_read_gains(reader);
@@ -263,27 +283,34 @@ static void juno_lm_step(int32_t token, int32_t position) {
   juno_lm_multiply(juno_lm_embedding, juno_lm_normalized, juno_lm_scores);
 }
 
+// The token of a normalized question character; one outside the alphabet reads as the space.
+static int32_t juno_lm_token(char character) {
+  unsigned char c = static_cast<unsigned char>(character);
+  int32_t token = c >= 32 && c <= 126 ? juno_lm_token_of[c - 32] : 0;
+  return token != 0 ? token : juno_lm_token_of[0];
+}
+
 static int32_t juno_lm_pick() {
   int32_t best = 0;
-  for (int32_t i = 1; i < JUNO_LM_VOCAB; i++) {
+  for (int32_t i = 1; i < juno_lm_vocab; i++) {
     if (juno_lm_scores[i] > juno_lm_scores[best]) best = i;
   }
   float sum = 0.0f;
-  for (int32_t i = 0; i < JUNO_LM_VOCAB; i++) {
+  for (int32_t i = 0; i < juno_lm_vocab; i++) {
     float exponent = juno_lm_scores[i] - juno_lm_scores[best];
     sum += expf(exponent < -60.0f ? -60.0f : exponent);
   }
   juno_lm_confidence = 1.0f / sum;
   if (juno_lm_creativity == 0) return best;
   float temperature = juno_lm_creativity / 5.0f, total = 0.0f;
-  for (int32_t i = 0; i < JUNO_LM_VOCAB; i++) {
+  for (int32_t i = 0; i < juno_lm_vocab; i++) {
     float exponent = (juno_lm_scores[i] - juno_lm_scores[best]) / temperature;
     float weight = expf(exponent < -60.0f ? -60.0f : (exponent > 0.0f ? 0.0f : exponent));
     juno_lm_weights[i] = weight < 0.15f ? 0.0f : weight;
     total += juno_lm_weights[i];
   }
   float remaining = (static_cast<float>(esp_random()) / 4294967295.0f) * total;
-  for (int32_t i = 0; i < JUNO_LM_VOCAB; i++) {
+  for (int32_t i = 0; i < juno_lm_vocab; i++) {
     remaining -= juno_lm_weights[i];
     if (remaining < 0.0f && juno_lm_weights[i] > 0.0f) return i;
   }
@@ -293,7 +320,7 @@ static int32_t juno_lm_pick() {
 static int32_t juno_lm_ask(const char* text, int32_t length, int32_t creativity) {
   if (juno_lm_layer_count == 0) return -4;
   if (creativity < 0 || creativity > 9) return -5;
-  // The same normalization as Tny2Vocabulary.question: cut to 72 characters, lower-case, ? ! , ; " and non-printable
+  // The same normalization as JlmVocabulary.question: cut to 72 characters, lower-case, ? ! , ; " and non-printable
   // characters as spaces, runs of spaces collapsed, none at either end.
   char question[JUNO_LM_MAX_QUESTION];
   int32_t size = 0;
@@ -309,7 +336,7 @@ static int32_t juno_lm_ask(const char* text, int32_t length, int32_t creativity)
   juno_lm_creativity = creativity;
   int32_t position = 0;
   for (; position < size; position++) {
-    juno_lm_step(static_cast<unsigned char>(question[position]) - JUNO_LM_TOKEN_OFFSET, position);
+    juno_lm_step(juno_lm_token(question[position]), position);
   }
   juno_lm_step(JUNO_LM_END, position++);
   juno_lm_pending_length = 0;
@@ -317,17 +344,17 @@ static int32_t juno_lm_ask(const char* text, int32_t length, int32_t creativity)
   juno_lm_pending_ended = false;
   juno_lm_fallback = nullptr;
   float lowest = 1.0f;
-  for (int32_t picks = 0; picks < JUNO_LM_LOOKAHEAD && position < JUNO_LM_CONTEXT; picks++, position++) {
+  for (int32_t picks = 0; picks < JUNO_LM_LOOKAHEAD && position < juno_lm_context; picks++, position++) {
     int32_t token = juno_lm_pick();
     if (juno_lm_confidence < lowest) lowest = juno_lm_confidence;
     if (token <= JUNO_LM_END) {
       juno_lm_pending_ended = true;
       break;
     }
-    juno_lm_pending[juno_lm_pending_length++] = static_cast<char>(token + JUNO_LM_TOKEN_OFFSET);
+    juno_lm_pending[juno_lm_pending_length++] = juno_lm_alphabet[token - JUNO_LM_RESERVED];
     juno_lm_step(token, position);
   }
-  if (position >= JUNO_LM_CONTEXT) juno_lm_pending_ended = true;
+  if (position >= juno_lm_context) juno_lm_pending_ended = true;
   if (lowest < JUNO_LM_CONFIDENCE_FLOOR) juno_lm_fallback = JUNO_LM_UNKNOWN;
   juno_lm_answer_position = position;
   juno_lm_answering = true;
@@ -359,7 +386,7 @@ extern "C" int32_t juno_language_model_next_char() {
   if (juno_lm_pending_next < juno_lm_pending_length) {
     return static_cast<unsigned char>(juno_lm_pending[juno_lm_pending_next++]);
   }
-  if (juno_lm_pending_ended || juno_lm_answer_position >= JUNO_LM_CONTEXT) {
+  if (juno_lm_pending_ended || juno_lm_answer_position >= juno_lm_context) {
     juno_lm_answering = false;
     return -1;
   }
@@ -369,5 +396,5 @@ extern "C" int32_t juno_language_model_next_char() {
     return -1;
   }
   juno_lm_step(token, juno_lm_answer_position++);
-  return token + JUNO_LM_TOKEN_OFFSET;
+  return static_cast<unsigned char>(juno_lm_alphabet[token - JUNO_LM_RESERVED]);
 }

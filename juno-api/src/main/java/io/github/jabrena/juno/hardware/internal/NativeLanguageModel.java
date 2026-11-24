@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * The board's TNY2 engine behind {@link io.github.jabrena.juno.hardware.MCU#getLanguageModel()}: one model per
+ * The board's JLM1 engine behind {@link io.github.jabrena.juno.hardware.MCU#getLanguageModel()}: one model per
  * program, in PSRAM, so the calls never read the object they are called on.
  */
 public final class NativeLanguageModel implements LanguageModel {
@@ -119,7 +119,7 @@ public final class NativeLanguageModel implements LanguageModel {
     /** Loads the bundled model the compiler links into the firmware. */
     native int beginDefault();
 
-    /** Loads the TNY2 file held in a PSRAM buffer. */
+    /** Loads the JLM1 file held in a PSRAM buffer. */
     native int loadModel(int psramHandle);
 
     native int askText(String question, int creativity);

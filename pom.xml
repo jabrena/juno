@@ -30,6 +30,7 @@
 
     <modules>
         <module>juno-api</module>
+        <module>juno-lm</module>
         <module>juno-compiler</module>
         <module>juno-maven-plugin</module>
         <module>juno-examples</module>
@@ -131,7 +132,7 @@
             </dependency>
             <dependency>
                 <groupId>io.github.jabrena</groupId>
-                <artifactId>juno-tny2</artifactId>
+                <artifactId>juno-lm</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

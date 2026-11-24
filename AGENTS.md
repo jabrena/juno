@@ -14,7 +14,7 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   third-party code; `ExamplesArchitectureTest` keeps `juno-examples` on board-side artifacts and the JDK only;
   `RcxFirmwareArchitectureTest` keeps the RCX generator independent of `juno-api` and `juno-compiler`.
 - **Nullness:** JSpecify (`provided` scope). Every `juno-api`, `juno-compiler`, `juno-third-parties/juno-rcx-firmware`,
-  `juno-third-parties/juno-tny2` and `juno-maven-plugin` package is `@NullMarked`; mark a value that can legitimately be absent `@Nullable`, and use
+  `juno-lm` and `juno-maven-plugin` package is `@NullMarked`; mark a value that can legitimately be absent `@Nullable`, and use
   `Objects.requireNonNull` for a
   lookup that must succeed by construction. NullAway (Error Prone, configured in the root `pom.xml`) enforces this at
   compile time in those five modules and fails the build on a nullness error.
@@ -36,9 +36,9 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   fake process executor and never touch hardware.
 - `juno-third-parties/juno-rcx-firmware/` – the independent H8/300 RCX firmware generator, its generated S-record and its generated
   Java image; it depends on neither `juno-api` nor `juno-compiler`.
-- `juno-third-parties/juno-tny2/` – the independent TNY2 model builder: trains a TINY 2.1-compatible character-level
-  transformer from facts files in pure Java, quantizes and writes the TNY2 file, runs it exactly as the board engine
-  does; its tracked `src/main/resources/tny2/JUNO.BIN` is the model `LanguageModel.begin()` links into a program,
+- `juno-lm/` – the independent JLM1 model builder: trains a character-level transformer (designed after TINY 2.1)
+  from facts files in pure Java, quantizes and writes the JLM1 file (a header with the dimensions, context and
+  alphabet, then signed-byte weights), runs it exactly as the board engine does, and converts TINY 2.1 TNY2 files; its tracked `src/main/resources/lm/JUNO.BIN` is the model `LanguageModel.begin()` links into a program,
   read by `juno-compiler` as a runtime resource. It depends on neither `juno-api` nor `juno-compiler`.
 - `juno-examples/` – example programs buildable with `arduino-cli`, including the RCX firmware downloader; depends
   on `juno-api` and the generated image from `juno-third-parties/juno-rcx-firmware`.
@@ -50,7 +50,7 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 
 ## Code style
 
-- **`juno-compiler`, the generators in `juno-third-parties/juno-rcx-firmware` and `juno-third-parties/juno-tny2`, and `juno-maven-plugin` run on the build machine: write
+- **`juno-compiler`, the generators in `juno-third-parties/juno-rcx-firmware` and `juno-lm`, and `juno-maven-plugin` run on the build machine: write
   them object-oriented.** Behavior lives
   on objects that hold their collaborators as `final` fields, not in static utility classes (`lowering` is the
   reference: `MethodContext`, `OperandStack`, one lowerer per opcode group registered on an `OpcodeTable`). Prefer
@@ -100,12 +100,14 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 ./mvnw -pl juno-third-parties/juno-rcx-firmware compile
 java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.juno.backend.h8300.RcxRemoteFirmware
 
-# Train JUNO.BIN on demand (the default build never trains; CI only compiles juno-tny2). The command writes JUNO.BIN into
-# juno-third-parties/juno-tny2/target/tny2, failing below 95% of the facts answered; copy it over
-# src/main/resources/tny2/JUNO.BIN to make it the model LanguageModel.begin() links into programs.
-./mvnw -pl juno-third-parties/juno-tny2 -Ptny2-model process-classes -Dtny2.steps=8000
-java -cp juno-third-parties/juno-tny2/target/classes io.github.jabrena.juno.tny2.cli.Tny2Builder \
-  ask juno-third-parties/juno-tny2/target/tny2/JUNO.BIN "What is Juno?"
+# Train JUNO.BIN on demand (the default build never trains; CI only compiles juno-lm). The command writes JUNO.BIN into
+# juno-lm/target/lm, failing below 95% of the facts answered; copy it over
+# src/main/resources/lm/JUNO.BIN to make it the model LanguageModel.begin() links into programs.
+./mvnw -pl juno-lm -Plm-model process-classes -Dlm.steps=8000
+java -cp juno-lm/target/classes io.github.jabrena.juno.lm.cli.JlmBuilder \
+  ask juno-lm/target/lm/JUNO.BIN "What is Juno?"
+# Convert a TINY 2.1 TNY2 model into JLM1, the only format the board engine reads
+java -cp juno-lm/target/classes io.github.jabrena.juno.lm.cli.JlmBuilder convert TINY.BIN JUNO.BIN
 
 # Generate Blink. The plugin has no default program: always pass -Djuno.main.
 ./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-uno-r4-wifi

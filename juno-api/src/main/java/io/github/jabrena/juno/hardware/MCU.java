@@ -94,7 +94,7 @@ public final class MCU {
         return NativeCamera.camera();
     }
 
-    /** The board's TNY2 language-model engine, which runs a model from PSRAM. */
+    /** The board's JLM1 language-model engine, which runs a model from PSRAM. */
     public static LanguageModel getLanguageModel() {
         return NativeLanguageModel.languageModel();
     }

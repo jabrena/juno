@@ -45,7 +45,7 @@
         </dependency>
         <dependency>
             <groupId>io.github.jabrena</groupId>
-            <artifactId>juno-tny2</artifactId>
+            <artifactId>juno-lm</artifactId>
         </dependency>
     </dependencies>
 
@@ -65,7 +65,7 @@
                                 <ignoredUnusedDeclaredDependency>io.github.jabrena:juno-maven-plugin</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>io.github.jabrena:juno-rcx-firmware</ignoredUnusedDeclaredDependency>
                                 <ignoredUnusedDeclaredDependency>io.github.jabrena:juno-pico-secure</ignoredUnusedDeclaredDependency>
-                                <ignoredUnusedDeclaredDependency>io.github.jabrena:juno-tny2</ignoredUnusedDeclaredDependency>
+                                <ignoredUnusedDeclaredDependency>io.github.jabrena:juno-lm</ignoredUnusedDeclaredDependency>
                             </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>

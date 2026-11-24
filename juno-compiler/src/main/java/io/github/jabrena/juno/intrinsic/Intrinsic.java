@@ -595,7 +595,7 @@ public enum Intrinsic {
             PSRAM_TOTAL_BYTES, PSRAM_FREE_BYTES, PSRAM_LARGEST_FREE_BLOCK, PSRAM_ALLOCATE, PSRAM_CAPACITY,
             PSRAM_READ_BYTE, PSRAM_WRITE_BYTE, PSRAM_READ, PSRAM_WRITE, PSRAM_RELEASE);
 
-    /** The TNY2 engine calls behind {@code NativeLanguageModel}: one model per program, so they ignore their receiver. */
+    /** The JLM1 engine calls behind {@code NativeLanguageModel}: one model per program, so they ignore their receiver. */
     private static final Set<Intrinsic> LANGUAGE_MODEL_OPERATIONS = EnumSet.of(LANGUAGE_MODEL_LOAD,
             LANGUAGE_MODEL_IS_LOADED, LANGUAGE_MODEL_WIDTH, LANGUAGE_MODEL_LAYERS, LANGUAGE_MODEL_ASK,
             LANGUAGE_MODEL_ASK_BYTES, LANGUAGE_MODEL_NEXT_CHAR, LANGUAGE_MODEL_RELEASE, LANGUAGE_MODEL_BEGIN_DEFAULT);

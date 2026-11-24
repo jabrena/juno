@@ -13,7 +13,7 @@
     <artifactId>juno-third-parties</artifactId>
     <packaging>pom</packaging>
     <name>Juno Third-Party Integrations</name>
-    <description>Parent of Juno's third-party firmware modules: the LEGO RCX firmware, the Pico 2 W secure firmware and the TNY2 model builder</description>
+    <description>Parent of Juno's third-party firmware modules: the LEGO RCX firmware and the Pico 2 W secure firmware</description>
 
     <!-- An aggregating pom with no classes of its own; its modules run PIT themselves. -->
     <properties>
@@ -23,6 +23,5 @@
     <modules>
         <module>juno-rcx-firmware</module>
         <module>juno-pico-secure</module>
-        <module>juno-tny2</module>
     </modules>
 </project>
