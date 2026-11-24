@@ -48,6 +48,27 @@ class NativeLanguageModelTest {
     }
 
     @Test
+    @DisplayName("Forwards runtime operations to the native engine")
+    void shouldForwardRuntimeOperationsToNativeEngine() {
+        // The native entry points are unavailable on the desktop JVM; reaching each one still verifies the Java
+        // adapter invokes the board boundary rather than silently implementing a different behavior.
+        assertThatThrownBy(() -> NativeLanguageModel.languageModel().isLoaded())
+                .isInstanceOf(UnsatisfiedLinkError.class);
+        assertThatThrownBy(() -> NativeLanguageModel.languageModel().width())
+                .isInstanceOf(UnsatisfiedLinkError.class);
+        assertThatThrownBy(() -> NativeLanguageModel.languageModel().layers())
+                .isInstanceOf(UnsatisfiedLinkError.class);
+        assertThatThrownBy(() -> NativeLanguageModel.languageModel().ask("hello", 1))
+                .isInstanceOf(UnsatisfiedLinkError.class).hasMessageContaining("askText");
+        assertThatThrownBy(() -> NativeLanguageModel.languageModel().ask(new byte[] {'h'}, 1, 1))
+                .isInstanceOf(UnsatisfiedLinkError.class).hasMessageContaining("askBytes");
+        assertThatThrownBy(() -> NativeLanguageModel.languageModel().nextChar())
+                .isInstanceOf(UnsatisfiedLinkError.class);
+        assertThatThrownBy(() -> NativeLanguageModel.languageModel().release())
+                .isInstanceOf(UnsatisfiedLinkError.class).hasMessageContaining("releaseModel");
+    }
+
+    @Test
     @DisplayName("Copies a model file chunk by chunk, and rejects a missing or short one")
     void shouldCopyChunkByChunk() throws Exception {
         // Given

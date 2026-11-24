@@ -411,6 +411,12 @@
                                     <!-- A module below ${coverage.level} fails the build. juno-examples opts out
                                          with jacoco.skip, since its board programs need hardware to run. -->
                                     <haltOnFailure>true</haltOnFailure>
+                                    <!-- This adapter's native entry points only execute in the board runtime and
+                                         cannot be covered by the desktop JVM tests. Its Java forwarding paths are
+                                         still exercised by NativeLanguageModelTest. -->
+                                    <excludes>
+                                        <exclude>io/github/jabrena/juno/hardware/internal/NativeLanguageModel*</exclude>
+                                    </excludes>
                                     <rules>
                                         <rule>
                                             <element>BUNDLE</element>
