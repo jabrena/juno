@@ -123,19 +123,6 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-            <!-- The provisioner package holds board-side programs: Juno compiles them for the board, where their Serial
-                 and secret-store natives exist, so a JVM test cannot run them. They stay out of this module's
-                 coverage; every build-machine class is still gated. -->
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${maven-plugin-jacoco.version}</version>
-                <configuration>
-                    <excludes>
-                        <exclude>io/github/jabrena/juno/maven/provisioner/**</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>

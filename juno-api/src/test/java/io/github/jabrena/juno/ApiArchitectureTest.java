@@ -20,15 +20,15 @@ class ApiArchitectureTest {
     private static final String[] API_PACKAGES = {
         "io.github.jabrena.juno.hardware..", "io.github.jabrena.juno.remote..", "io.github.jabrena.juno.util..",
         "io.github.jabrena.juno.annotations..", "io.github.jabrena.juno.robotics..", "io.github.jabrena.juno.jdk..",
-        "io.github.jabrena.juno.javax..",
+        "io.github.jabrena.juno.javax..", "io.github.jabrena.juno.ai..",
     };
 
     @ArchTest
     static final ArchRule shouldLiveOnlyInApiPackages = classes()
             .that().doNotHaveSimpleName("package-info")
             .should().resideInAnyPackage(API_PACKAGES)
-            .because("juno-api holds only the hardware, remote, robotics, util, annotations, jdk and javax packages (jdk"
-                    + " and javax hold the board-side java and javax classes); compiler code belongs in juno-compiler");
+            .because("juno-api holds only the hardware, remote, robotics, util, annotations, ai, jdk and javax packages"
+                    + " (jdk and javax hold the board-side java and javax classes); compiler code belongs in juno-compiler");
 
     @ArchTest
     static final ArchRule shouldDependOnlyOnItselfAndTheJdk = classes()
@@ -36,7 +36,7 @@ class ApiArchitectureTest {
                     "io.github.jabrena.juno.hardware..", "io.github.jabrena.juno.remote..",
                     "io.github.jabrena.juno.util..", "io.github.jabrena.juno.annotations..",
                     "io.github.jabrena.juno.robotics..", "io.github.jabrena.juno.jdk..",
-                    "io.github.jabrena.juno.javax..", "java..",
+                    "io.github.jabrena.juno.javax..", "io.github.jabrena.juno.ai..", "java..",
                     "org.jspecify.annotations..")
             .because("programs compile against juno-api alone, so it must not use the compiler or third-party code");
 

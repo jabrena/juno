@@ -290,6 +290,55 @@ After uploading the program, you could monitor what happen in the board using th
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
+### A language model on the Arduino Nano ESP32
+
+[`LanguageModelSecretStoreChat`](juno-examples/src/main/java/io/github/jabrena/juno/api/ai/LanguageModelSecretStoreChat.java)
+runs JLM1, a small language model that answers questions about Juno, on the board itself. It loads the bundled
+`JUNO.BIN` into the Nano ESP32's PSRAM, joins Wi-Fi with the credentials in the board's Secret Store, and serves a
+chat page with the JDK's `HttpServer`. The answer streams back one character at a time as the model generates it. Its
+`main`, condensed (the example also checks the credentials, waits for the connection and prints its address):
+
+```java
+public static void main(String[] args) throws IOException {
+    Serial.begin(BaudRate.BAUD_115200);
+    Delay.millis(2000);
+    Serial.println(LanguageModelStatus.describe(MCU.getLanguageModel().begin()));
+
+    Wifi wifi = MCU.getWifi();
+    SecretStore secrets = MCU.getSecretStore();
+    wifi.begin(secrets.getString("wifi.ssid"), secrets.getString("wifi.password"));
+
+    HttpServer server = HttpServer.create(new InetSocketAddress(80), 4);
+    LanguageModelWebChat.register(server);
+    server.start();
+}
+```
+
+Store the Wi-Fi credentials once (`juno:secret` asks for each value at a hidden prompt), then flash the example and
+watch for the address it prints:
+
+```bash
+./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-nano-esp32 -Djuno.secret.key=wifi.ssid
+./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-nano-esp32 -Djuno.secret.key=wifi.password
+./mvnw -f juno-examples/pom.xml compile juno:flash \
+  -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSecretStoreChat \
+  -Djuno.board=arduino-nano-esp32
+./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32
+# JLM1: open http://<address>
+```
+
+Open that address in a browser, or ask through the API:
+
+```bash
+curl -X POST --data 'What is Juno?' http://<address>/api/chat
+# Juno compiles Java programs into firmware for microcontrollers.
+```
+
+The model is a 96 × 4 × 256 character-level transformer (366,528 parameters, 382 KB), trained in pure Java by
+[`juno-lm`](juno-lm) and run by an engine written in Java. The article
+[JLM1: a language model that runs on the board](https://jabrena.github.io/juno/blog/2026-11-24-jlm1-on-board-language-model/)
+explains how it works.
+
 ## Maven plugin
 
 The `juno` Maven plugin provides these goals. The commands below run them from the examples module;

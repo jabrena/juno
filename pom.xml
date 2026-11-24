@@ -30,6 +30,7 @@
 
     <modules>
         <module>juno-api</module>
+        <module>juno-lm</module>
         <module>juno-compiler</module>
         <module>juno-maven-plugin</module>
         <module>juno-examples</module>
@@ -86,6 +87,7 @@
         <!-- Overridden to true by the modules that are never published; the -Prelease attachments follow it too. -->
         <maven.deploy.skip>false</maven.deploy.skip>
         <maven-plugin-pmd.version>3.28.0</maven-plugin-pmd.version>
+        <exec-maven-plugin.version>3.7.0</exec-maven-plugin.version>
         <pmd.version>7.29.0</pmd.version>
         <maven-plugin-jxr.version>3.6.0</maven-plugin-jxr.version>
         <maven-plugin-spotless.version>3.12.0</maven-plugin-spotless.version>
@@ -126,6 +128,11 @@
             <dependency>
                 <groupId>io.github.jabrena</groupId>
                 <artifactId>juno-rcx-firmware</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.jabrena</groupId>
+                <artifactId>juno-lm</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -405,6 +412,12 @@
                                     <!-- A module below ${coverage.level} fails the build. juno-examples opts out
                                          with jacoco.skip, since its board programs need hardware to run. -->
                                     <haltOnFailure>true</haltOnFailure>
+                                    <!-- The language model's PSRAM kernels and runtime are native calls that only run on
+                                         the board; JlmLanguageModelTest covers the Java engine over heap memory. -->
+                                    <excludes>
+                                        <exclude>io/github/jabrena/juno/hardware/internal/PsramModelMemory*</exclude>
+                                        <exclude>io/github/jabrena/juno/hardware/internal/PsramJlmRuntime*</exclude>
+                                    </excludes>
                                     <rules>
                                         <rule>
                                             <element>BUNDLE</element>

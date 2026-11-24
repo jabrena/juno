@@ -431,6 +431,12 @@ final class Esp32CoreRuntime implements CoreRuntime {
         return runtimeSource.load("esp32/psram.cpp");
     }
 
+    /** The JLM1 engine's int8 row kernels over PSRAM buffers; the engine itself is Java. */
+    @Override
+    public String languageModelHelpers() {
+        return runtimeSource.load("esp32/language-model.cpp");
+    }
+
     private void requireCamera() {
         if (core != ArduinoCore.ESP32_CAM) {
             throw new IllegalStateException("Only the AI Thinker ESP32-CAM has a camera on the ESP32 core");

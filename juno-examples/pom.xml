@@ -27,7 +27,6 @@
         <scala-maven-plugin.version>4.10.0</scala-maven-plugin.version>
         <clojure.version>1.12.7</clojure.version>
         <groovy.version>6.0.0</groovy.version>
-        <exec-maven-plugin.version>3.7.0</exec-maven-plugin.version>
         <eclipse-collections.version>13.0.0</eclipse-collections.version>
     </properties>
 
@@ -39,6 +38,12 @@
         <dependency>
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-rcx-firmware</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.jabrena</groupId>
+            <artifactId>juno-lm</artifactId>
+            <!-- Test scope: LanguageModelQemuIT checks the board's answers against the Java engine and the bundled model. -->
+            <scope>test</scope>
         </dependency>
         <!-- Eclipse Collections is present while compiling and linking examples, but is not a board runtime dependency. -->
         <dependency>
@@ -352,6 +357,36 @@
                                     junit.jupiter.execution.parallel.config.fixed.parallelism = ${juno.arduinoCliParallelism}
                                 </configurationParameters>
                             </properties>
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/*Test.java</exclude>
+                            </excludes>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!-- Run the board's JLM1 engine under Espressif's QEMU in Docker and compare its answers with the Java engine
+             (LanguageModelQemuIT); reuses juno-compiler's Xtensa harness image. -->
+        <profile>
+            <id>xtensa</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <groups>xtensa</groups>
                             <includes>
                                 <include>**/*IT.java</include>
                             </includes>

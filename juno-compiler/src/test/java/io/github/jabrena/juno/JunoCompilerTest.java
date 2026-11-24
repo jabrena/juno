@@ -127,6 +127,149 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Compiles the language model on the Nano ESP32 with its engine and the PSRAM service it reads")
+        void shouldCompileLanguageModelOnNanoEsp32() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.ai.LanguageModel;
+                    import io.github.jabrena.juno.ai.ModelStatus;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    @Board(ArduinoNanoEsp32Board.class)
+                    public final class NanoLanguageModel {
+                        public static void main(String[] args) {
+                            LanguageModel model = MCU.getLanguageModel();
+                            Serial.println(model.begin() == ModelStatus.OK);
+                            Serial.println(model.isLoaded());
+                            Serial.println(model.width() + model.layers());
+                            byte[] question = new byte[8];
+                            Serial.println(model.ask("Hello", 0) == model.ask(question, 3, 1));
+                            for (int c = model.nextChar(); c != LanguageModel.END; c = model.nextChar()) {
+                                Serial.println(c);
+                            }
+                            model.release();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoLanguageModel", source);
+
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoLanguageModel");
+
+            assertThat(result.runtimeShim()).contains("juno_lm_bundled_model", "juno_lm_default_model[381907]",
+                    "juno_lm_multiply_rows", "juno_lm_accumulate_rows", "juno_lm_quantize_row", "juno_lm_read_floats",
+                    "juno_psram_find", "#include <esp_heap_caps.h>")
+                    .doesNotContain("juno_language_model");
+            assertThat(result.runtimeShim().split("int32_t juno_lm_multiply_rows", -1)).hasSize(2);
+            assertThat(result.assembly()).contains("juno_lm_bundled_model", "juno_lm_multiply_rows",
+                    "juno_lm_accumulate_rows", "juno_lm_quantize_row", "juno_lm_read_floats", "juno_lm_exponentials",
+                    "juno_lm_attend", "juno_lm_rms_norm", "juno_lm_add", "juno_lm_relu");
+        }
+
+        @Test
+        @DisplayName("Links the bundled model only into a program that calls begin(), not one that loads from an SD card")
+        void shouldLinkTheBundledModelOnlyForBegin() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    @Board(ArduinoNanoEsp32Board.class)
+                    public final class NanoSdLanguageModel {
+                        public static void main(String[] args) {
+                            Serial.println(MCU.getLanguageModel().begin(
+                                    new NanoConnectorCarrier(MCU.getGpio()).getSdCard(), "/JUNO.BIN").ordinal());
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoSdLanguageModel", source);
+
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoSdLanguageModel");
+
+            assertThat(result.runtimeShim()).contains("juno_lm_multiply_rows", "juno_psram_write")
+                    .doesNotContain("juno_lm_default_model", "juno_lm_bundled_model");
+        }
+
+        @Test
+        @DisplayName("Leaves the language-model engine out of a program that does not use it")
+        void shouldLeaveTheLanguageModelOutOfOtherPrograms() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.Psram;
+                    @Board(ArduinoNanoEsp32Board.class)
+                    public final class NanoPsramOnly {
+                        public static void main(String[] args) {
+                            Psram.release(Psram.allocate(32));
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoPsramOnly", source);
+
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoPsramOnly");
+
+            assertThat(result.runtimeShim()).contains("juno_psram_allocate").doesNotContain("juno_lm_");
+        }
+
+        @Test
+        @DisplayName("Rejects the language model on a board without PSRAM")
+        void shouldRejectLanguageModelOnUnoR4() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    @Board(ArduinoUnoR4WiFiBoard.class)
+                    public final class UnoLanguageModel {
+                        public static void main(String[] args) {
+                            MCU.getLanguageModel().begin();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.UnoLanguageModel", source);
+
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UnoLanguageModel"))
+                    .hasMessageContaining("PSRAM");
+        }
+
+        @Test
+        @DisplayName("Emits the raw serial byte writer only for a program that writes bytes")
+        void shouldEmitSerialWriteOnlyWhenUsed() throws Exception {
+            String writes = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    public final class SerialWrites {
+                        public static void main(String[] args) {
+                            Serial.write('J');
+                        }
+                    }
+                    """;
+            String prints = """
+                    package demo;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    public final class SerialPrints {
+                        public static void main(String[] args) {
+                            Serial.print(74);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.SerialWrites", writes);
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.SerialPrints", prints);
+
+            CompilationResult written = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.SerialWrites");
+            CompilationResult printed = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.SerialPrints");
+
+            assertThat(written.runtimeShim()).contains("void juno_serial_write(int32_t value)",
+                    "Serial.write(static_cast<uint8_t>(value));");
+            assertThat(written.assembly()).contains("juno_serial_write");
+            assertThat(printed.runtimeShim()).doesNotContain("juno_serial_write");
+        }
+
+        @Test
         @DisplayName("Compiles symbolic GPIO lookup for the Cardputer")
         void shouldCompileSymbolicGpioLookupForCardputer() throws Exception {
             // Given

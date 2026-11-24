@@ -274,6 +274,17 @@ public enum Intrinsic {
     PSRAM_READ,
     PSRAM_WRITE,
     PSRAM_RELEASE,
+    LANGUAGE_MODEL_BUNDLED,
+    LANGUAGE_MODEL_READ_FLOATS,
+    LANGUAGE_MODEL_MULTIPLY_ROWS,
+    LANGUAGE_MODEL_ACCUMULATE_ROWS,
+    LANGUAGE_MODEL_QUANTIZE_ROW,
+    LANGUAGE_MODEL_EXPONENTIALS,
+    LANGUAGE_MODEL_ATTEND,
+    LANGUAGE_MODEL_RMS_NORM,
+    LANGUAGE_MODEL_ADD,
+    LANGUAGE_MODEL_RELU,
+    SERIAL_WRITE,
     SMTP_SEND,
     SMTP_SEND_TLS,
     POP3_MESSAGE_COUNT,
@@ -586,6 +597,16 @@ public enum Intrinsic {
             PSRAM_READ_BYTE, PSRAM_WRITE_BYTE, PSRAM_READ, PSRAM_WRITE, PSRAM_RELEASE);
 
     /**
+     * The float kernels behind {@code PsramModelMemory} and {@code PsramJlmRuntime}, the only native code of the Java
+     * language-model engine: int8 rows, attention, RMS norm, residual add, ReLU and {@code expf}. They are static, so
+     * there is no receiver.
+     */
+    private static final Set<Intrinsic> LANGUAGE_MODEL_OPERATIONS = EnumSet.of(LANGUAGE_MODEL_BUNDLED,
+            LANGUAGE_MODEL_READ_FLOATS, LANGUAGE_MODEL_MULTIPLY_ROWS, LANGUAGE_MODEL_ACCUMULATE_ROWS,
+            LANGUAGE_MODEL_QUANTIZE_ROW, LANGUAGE_MODEL_EXPONENTIALS, LANGUAGE_MODEL_ATTEND, LANGUAGE_MODEL_RMS_NORM,
+            LANGUAGE_MODEL_ADD, LANGUAGE_MODEL_RELU);
+
+    /**
      * The families that touch only Juno's own runtime: monitors, locks and the other {@code java.util.concurrent}
      * primitives, atomics, threads, structured tasks, scoped values, exceptions, durations and strings. None reaches
      * the board's libraries or a double-precision instruction, so the call may run on a core that has neither of its
@@ -620,6 +641,7 @@ public enum Intrinsic {
     /** Whether this intrinsic ignores the object it is called on, so lowering need not keep that object alive. */
     public boolean ignoresReceiver() {
         return PORT_OPERATIONS.contains(this) || WIFI_OPERATIONS.contains(this)
-                || SD_CARD_OPERATIONS.contains(this) || CAMERA_OPERATIONS.contains(this) || PSRAM_OPERATIONS.contains(this);
+                || SD_CARD_OPERATIONS.contains(this) || CAMERA_OPERATIONS.contains(this) || PSRAM_OPERATIONS.contains(this)
+                || LANGUAGE_MODEL_OPERATIONS.contains(this);
     }
 }

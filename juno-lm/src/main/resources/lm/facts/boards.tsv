@@ -1,0 +1,66 @@
+# Board specifications: relation<TAB>subject|alias<TAB>answer, expanded through templates.tpl.
+chip	UNO R3|Arduino UNO R3	An ATmega328P.
+clock	UNO R3|Arduino UNO R3	16 MHz.
+flash	UNO R3|Arduino UNO R3	32 KB.
+ram	UNO R3|Arduino UNO R3	2 KB.
+psram	UNO R3|Arduino UNO R3	None.
+id	UNO R3|Arduino UNO R3	arduino-uno-r3.
+led	UNO R3|Arduino UNO R3	D13.
+arena	UNO R3|Arduino UNO R3	1 KiB.
+wifi	UNO R3|Arduino UNO R3	No. It has no network support.
+backend	UNO R3|Arduino UNO R3	AVR.
+chip	UNO R4 WiFi|UNO R4|Arduino UNO R4 WiFi	A Renesas RA4M1, an Arm Cortex-M4.
+clock	UNO R4 WiFi|UNO R4|Arduino UNO R4 WiFi	48 MHz.
+flash	UNO R4 WiFi|UNO R4|Arduino UNO R4 WiFi	256 KB.
+ram	UNO R4 WiFi|UNO R4|Arduino UNO R4 WiFi	32 KB.
+psram	UNO R4 WiFi|UNO R4|Arduino UNO R4 WiFi	None.
+id	UNO R4 WiFi|UNO R4|Arduino UNO R4 WiFi	arduino-uno-r4-wifi.
+led	UNO R4 WiFi|UNO R4|Arduino UNO R4 WiFi	D13.
+arena	UNO R4 WiFi|UNO R4|Arduino UNO R4 WiFi	8 KiB.
+wifi	UNO R4 WiFi|UNO R4|Arduino UNO R4 WiFi	Yes, through its ESP32-S3 coprocessor.
+backend	UNO R4 WiFi|UNO R4|Arduino UNO R4 WiFi	Thumb-2.
+chip	Nano ESP32|Arduino Nano ESP32|Nano	An ESP32-S3.
+clock	Nano ESP32|Arduino Nano ESP32|Nano	240 MHz.
+flash	Nano ESP32|Arduino Nano ESP32|Nano	16 MB.
+ram	Nano ESP32|Arduino Nano ESP32|Nano	512 KB.
+psram	Nano ESP32|Arduino Nano ESP32|Nano	8 MB.
+id	Nano ESP32|Arduino Nano ESP32|Nano	arduino-nano-esp32.
+led	Nano ESP32|Arduino Nano ESP32|Nano	D13, which is ESP32-S3 GPIO48.
+arena	Nano ESP32|Arduino Nano ESP32|Nano	64 KiB.
+wifi	Nano ESP32|Arduino Nano ESP32|Nano	Yes.
+backend	Nano ESP32|Arduino Nano ESP32|Nano	Xtensa.
+chip	Portenta H7|Arduino Portenta H7|Portenta	An STM32H747 with a Cortex-M7 and a Cortex-M4.
+clock	Portenta H7|Arduino Portenta H7|Portenta	480 MHz on the M7 and 240 MHz on the M4.
+flash	Portenta H7|Arduino Portenta H7|Portenta	2 MB internal plus 16 MB NOR flash.
+ram	Portenta H7|Arduino Portenta H7|Portenta	1 MB plus 8 MB of SDRAM.
+psram	Portenta H7|Arduino Portenta H7|Portenta	None; it has 8 MB of SDRAM.
+id	Portenta H7|Arduino Portenta H7|Portenta	arduino-portenta-h7.
+led	Portenta H7|Arduino Portenta H7|Portenta	Pin 24, the RGB LED.
+arena	Portenta H7|Arduino Portenta H7|Portenta	64 KiB.
+wifi	Portenta H7|Arduino Portenta H7|Portenta	Yes.
+backend	Portenta H7|Arduino Portenta H7|Portenta	Thumb-2.
+chip	Pico 2 W|Raspberry Pi Pico 2 W|Pico	An RP2350.
+clock	Pico 2 W|Raspberry Pi Pico 2 W|Pico	150 MHz.
+flash	Pico 2 W|Raspberry Pi Pico 2 W|Pico	4 MB.
+ram	Pico 2 W|Raspberry Pi Pico 2 W|Pico	520 KB.
+psram	Pico 2 W|Raspberry Pi Pico 2 W|Pico	None.
+id	Pico 2 W|Raspberry Pi Pico 2 W|Pico	raspberry-pi-pico-2-w.
+led	Pico 2 W|Raspberry Pi Pico 2 W|Pico	Pin 64, on the CYW43439 radio.
+arena	Pico 2 W|Raspberry Pi Pico 2 W|Pico	64 KiB.
+wifi	Pico 2 W|Raspberry Pi Pico 2 W|Pico	Yes, with an Infineon CYW43439.
+backend	Pico 2 W|Raspberry Pi Pico 2 W|Pico	Thumb-2.
+chip	Cardputer|M5Stack Cardputer	An ESP32-S3.
+clock	Cardputer|M5Stack Cardputer	240 MHz.
+flash	Cardputer|M5Stack Cardputer	8 MB.
+ram	Cardputer|M5Stack Cardputer	512 KB.
+id	Cardputer|M5Stack Cardputer	m5stack-cardputer.
+arena	Cardputer|M5Stack Cardputer	64 KiB.
+wifi	Cardputer|M5Stack Cardputer	Yes.
+backend	Cardputer|M5Stack Cardputer	Xtensa.
+chip	ESP32-CAM|AI Thinker ESP32-CAM	An ESP32.
+psram	ESP32-CAM|AI Thinker ESP32-CAM	4 MB.
+id	ESP32-CAM|AI Thinker ESP32-CAM	ai-thinker-esp32-cam.
+arena	ESP32-CAM|AI Thinker ESP32-CAM	64 KiB.
+wifi	ESP32-CAM|AI Thinker ESP32-CAM	Yes.
+backend	ESP32-CAM|AI Thinker ESP32-CAM	Xtensa.
+camera	ESP32-CAM|AI Thinker ESP32-CAM	An OV2640.

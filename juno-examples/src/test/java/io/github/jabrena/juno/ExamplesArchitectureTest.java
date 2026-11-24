@@ -107,4 +107,5 @@ class ExamplesArchitectureTest {
     private static Location rcxFirmwareLocation() throws URISyntaxException {
         return Location.of(RcxFirmwareImage.class.getProtectionDomain().getCodeSource().getLocation().toURI());
     }
+
 }

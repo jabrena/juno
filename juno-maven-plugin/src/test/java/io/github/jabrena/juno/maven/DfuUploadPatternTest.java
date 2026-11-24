@@ -87,4 +87,31 @@ class DfuUploadPatternTest {
                 .hasMessageContaining("must be a USB serial number");
         assertThatThrownBy(() -> pattern.selecting("a b")).isInstanceOf(ArduinoCliException.class);
     }
+
+    @Test
+    @DisplayName("Refuses a board whose properties name no upload tool, or no command or pattern for it")
+    void shouldRefuseIncompleteProperties() {
+        // Given
+        String noTool = """
+                not a property
+                =no key
+                tools.dfu-util.cmd=dfu-util
+                """;
+        String noCommand = """
+                upload.tool=dfu-util
+                tools.dfu-util.upload.pattern=dfu-util -D x.bin
+                """;
+        String noPattern = """
+                upload.tool=dfu-util
+                tools.dfu-util.cmd=dfu-util
+                """;
+
+        // When & Then
+        assertThatThrownBy(() -> DfuUploadPattern.from("x:y:z", noTool)).isInstanceOf(ArduinoCliException.class)
+                .hasMessageContaining("x:y:z uploads with no known tool");
+        assertThatThrownBy(() -> DfuUploadPattern.from("x:y:z", noCommand)).isInstanceOf(ArduinoCliException.class)
+                .hasMessageContaining("uploads with dfu-util");
+        assertThatThrownBy(() -> DfuUploadPattern.from("x:y:z", noPattern)).isInstanceOf(ArduinoCliException.class)
+                .hasMessageContaining("uploads with dfu-util");
+    }
 }

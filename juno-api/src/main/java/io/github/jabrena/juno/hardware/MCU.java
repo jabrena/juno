@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.hardware;
 
+import io.github.jabrena.juno.ai.LanguageModel;
 import io.github.jabrena.juno.hardware.audio.Audio;
 import io.github.jabrena.juno.hardware.device.camera.Camera;
 import io.github.jabrena.juno.hardware.device.sd.SdCard;
@@ -7,6 +8,7 @@ import io.github.jabrena.juno.hardware.display.Display;
 import io.github.jabrena.juno.hardware.gpio.Gpio;
 import io.github.jabrena.juno.hardware.hid.Mouse;
 import io.github.jabrena.juno.hardware.i2c.I2c;
+import io.github.jabrena.juno.hardware.internal.JlmLanguageModel;
 import io.github.jabrena.juno.hardware.internal.NativeAudio;
 import io.github.jabrena.juno.hardware.internal.NativeBattery;
 import io.github.jabrena.juno.hardware.internal.NativeBluetoothLe;
@@ -90,6 +92,11 @@ public final class MCU {
     /** The selected board's onboard camera. */
     public static Camera getCamera() {
         return NativeCamera.camera();
+    }
+
+    /** The board's JLM1 language-model engine, which runs a model from PSRAM. */
+    public static LanguageModel getLanguageModel() {
+        return JlmLanguageModel.languageModel();
     }
 
     /** The card in the selected board's onboard SD socket. */

@@ -83,6 +83,7 @@ initTheme();
 <li><a href="#getBoardModel()" tabindex="0">getBoardModel()</a></li>
 <li><a href="#getBoardMemory()" tabindex="0">getBoardMemory()</a></li>
 <li><a href="#getCamera()" tabindex="0">getCamera()</a></li>
+<li><a href="#getLanguageModel()" tabindex="0">getLanguageModel()</a></li>
 <li><a href="#getSdCard()" tabindex="0">getSdCard()</a></li>
 <li><a href="#getDisplay()" tabindex="0">getDisplay()</a></li>
 <li><a href="#getKeyboard()" tabindex="0">getKeyboard()</a></li>
@@ -181,31 +182,36 @@ monochrome 12x8 <a href="display/Display.html" title="interface in io.github.jab
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The selected board's onboard keyboard.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getMouse()" class="member-name-link">getMouse</a>()</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="../ai/LanguageModel.html" title="interface in io.github.jabrena.juno.ai">LanguageModel</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getLanguageModel()" class="member-name-link">getLanguageModel</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">The board's JLM1 language-model engine, which runs a model from PSRAM.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="hid/Mouse.html" title="interface in io.github.jabrena.juno.hardware.hid">Mouse</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getMouse()" class="member-name-link">getMouse</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The selected board acting as a USB HID mouse.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getSdCard()" class="member-name-link">getSdCard</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getSdCard()" class="member-name-link">getSdCard</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The card in the selected board's onboard SD socket.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getSecretStore()" class="member-name-link">getSecretStore</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="security/SecretStore.html" title="interface in io.github.jabrena.juno.hardware.security">SecretStore</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getSecretStore()" class="member-name-link">getSecretStore</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The selected board's store of named secrets, which is whatever that board actually has: the Portenta H7's NXP
 SE050C2, the ESP32-family boards' own non-volatile storage (also the UNO R4 WiFi's ESP32-S3 coprocessor's), the
 Pico 2 W's slots behind Juno's TrustZone secure firmware, or the UNO R3's on-chip EEPROM, the weakest of them.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getSpi()" class="member-name-link">getSpi</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="spi/Spi.html" title="interface in io.github.jabrena.juno.hardware.spi">Spi</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getSpi()" class="member-name-link">getSpi</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The selected board's primary SPI bus.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getWifi()" class="member-name-link">getWifi</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="net/Wifi.html" title="interface in io.github.jabrena.juno.hardware.net">Wifi</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getWifi()" class="member-name-link">getWifi</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">The selected board's onboard Wi-Fi service.</div>
 </div>
 </div>
@@ -312,6 +318,15 @@ Pico 2 W's slots behind Juno's TrustZone secure firmware, or the UNO R3's on-chi
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="device/camera/Camera.html" title="interface in io.github.jabrena.juno.hardware.device.camera">Camera</a></span>&nbsp;<span class="element-name">getCamera</span>()</div>
 <div class="block">The selected board's onboard camera.</div>
+</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getLanguageModel()">
+<h3>getLanguageModel</h3>
+<div class="horizontal-scroll">
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="../ai/LanguageModel.html" title="interface in io.github.jabrena.juno.ai">LanguageModel</a></span>&nbsp;<span class="element-name">getLanguageModel</span>()</div>
+<div class="block">The board's JLM1 language-model engine, which runs a model from PSRAM.</div>
 </div>
 </section>
 </li>
