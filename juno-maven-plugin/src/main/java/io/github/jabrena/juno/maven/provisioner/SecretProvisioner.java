@@ -65,37 +65,36 @@ public final class SecretProvisioner {
     private void run() {
         Serial.println("READY");
         while (true) {
-            readLine();
-            if (lineTooLong) {
-                Serial.println("ERR line too long");
-            } else {
-                handle();
+            waitForInput();
+            if (accept(Serial.read())) {
+                Serial.println(answer());
             }
         }
     }
 
-    /** Reads one request line into {@link #line}; bytes past its capacity are dropped and flagged. */
-    private void readLine() {
-        lineLength = 0;
-        lineTooLong = false;
-        while (true) {
-            int idleMs = 0;
-            while (Serial.available() == 0) {
-                Delay.millis(POLL_MS);
-                idleMs += POLL_MS;
-                if (!requested && idleMs >= READY_REPEAT_MS) {
-                    Serial.println("READY");
-                    idleMs = 0;
-                }
+    /** Waits for a received byte, printing {@code READY} every second until the first request arrives. */
+    private void waitForInput() {
+        int idleMs = 0;
+        while (Serial.available() == 0) {
+            Delay.millis(POLL_MS);
+            idleMs += POLL_MS;
+            if (!requested && idleMs >= READY_REPEAT_MS) {
+                Serial.println("READY");
+                idleMs = 0;
             }
-            requested = true;
-            int received = Serial.read();
-            if (received == '\n') {
-                return;
-            }
-            if (received == '\r') {
-                continue;
-            }
+        }
+        requested = true;
+    }
+
+    /**
+     * Takes one received byte into {@link #line}: true once a newline ends the request. A carriage return is skipped,
+     * and bytes past the line's capacity are dropped and flagged.
+     */
+    boolean accept(int received) {
+        if (received == '\n') {
+            return true;
+        }
+        if (received != '\r') {
             if (lineLength < LINE_BYTES) {
                 line[lineLength] = (byte) received;
                 lineLength++;
@@ -103,75 +102,78 @@ public final class SecretProvisioner {
                 lineTooLong = true;
             }
         }
+        return false;
     }
 
-    private void handle() {
+    /** The reply to the request line {@link #accept(int)} completed, which it then clears for the next request. */
+    String answer() {
+        String reply = lineTooLong ? "ERR line too long" : handle();
+        lineLength = 0;
+        lineTooLong = false;
+        return reply;
+    }
+
+    private String handle() {
         if (startsWith("SET ")) {
-            set();
-        } else if (startsWith("CLEAR ALL")) {
-            clearAll();
-        } else if (startsWith("CLEAR ")) {
-            clear();
-        } else if (startsWith("LIST")) {
-            list();
-        } else {
-            Serial.println("ERR unknown request");
+            return set();
         }
+        if (startsWith("CLEAR ALL")) {
+            return clearAll();
+        }
+        if (startsWith("CLEAR ")) {
+            return clear();
+        }
+        if (startsWith("LIST")) {
+            return list();
+        }
+        return "ERR unknown request";
     }
 
-    private void set() {
+    private String set() {
         int nameEnd = indexOfSpace(NAME_PREFIX_SET);
         if (nameEnd <= NAME_PREFIX_SET) {
-            Serial.println("ERR missing name");
-            return;
+            return "ERR missing name";
         }
         String name = text(NAME_PREFIX_SET, nameEnd);
         int hexStart = nameEnd + 1;
         int hexLength = lineLength - hexStart;
         if (hexLength <= 0 || hexLength % 2 != 0 || hexLength / 2 > VALUE_BYTES) {
-            Serial.println("ERR bad value length");
-            return;
+            return "ERR bad value length";
         }
         if (!decodeHex(hexStart, hexLength)) {
-            Serial.println("ERR bad hex value");
-            return;
+            return "ERR bad hex value";
         }
         if (chip.write(name, value, hexLength / 2) < 0) {
-            Serial.println("ERR store rejected the write: bad name, too long or store full");
-            return;
+            return "ERR store rejected the write: bad name, too long or store full";
         }
-        Serial.println("OK " + name);
+        return "OK " + name;
     }
 
-    private void clear() {
+    private String clear() {
         String name = text(NAME_PREFIX_CLEAR, lineLength);
         if (chip.clear(name) != 0) {
-            Serial.println("ERR write failed");
-            return;
+            return "ERR write failed";
         }
-        Serial.println("OK " + name);
+        return "OK " + name;
     }
 
-    private void clearAll() {
+    private String clearAll() {
         if (lineLength != "CLEAR ALL".length()) {
-            Serial.println("ERR unknown request");
-            return;
+            return "ERR unknown request";
         }
         if (chip.clearAll() != 0) {
-            Serial.println("ERR write failed");
-            return;
+            return "ERR write failed";
         }
-        Serial.println("OK CLEAR ALL");
+        return "OK CLEAR ALL";
     }
 
-    private void list() {
+    private String list() {
         if (lineLength <= NAME_PREFIX_LIST || line[NAME_PREFIX_LIST - 1] != ' ') {
-            Serial.println("ERR missing name");
-            return;
+            return "ERR missing name";
         }
         String name = text(NAME_PREFIX_LIST, lineLength);
         boolean written = chip.read(name, readBack) >= 0;
-        Serial.println("STATE " + name + (written ? " written" : " missing"));
+        return "STATE " + name + (written ? " written" : " missing");
     }
 
     private boolean startsWith(String prefix) {

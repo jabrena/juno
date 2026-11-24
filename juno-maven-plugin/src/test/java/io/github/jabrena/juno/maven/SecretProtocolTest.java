@@ -50,4 +50,15 @@ class SecretProtocolTest {
         assertThat(SecretProtocol.setRequest("board.custom", new byte[] {'o', 'k'}))
                 .isEqualTo("SET board.custom 6f6b");
     }
+
+    @Test
+    @DisplayName("a name must be 1 to 31 printable non-space characters, and a value printable ASCII")
+    void rejectsBadNamesAndControlCharacters() {
+        assertThatThrownBy(() -> SecretProtocol.validateName("")).hasMessageContaining("1 to 31 characters");
+        assertThatThrownBy(() -> SecretProtocol.validateName("k".repeat(32))).hasMessageContaining("1 to 31");
+        assertThatThrownBy(() -> SecretProtocol.validateName("a b")).hasMessageContaining("non-space ASCII");
+        assertThatThrownBy(() -> SecretProtocol.validateName("a\u007f")).hasMessageContaining("non-space ASCII");
+        assertThatThrownBy(() -> SecretProtocol.valueBytes("wifi.ssid", "a\tb".toCharArray()))
+                .hasMessageContaining("printable ASCII");
+    }
 }

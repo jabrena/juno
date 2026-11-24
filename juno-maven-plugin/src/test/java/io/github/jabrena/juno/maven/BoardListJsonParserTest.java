@@ -84,4 +84,34 @@ class BoardListJsonParserTest {
         // Then
         assertThat(ports).extracting(DetectedPort::address).containsExactly("C:\\COM3 é");
     }
+
+    @Test
+    @DisplayName("Unescapes every JSON escape in a string value")
+    void shouldUnescapeJsonEscapes() {
+        // Given
+        String json = """
+                {"detected_ports": [{"port": {"address": "a\\b\\f\\n\\r\\t\\/\\\\\\"\\u0041", "protocol": "serial"}}]}""";
+
+        // When
+        List<DetectedPort> ports = parser.parse(json);
+
+        // Then
+        assertThat(ports).singleElement().extracting(DetectedPort::address)
+                .isEqualTo("a\b\f\n\r\t/\\\"A");
+    }
+
+    @Test
+    @DisplayName("Rejects an unknown escape and a short or non-hex Unicode escape")
+    void shouldRejectInvalidEscapes() {
+        // When & Then
+        assertThatThrownBy(() -> parser.parse("""
+                {"detected_ports": [{"address": "a\\x"}]}"""))
+                .isInstanceOf(ArduinoCliException.class).hasMessageContaining("Invalid JSON escape");
+        assertThatThrownBy(() -> parser.parse("""
+                {"detected_ports": [{"address": "a\\u12"}]}"""))
+                .isInstanceOf(ArduinoCliException.class).hasMessageContaining("Invalid Unicode escape");
+        assertThatThrownBy(() -> parser.parse("""
+                {"detected_ports": [{"address": "\\uZZZZ"}]}"""))
+                .isInstanceOf(ArduinoCliException.class).hasMessageContaining("Invalid Unicode escape");
+    }
 }
