@@ -63,7 +63,7 @@ public final class Tny2Trainer {
                             learningRate, seconds);
                 }
                 boolean last = step + 1 == options.steps();
-                if (last || options.evalEvery() > 0 && (step + 1) % options.evalEvery() == 0) {
+                if (last || (options.evalEvery() > 0 && (step + 1) % options.evalEvery() == 0)) {
                     checkpoint.reached(step + 1, network);
                 }
             }
