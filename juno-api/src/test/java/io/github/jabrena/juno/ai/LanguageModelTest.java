@@ -1,12 +1,11 @@
 package io.github.jabrena.juno.ai;
 
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.internal.NativeLanguageModel;
+import io.github.jabrena.juno.hardware.internal.JlmLanguageModel;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Language model")
 class LanguageModelTest {
@@ -18,26 +17,25 @@ class LanguageModelTest {
         LanguageModel model = MCU.getLanguageModel();
 
         // Then
-        assertThat(model).isSameAs(NativeLanguageModel.languageModel()).isInstanceOf(NativeLanguageModel.class);
+        assertThat(model).isSameAs(JlmLanguageModel.languageModel()).isInstanceOf(JlmLanguageModel.class);
     }
 
     @Test
-    @DisplayName("Asking with bytes passes the array capacity to the native engine")
-    void shouldPassTheArrayCapacityToTheNativeEngine() {
+    @DisplayName("Before begin, the engine reports no model, refuses questions and releases nothing")
+    void shouldRefuseQuestionsBeforeBegin() {
         // Given
         LanguageModel model = MCU.getLanguageModel();
 
-        // When & Then: off the board the native engine is absent, so reaching it proves the wrapper delegates
-        assertThatThrownBy(() -> model.ask(new byte[8], 3, 0)).isInstanceOf(UnsatisfiedLinkError.class)
-                .hasMessageContaining("ask");
-    }
+        // When
+        model.release();
 
-    @Test
-    @DisplayName("Releasing reaches the native engine")
-    void shouldReleaseThroughTheNativeEngine() {
-        // When & Then: off the board the native engine is absent, so reaching it proves the wrapper delegates
-        assertThatThrownBy(() -> MCU.getLanguageModel().release()).isInstanceOf(UnsatisfiedLinkError.class)
-                .hasMessageContaining("releaseModel");
+        // Then: nothing reaches the board's PSRAM, so this runs off the board too
+        assertThat(model.isLoaded()).isFalse();
+        assertThat(model.width()).isZero();
+        assertThat(model.layers()).isZero();
+        assertThat(model.ask("Hello", 0)).isEqualTo(ModelStatus.NOT_LOADED);
+        assertThat(model.ask(new byte[8], 3, 0)).isEqualTo(ModelStatus.NOT_LOADED);
+        assertThat(model.nextChar()).isEqualTo(LanguageModel.END);
     }
 
     @Test

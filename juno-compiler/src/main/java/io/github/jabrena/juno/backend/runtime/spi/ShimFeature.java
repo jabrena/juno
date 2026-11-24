@@ -130,10 +130,10 @@ public enum ShimFeature {
     AVR_INT_HELPERS,
     /** {@code HttpServer.beginTls}: the HTTP server's connections wrapped in a TLS server session. */
     HTTPS_SERVER,
-    /** {@code MCU.getLanguageModel()}: the JLM1 engine, which keeps its model in PSRAM through the PSRAM service. */
+    /** {@code MCU.getLanguageModel()}: the int8 row kernels of the Java JLM1 engine, over PSRAM buffers. */
     LANGUAGE_MODEL,
     /** {@code Serial.write(int)}: one raw byte, emitted only for a program that writes bytes. */
     SERIAL_WRITE,
-    /** {@code LanguageModel.begin()}: the bundled JUNO.BIN as a flash table, loaded by the JLM1 engine. */
+    /** {@code LanguageModel.begin()}: the bundled JUNO.BIN as a flash table, copied into PSRAM for the engine. */
     LANGUAGE_MODEL_DEFAULT
 }
