@@ -24,10 +24,6 @@
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.github.jabrena</groupId>
-            <artifactId>juno-models</artifactId>
-        </dependency>
         <!-- Runtime scope: DefaultLanguageModel reads its lm/JUNO.BIN, the model LanguageModel.begin() links into
              a program's firmware; no class of it is used. -->
         <dependency>

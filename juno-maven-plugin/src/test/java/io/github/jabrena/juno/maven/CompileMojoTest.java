@@ -8,6 +8,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static io.github.jabrena.juno.maven.MojoConfig.configuration;
@@ -158,5 +160,58 @@ class CompileMojoTest extends AbstractMojoTestCase {
 
         assertThatThrownBy(mojo::execute)
                 .isInstanceOf(MojoFailureException.class).hasMessageContaining("juno.carriers");
+    }
+    @Test
+    @DisplayName("Links the juno.dm.model file into a program that calls DecisionModel.begin()")
+    void shouldLinkTheDecisionModelFile() throws Exception {
+        // Given
+        Path model = Files.createDirectories(Path.of("target/juno-mojo-test/dm-model")).resolve("TINY.JEV");
+        Files.write(model, tinyJevModel());
+        CompileMojo mojo = lookupEmptyMojo("compile", new File("."));
+        mojo = configureMojo(mojo, configuration()
+                .set("arduinoCli", "arduino-cli")
+                .set("mainClass", "io.github.jabrena.juno.maven.fixture.DecisionModelProgram")
+                .set("board", "arduino-nano-esp32")
+                .set("decisionModel", model.toString())
+                .set("outputDirectory", "target/juno-mojo-test/dm-linked")
+                .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
+                .build());
+        mojo.setLog(new RecordingLog());
+
+        // When
+        mojo.execute();
+
+        // Then
+        assertThat(Path.of("target/juno-mojo-test/dm-linked/DecisionModelProgramAsm/DecisionModelProgramShim.cpp"))
+                .content().contains("juno_dm_linked_model[31]", "juno_dm_begin_linked");
+    }
+
+    @Test
+    @DisplayName("Fails a program that calls DecisionModel.begin() without juno.dm.model")
+    void shouldRequireTheDecisionModelFile() throws Exception {
+        // Given
+        CompileMojo mojo = lookupEmptyMojo("compile", new File("."));
+        mojo = configureMojo(mojo, configuration()
+                .set("arduinoCli", "arduino-cli")
+                .set("mainClass", "io.github.jabrena.juno.maven.fixture.DecisionModelProgram")
+                .set("board", "arduino-nano-esp32")
+                .set("outputDirectory", "target/juno-mojo-test/dm-missing")
+                .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
+                .build());
+        mojo.setLog(new RecordingLog());
+
+        // When & Then
+        assertThatThrownBy(mojo::execute)
+                .isInstanceOf(MojoFailureException.class)
+                .hasMessageContaining("-Djuno.dm.model=<file>");
+    }
+
+    /** A 2-action, 3-feature JEV1 model: 9 header bytes, then per action a scale, a bias and 3 weights. */
+    private static byte[] tinyJevModel() {
+        ByteBuffer model = ByteBuffer.allocate(31);
+        model.put(new byte[] {'J', 'E', 'V', '1', 1}).putShort((short) 2).putShort((short) 3);
+        model.putFloat(0.5f).putFloat(0f).put(new byte[] {1, 2, 3});
+        model.putFloat(0.25f).putFloat(1f).put(new byte[] {3, 2, 1});
+        return model.array();
     }
 }

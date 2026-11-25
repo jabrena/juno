@@ -3,6 +3,7 @@ package io.github.jabrena.juno.api.ai;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import io.github.jabrena.juno.ai.DecisionModel;
+import io.github.jabrena.juno.ai.ModelStatus;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
@@ -16,7 +17,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
-/** Serves a browser game whose computer moves are selected by the exhaustive JEV model. */
+/**
+ * Serves a browser game whose computer moves are selected by the exhaustive JEV1 tic-tac-toe model, linked into the
+ * firmware at build time. The board prints its address on Serial; open it in a browser on the same network.
+ *
+ * <pre>{@code
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
+ *   -Djuno.main=io.github.jabrena.juno.api.ai.TicTacToeWebGame -Djuno.board=arduino-nano-esp32 \
+ *   -Djuno.dm.model=../juno-models/src/main/resources/dm/TIC_TAC_TOE.JEV
+ * }</pre>
+ */
 @Board(ArduinoNanoEsp32Board.class)
 public final class TicTacToeWebGame {
     private static final int[] STATE = new int[4520];
@@ -72,6 +82,12 @@ public final class TicTacToeWebGame {
         Serial.begin(BaudRate.BAUD_115200);
         Delay.millis(2000);
         Serial.println("JEV web game starting");
+        ModelStatus status = MODEL.begin();
+        if (status != ModelStatus.OK) {
+            Serial.print("JEV web game could not load its model: ");
+            Serial.println(status.ordinal());
+            return;
+        }
         computerMove();
         Wifi wifi = MCU.getWifi();
         SecretStore secrets = MCU.getSecretStore();

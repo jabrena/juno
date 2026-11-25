@@ -15,9 +15,17 @@ import java.util.Optional;
  *     more than one board.
  * @param runtimeConfig the arena and task-stack capacities of the generated runtime; {@link RuntimeConfig#DEFAULT}
  *     when not given.
+ * @param decisionModel the JEV1 file {@code DecisionModel.begin()} links into the firmware ({@code juno.dm.model});
+ *     required only by a program that calls that method.
  */
 public record CompilationRequest(List<Path> classPath, String mainClass, boolean gcLoggingEnabled,
-                                  Optional<String> requestedBoard, RuntimeConfig runtimeConfig) {
+                                  Optional<String> requestedBoard, RuntimeConfig runtimeConfig,
+                                  Optional<Path> decisionModel) {
+    public CompilationRequest(List<Path> classPath, String mainClass, boolean gcLoggingEnabled,
+                              Optional<String> requestedBoard, RuntimeConfig runtimeConfig) {
+        this(classPath, mainClass, gcLoggingEnabled, requestedBoard, runtimeConfig, Optional.empty());
+    }
+
     public CompilationRequest(List<Path> classPath, String mainClass) {
         this(classPath, mainClass, false, Optional.empty());
     }

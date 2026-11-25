@@ -80,6 +80,16 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     private @Nullable String carrierCount;
 
     /**
+     * The JEV1 decision model that {@code DecisionModel.begin()} links into the firmware, so {@code juno:flash} uploads
+     * the program and its model together (for example
+     * {@code -Djuno.dm.model=../juno-models/src/main/resources/dm/TIC_TAC_TOE.JEV}). A relative path is resolved
+     * against the project's directory. Required only by a program that calls {@code begin()}; the build fails without
+     * it, and a program that loads its model with {@code begin(SdCard, String)} needs none.
+     */
+    @Parameter(property = "juno.dm.model")
+    private @Nullable File decisionModel;
+
+    /**
      * The program this goal compiles when no {@code juno.main} is given. Most goals have none, since a project's
      * programs are its own; a goal that talks to a program of the plugin's (such as {@code juno:secret}) ships it.
      */
@@ -110,7 +120,8 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
         RuntimeConfig runtimeConfig = RuntimeConfig.of(Optional.ofNullable(arenaSize),
                 Optional.ofNullable(threadStackSize), Optional.ofNullable(carrierCount));
         CompilationResult result = new JunoCompiler().compileTo(
-                new CompilationRequest(classpath, entryPoint, gcLog, configured(board), runtimeConfig),
+                new CompilationRequest(classpath, entryPoint, gcLog, configured(board), runtimeConfig,
+                        Optional.ofNullable(decisionModel).map(File::toPath)),
                 layout.assembly(), layout.runtimeShim());
         result.sketchWrapper().writeTo(layout.wrapper());
 

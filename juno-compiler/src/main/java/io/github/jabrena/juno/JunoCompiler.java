@@ -3,9 +3,11 @@ package io.github.jabrena.juno;
 import io.github.jabrena.juno.backend.AsmBackend;
 import io.github.jabrena.juno.backend.GeneratedCode;
 import io.github.jabrena.juno.backend.avr.AvrAsmBackend;
+import io.github.jabrena.juno.backend.runtime.LinkedDecisionModel;
 import io.github.jabrena.juno.backend.thumb2.Thumb2AsmBackend;
 import io.github.jabrena.juno.backend.xtensa.XtensaAsmBackend;
 import io.github.jabrena.juno.board.Board;
+import io.github.jabrena.juno.intrinsic.Intrinsic;
 import io.github.jabrena.juno.ir.IrProgram;
 import io.github.jabrena.juno.linker.Program;
 
@@ -28,7 +30,8 @@ public final class JunoCompiler {
         CompilationReport report = CompilationReport.from(program, lowered, optimized, runtimeConfig);
         GeneratedCode code = backendFor(program.board(), request.gcLoggingEnabled(), runtimeConfig)
                 .generate(optimized);
-        return new CompilationResult(code.assembly(), code.runtimeShim(), code.entryPointSymbol(), report,
+        String runtimeShim = code.runtimeShim() + linkedDecisionModel(request, report);
+        return new CompilationResult(code.assembly(), runtimeShim, code.entryPointSymbol(), report,
                 program.board().fqbn() + code.fqbnOptions(), code.mainLauncher(), code.coprocessor());
     }
 
@@ -68,6 +71,20 @@ public final class JunoCompiler {
                                        Optional<String> requestedBoard) {
         return compileTo(new CompilationRequest(classPath, mainClass, gcLoggingEnabled, requestedBoard),
                 assemblyOutput, runtimeShimOutput);
+    }
+
+    /**
+     * The JEV1 model {@code DecisionModel.begin()} uses, appended after the evaluator it calls, or nothing for a program
+     * that never calls it.
+     */
+    private String linkedDecisionModel(CompilationRequest request, CompilationReport report) {
+        if (!report.intrinsics().contains(Intrinsic.DECISION_MODEL_BEGIN_LINKED)) {
+            return "";
+        }
+        Path model = request.decisionModel().orElseThrow(() -> new CompileException(
+                "DecisionModel.begin() links the JEV1 model named by -Djuno.dm.model=<file>, and none was given; "
+                        + "pass it, or load the model from an SD card with DecisionModel.begin(SdCard, String)"));
+        return LinkedDecisionModel.read(model).source();
     }
 
     /** A fresh backend for {@code board}'s instruction-set architecture. */

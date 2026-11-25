@@ -433,6 +433,14 @@ public final class IntrinsicLowering {
                 ShimFeature.LANGUAGE_MODEL);
         shim(Intrinsic.DECISION_MODEL_EVALUATE, "juno_dm_evaluate", Result.WORD,
                 List.of(arg(0), arg(1)), ShimFeature.DECISION_MODEL);
+        shim(Intrinsic.DECISION_MODEL_BEGIN_LINKED, "juno_dm_begin_linked", Result.WORD, List.of(),
+                ShimFeature.DECISION_MODEL, ShimFeature.DECISION_MODEL_LINKED);
+        shim(Intrinsic.DECISION_MODEL_BEGIN_PSRAM, "juno_dm_begin_psram", Result.WORD, List.of(arg(0), arg(1)),
+                ShimFeature.DECISION_MODEL, ShimFeature.DECISION_MODEL_PSRAM, ShimFeature.PSRAM);
+        shim(Intrinsic.DECISION_MODEL_ACTIONS, "juno_dm_actions", Result.WORD, List.of(), ShimFeature.DECISION_MODEL);
+        shim(Intrinsic.DECISION_MODEL_FEATURES, "juno_dm_features", Result.WORD, List.of(),
+                ShimFeature.DECISION_MODEL);
+        shim(Intrinsic.DECISION_MODEL_UNLOAD, "juno_dm_unload", Result.NONE, List.of(), ShimFeature.DECISION_MODEL);
     }
 
     /**
