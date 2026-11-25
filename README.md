@@ -323,7 +323,7 @@ watch for the address it prints:
 ./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSecretStoreChat \
   -Djuno.board=arduino-nano-esp32 \
-  -Djuno.lm.model=../juno-lm/src/main/resources/lm/JUNO.BIN
+  -Djuno.lm.model=../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32
 # JLM1: open http://<address>
 ```
@@ -336,7 +336,7 @@ curl -X POST --data 'What is Juno?' http://<address>/api/chat
 ```
 
 The model is a 96 × 4 × 256 character-level transformer (366,528 parameters, 382 KB), trained in pure Java by
-[`juno-lm`](juno-lm) and run by an engine written in Java. The article
+[`juno-lm`](juno-ai/juno-lm) and run by an engine written in Java. The article
 [JLM1: a language model that runs on the board](https://jabrena.github.io/juno/blog/2026-11-24-jlm1-on-board-language-model/)
 explains how it works.
 

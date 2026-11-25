@@ -14,10 +14,10 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   third-party code; `ExamplesArchitectureTest` keeps `juno-examples` on board-side artifacts and the JDK only;
   `RcxFirmwareArchitectureTest` keeps the RCX generator independent of `juno-api` and `juno-compiler`.
 - **Nullness:** JSpecify (`provided` scope). Every `juno-api`, `juno-compiler`, `juno-third-parties/juno-rcx-firmware`,
-  `juno-lm` and `juno-maven-plugin` package is `@NullMarked`; mark a value that can legitimately be absent `@Nullable`, and use
+  `juno-ai/*` and `juno-maven-plugin` package is `@NullMarked`; mark a value that can legitimately be absent `@Nullable`, and use
   `Objects.requireNonNull` for a
   lookup that must succeed by construction. NullAway (Error Prone, configured in the root `pom.xml`) enforces this at
-  compile time in those five modules and fails the build on a nullness error.
+  compile time in those modules and fails the build on a nullness error.
 - **Build checks:** Spotless (formatting: imports as project/third-party, `java.*`, then static), the Maven
   Enforcer (JDK/Maven versions, dependency convergence) and `dependency:analyze-only` (no undeclared or unused
   dependencies) run on every `verify`; documented exceptions live in the poms.
@@ -36,11 +36,18 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   fake process executor and never touch hardware.
 - `juno-third-parties/juno-rcx-firmware/` – the independent H8/300 RCX firmware generator, its generated S-record and its generated
   Java image; it depends on neither `juno-api` nor `juno-compiler`.
-- `juno-lm/` – the independent JLM1 model builder: trains a character-level transformer (designed after TINY 2.1)
+- `juno-ai/` – the umbrella for every AI module that runs on the build machine; an aggregating pom with no
+  classes of its own.
+- `juno-ai/juno-lm/` – the independent JLM1 model builder: trains a character-level transformer (designed after TINY 2.1)
   from facts files in pure Java, quantizes and writes the JLM1 file (a header with the dimensions, context and
   alphabet, then signed-byte weights), runs it exactly as the board engine does, and converts TINY 2.1 TNY2 files; its tracked `src/main/resources/lm/JUNO.BIN` is the model the language-model examples link with
   `-Djuno.lm.model` (`LanguageModel.begin()` links the file that option names; `juno-compiler` has no default model).
   It depends on neither `juno-api` nor `juno-compiler`.
+- `juno-ai/juno-dm/` – the independent JEV1 decision-model core: trains, quantizes, encodes and runs JEV models
+  (a learned evaluation over a feature vector) exactly as the board evaluator does. It depends on neither `juno-api`
+  nor `juno-compiler`.
+- `juno-ai/juno-models/` – datasets, oracles and the tracked `.JEV` files built with `juno-dm` (under
+  `src/main/resources/dm/`), which the decision-model examples link with `-Djuno.dm.model`.
 - `juno-examples/` – example programs buildable with `arduino-cli`, including the RCX firmware downloader; depends
   on `juno-api` and the generated image from `juno-third-parties/juno-rcx-firmware`.
 - `juno-site/` – documentation site: edit prose in `src/main/resources/content/`, never hand-edit `docs/`. Images
@@ -102,13 +109,13 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
 java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.juno.backend.h8300.RcxRemoteFirmware
 
 # Train JUNO.BIN on demand (the default build never trains; CI only compiles juno-lm). The command writes JUNO.BIN into
-# juno-lm/target/lm, failing below 95% of the facts answered; copy it over
+# juno-ai/juno-lm/target/lm, failing below 95% of the facts answered; copy it over
 # src/main/resources/lm/JUNO.BIN to make it the model the examples link with -Djuno.lm.model.
-./mvnw -pl juno-lm -Plm-model process-classes -Dlm.steps=16000
-java -cp juno-lm/target/classes io.github.jabrena.juno.lm.cli.JlmBuilder \
-  ask juno-lm/target/lm/JUNO.BIN "What is Juno?"
+./mvnw -pl juno-ai/juno-lm -Plm-model process-classes -Dlm.steps=16000
+java -cp juno-ai/juno-lm/target/classes io.github.jabrena.juno.lm.cli.JlmBuilder \
+  ask juno-ai/juno-lm/target/lm/JUNO.BIN "What is Juno?"
 # Convert a TINY 2.1 TNY2 model into JLM1, the only format the board engine reads
-java -cp juno-lm/target/classes io.github.jabrena.juno.lm.cli.JlmBuilder convert TINY.BIN JUNO.BIN
+java -cp juno-ai/juno-lm/target/classes io.github.jabrena.juno.lm.cli.JlmBuilder convert TINY.BIN JUNO.BIN
 
 # Generate Blink. The plugin has no default program: always pass -Djuno.main.
 ./mvnw -f juno-examples/pom.xml compile juno:compile -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink -Djuno.board=arduino-uno-r4-wifi

@@ -8,7 +8,7 @@
         <groupId>io.github.jabrena</groupId>
         <artifactId>juno-parent</artifactId>
         <version>0.1.0</version>
-        <relativePath>../pom.xml</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>juno-lm</artifactId>
@@ -79,7 +79,7 @@
     <profiles>
         <!-- On demand only: trains JUNO.BIN from the bundled facts into target/lm; a default build never trains, and
              CI never trains a model.
-             ./mvnw -pl juno-lm -Plm-model process-classes [-Dlm.steps=3000]
+             ./mvnw -pl juno-ai/juno-lm -Plm-model process-classes [-Dlm.steps=3000]
              To release the result, copy target/lm/JUNO.BIN to src/main/resources/lm/: it is the model
              LanguageModel.begin() links into a program's firmware. -->
         <profile>

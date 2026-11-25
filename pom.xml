@@ -30,9 +30,7 @@
 
     <modules>
         <module>juno-api</module>
-        <module>juno-lm</module>
-        <module>juno-dm</module>
-        <module>juno-models</module>
+        <module>juno-ai</module>
         <module>juno-compiler</module>
         <module>juno-maven-plugin</module>
         <module>juno-examples</module>

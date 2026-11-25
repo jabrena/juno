@@ -16,7 +16,7 @@ import io.github.jabrena.juno.util.Delay;
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.ai.TicTacToeDecisionModel -Djuno.board=arduino-nano-esp32 \
- *   -Djuno.dm.model=../juno-models/src/main/resources/dm/TIC_TAC_TOE.JEV
+ *   -Djuno.dm.model=../juno-ai/juno-models/src/main/resources/dm/TIC_TAC_TOE.JEV
  * ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.baudRate=115200
  * }</pre>
  */

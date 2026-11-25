@@ -46,7 +46,7 @@ class JunoCompilerTest {
     @DisplayName("Compilation and class model")
     class CompilationAndClassModel {
         /** The model juno-lm trains from the Juno facts, which the language-model examples link. */
-        private static final Path JUNO_BIN = Path.of("../juno-lm/src/main/resources/lm/JUNO.BIN");
+        private static final Path JUNO_BIN = Path.of("../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN");
 
         @TempDir
         Path temporaryDirectory;

@@ -31,7 +31,7 @@ program and its model together:
 ./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSecretStoreChat \
   -Djuno.board=arduino-nano-esp32 -Djuno.port=<port> \
-  -Djuno.lm.model=../juno-lm/src/main/resources/lm/JUNO.BIN
+  -Djuno.lm.model=../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.port=<port>
 ```
 
@@ -129,7 +129,7 @@ That is roughly 30 ms per character, question included.
 ## How it is trained
 
 `juno-lm` trains the model on the build machine, in pure Java with hand-written backpropagation and no ML library. The
-training data is plain text in `juno-lm/src/main/resources/lm/facts`: one fact per line, several wordings of a
+training data is plain text in `juno-ai/juno-lm/src/main/resources/lm/facts`: one fact per line, several wordings of a
 question and the answer:
 
 ```text
@@ -142,7 +142,7 @@ rate 0.003, warm-up, cosine decay), dropout 0.1 and weight decay 0.01, then quan
 `JUNO.BIN`. It takes about 40 minutes on an 8-core laptop:
 
 ```bash
-./mvnw -pl juno-lm -Plm-model process-classes -Dlm.steps=16000
+./mvnw -pl juno-ai/juno-lm -Plm-model process-classes -Dlm.steps=16000
 ```
 
 The build fails if the model answers fewer than 95% of the trained questions exactly. A separate held-out set of

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.jabrena</groupId>
+        <artifactId>juno-parent</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <artifactId>juno-ai</artifactId>
+    <packaging>pom</packaging>
+    <name>Juno AI</name>
+    <description>Parent of Juno's build-machine AI modules: the JLM1 language-model builder, the JEV decision-model builder and the decision models built with it</description>
+
+    <!-- An aggregating pom with no classes of its own; its modules run PIT themselves. -->
+    <properties>
+        <skipPitest>true</skipPitest>
+    </properties>
+
+    <modules>
+        <module>juno-lm</module>
+        <module>juno-dm</module>
+        <module>juno-models</module>
+    </modules>
+</project>

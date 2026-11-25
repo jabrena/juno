@@ -8,14 +8,14 @@ import java.io.IOException;
  * Builds JLM1 models from facts, from the repository root:
  *
  * <pre>
- * ./mvnw -pl juno-lm compile
- * java -cp juno-lm/target/classes io.github.jabrena.juno.lm.cli.JlmBuilder \
- *     train juno-lm/src/main/resources/lm/facts target/lm/JUNO.BIN
+ * ./mvnw -pl juno-ai/juno-lm compile
+ * java -cp juno-ai/juno-lm/target/classes io.github.jabrena.juno.lm.cli.JlmBuilder \
+ *     train juno-ai/juno-lm/src/main/resources/lm/facts target/lm/JUNO.BIN
  * </pre>
  *
  * Exits with 0 on success, 2 for wrong arguments and 1 for an unreadable or invalid file, or a trained model below
  * {@code --min-accuracy}. Maven runs the same {@code train} on demand with
- * {@code ./mvnw -pl juno-lm -Plm-model process-classes}.
+ * {@code ./mvnw -pl juno-ai/juno-lm -Plm-model process-classes}.
  */
 public final class JlmBuilder {
 

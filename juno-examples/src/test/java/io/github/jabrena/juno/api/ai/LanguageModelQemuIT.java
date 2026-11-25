@@ -45,7 +45,7 @@ class LanguageModelQemuIT {
     private static final String BOARD = "arduino-nano-esp32";
     private static final String NAME = "LanguageModelQemuProgram";
     /** The model the build links for {@code LanguageModel.begin()} ({@code juno.lm.model}), from juno-lm. */
-    private static final Path MODEL = BASEDIR.resolve("../juno-lm/src/main/resources/lm/JUNO.BIN").normalize();
+    private static final Path MODEL = BASEDIR.resolve("../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN").normalize();
     private static final String BEGIN_MARKER = "[juno-begin]\n";
     private static final String EXIT_MARKER = "[juno-exit]\n";
     private static final int RUN_TIMEOUT_SECONDS = Integer.getInteger("juno.xtensaRunTimeoutSeconds", 900);
