@@ -541,9 +541,26 @@ moves so the games differ:</p>
 </tbody>
 </table>
 <p>That is the trade a JEV model makes: its features look one reply ahead, and it plays about as well as a four-move
-search for the cost of 7 × 56 multiply-adds; a better player needs better features rather than a bigger engine. There
-is no Connect Four board example yet: a program would compute the same 56 numbers from its own board arrays, as
-<code>ConnectFourFeatures</code> documents them, before calling <code>evaluate</code>.</p>
+search for the cost of 7 × 56 multiply-adds; a better player needs better features rather than a bigger engine.</p>
+<h2 id="try-it-connectfourwebgame">Try it: ConnectFourWebGame</h2>
+<p>On the board, <code>ConnectFourGame</code> keeps the 42 cells in an <code>int[]</code> and computes the same 56 features, from buffers
+allocated once; <code>ConnectFourGameTest</code> replays 300 random games and checks every position's features against
+<code>ConnectFourFeatures</code>, so the board feeds the model exactly what it was trained on. <code>ConnectFourWebGame</code> serves the
+game with the same Secret Store Wi-Fi as the tic-tac-toe example:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
+  -Djuno.main=io.github.jabrena.juno.api.ai.ConnectFourWebGame \
+  -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt; \
+  -Djuno.dm.model=../juno-ai/juno-models/src/main/resources/dm/CONNECT_FOUR.JEV
+./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt; -Djuno.baudRate=115200
+</code></pre>
+<p>You play yellow and the model plays red; two buttons start a new game with either side moving first. The routes are
+the tic-tac-toe ones: <code>GET /api/state</code> returns the 42 cells column by column from the bottom, the status and the last
+cell played, <code>POST /api/move</code> takes a column, and <code>POST /api/reset</code> takes <code>h</code> or <code>m</code> for who starts:</p>
+<pre><code class="language-bash">curl -X POST --data m http://&lt;address&gt;/api/reset
+# {&quot;board&quot;:&quot;------------------M-----------------------&quot;,&quot;status&quot;:&quot;turn&quot;,&quot;last&quot;:18}
+</code></pre>
+<p>On a Nano ESP32 a move, the feature encoding, the model's evaluation and the HTTP round trip over Wi-Fi together take
+about 60 ms.</p>
 <h2 id="what-to-expect">What to expect</h2>
 <p>A JEV model is as good as the features it is given: the evaluator is linear and looks one decision ahead, so it does
 not search. In exchange it is tiny, its cost is known in advance (one pass over the legal actions' rows), and it never
