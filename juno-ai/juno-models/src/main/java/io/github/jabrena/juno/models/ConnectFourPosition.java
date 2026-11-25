@@ -116,7 +116,8 @@ public record ConnectFourPosition(long red, long yellow) {
         return 1L << (column * COLUMN_BITS + ROWS - 1);
     }
 
-    static boolean hasWon(long discs) {
+    /** Whether {@code discs} hold four in a line. */
+    public static boolean hasWon(long discs) {
         for (int shift : DIRECTIONS) {
             long pairs = discs & (discs >>> shift);
             if ((pairs & (pairs >>> (2 * shift))) != 0) {
