@@ -4,6 +4,9 @@ import io.github.jabrena.juno.dm.JevInference;
 import io.github.jabrena.juno.dm.QuantizedJevInference;
 import org.junit.jupiter.api.Test;
 
+import java.io.InputStream;
+import java.util.Arrays;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -81,6 +84,14 @@ class TicTacToeModelTest {
             assertThat(oracle.utility(position, selected))
                     .as("position %s selected action %d", position, selected)
                     .isEqualTo(oracle.bestUtility(position));
+        }
+    }
+
+    @Test
+    void trackedArtifactMatchesTheCanonicalModelFactory() throws Exception {
+        try (InputStream artifact = TicTacToeModelTest.class.getResourceAsStream("/dm/TIC_TAC_TOE.JEV")) {
+            assertThat(artifact).isNotNull();
+            assertThat(Arrays.equals(TicTacToeModelArtifact.encoded(), artifact.readAllBytes())).isTrue();
         }
     }
 }

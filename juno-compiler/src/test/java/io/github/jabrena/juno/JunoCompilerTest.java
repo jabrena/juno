@@ -189,7 +189,12 @@ class JunoCompilerTest {
 
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoDecisionModel");
 
-            assertThat(result.runtimeShim()).contains("juno_dm_evaluate");
+            assertThat(result.runtimeShim()).contains(
+                    "juno_dm_tic_tac_toe_weights[9][4520]",
+                    "juno_dm_tic_tac_toe_scales[9]",
+                    "juno_dm_evaluate",
+                    "juno_dm_tic_tac_toe_feature_count = 4520")
+                    .doesNotContain("deterministic legal-action fallback");
             assertThat(result.assembly()).contains("juno_dm_evaluate");
         }
 
