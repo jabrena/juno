@@ -206,6 +206,49 @@ class CompileMojoTest extends AbstractMojoTestCase {
                 .hasMessageContaining("-Djuno.dm.model=<file>");
     }
 
+    @Test
+    @DisplayName("Links the juno.lm.model file into a program that calls LanguageModel.begin()")
+    void shouldLinkTheLanguageModelFile() throws Exception {
+        // Given
+        CompileMojo mojo = lookupEmptyMojo("compile", new File("."));
+        mojo = configureMojo(mojo, configuration()
+                .set("arduinoCli", "arduino-cli")
+                .set("mainClass", "io.github.jabrena.juno.maven.fixture.LanguageModelProgram")
+                .set("board", "arduino-nano-esp32")
+                .set("languageModel", "../juno-lm/src/main/resources/lm/JUNO.BIN")
+                .set("outputDirectory", "target/juno-mojo-test/lm-linked")
+                .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
+                .build());
+        mojo.setLog(new RecordingLog());
+
+        // When
+        mojo.execute();
+
+        // Then
+        assertThat(Path.of("target/juno-mojo-test/lm-linked/LanguageModelProgramAsm/LanguageModelProgramShim.cpp"))
+                .content().contains("juno_lm_linked_model[381907]", "juno_lm_bundled_model");
+    }
+
+    @Test
+    @DisplayName("Fails a program that calls LanguageModel.begin() without juno.lm.model")
+    void shouldRequireTheLanguageModelFile() throws Exception {
+        // Given
+        CompileMojo mojo = lookupEmptyMojo("compile", new File("."));
+        mojo = configureMojo(mojo, configuration()
+                .set("arduinoCli", "arduino-cli")
+                .set("mainClass", "io.github.jabrena.juno.maven.fixture.LanguageModelProgram")
+                .set("board", "arduino-nano-esp32")
+                .set("outputDirectory", "target/juno-mojo-test/lm-missing")
+                .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
+                .build());
+        mojo.setLog(new RecordingLog());
+
+        // When & Then
+        assertThatThrownBy(mojo::execute)
+                .isInstanceOf(MojoFailureException.class)
+                .hasMessageContaining("-Djuno.lm.model=<file>");
+    }
+
     /** A 2-action, 3-feature JEV1 model: 9 header bytes, then per action a scale, a bias and 3 weights. */
     private static byte[] tinyJevModel() {
         ByteBuffer model = ByteBuffer.allocate(31);

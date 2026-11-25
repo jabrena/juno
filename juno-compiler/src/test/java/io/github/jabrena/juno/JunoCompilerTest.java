@@ -45,6 +45,9 @@ class JunoCompilerTest {
     @Nested
     @DisplayName("Compilation and class model")
     class CompilationAndClassModel {
+        /** The model juno-lm trains from the Juno facts, which the language-model examples link. */
+        private static final Path JUNO_BIN = Path.of("../juno-lm/src/main/resources/lm/JUNO.BIN");
+
         @TempDir
         Path temporaryDirectory;
 
@@ -159,9 +162,11 @@ class JunoCompilerTest {
                     """;
             CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoLanguageModel", source);
 
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoLanguageModel");
+            CompilationResult result = CompilerTestSupport.compileJunoWithLanguageModel(temporaryDirectory,
+                    "demo.NanoLanguageModel", JUNO_BIN);
 
-            assertThat(result.runtimeShim()).contains("juno_lm_bundled_model", "juno_lm_default_model[381907]",
+            assertThat(result.runtimeShim()).contains("juno_lm_bundled_model", "juno_lm_linked_model[381907]",
+                    "The linked JLM1 model (JUNO.BIN, 381907 bytes)",
                     "juno_lm_multiply_rows", "juno_lm_accumulate_rows", "juno_lm_quantize_row", "juno_lm_read_floats",
                     "juno_psram_find", "#include <esp_heap_caps.h>")
                     .doesNotContain("juno_language_model");
@@ -169,6 +174,34 @@ class JunoCompilerTest {
             assertThat(result.assembly()).contains("juno_lm_bundled_model", "juno_lm_multiply_rows",
                     "juno_lm_accumulate_rows", "juno_lm_quantize_row", "juno_lm_read_floats", "juno_lm_exponentials",
                     "juno_lm_attend", "juno_lm_rms_norm", "juno_lm_add", "juno_lm_relu");
+        }
+
+        @Test
+        @DisplayName("Fails the build when LanguageModel.begin() has no juno.lm.model to link")
+        void shouldRequireALanguageModelForBegin() throws Exception {
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoUnlinkedLanguageModel", """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    @Board(ArduinoNanoEsp32Board.class)
+                    public final class NanoUnlinkedLanguageModel {
+                        public static void main(String[] args) {
+                            Serial.println(MCU.getLanguageModel().begin().ordinal());
+                        }
+                    }
+                    """);
+            Path notAModel = Files.writeString(temporaryDirectory.resolve("NOTES.TXT"), "not a model");
+
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory,
+                    "demo.NanoUnlinkedLanguageModel"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("-Djuno.lm.model=<file>");
+            assertThatThrownBy(() -> CompilerTestSupport.compileJunoWithLanguageModel(temporaryDirectory,
+                    "demo.NanoUnlinkedLanguageModel", notAModel))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("is not a JLM1 model");
         }
 
         @Test

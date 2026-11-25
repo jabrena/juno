@@ -17,6 +17,12 @@ import java.net.InetSocketAddress;
  * The JLM1 neural terminal in Java: the Nano ESP32 opens its own Wi-Fi network {@code JLM1-NEURAL} (password
  * {@code tinyterminal}) and serves the {@link LanguageModelWebChat} page at {@code http://192.168.4.1}. No internet and no
  * credentials are needed: join the board's network and chat with the model running on it.
+ *
+ * <pre>{@code
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
+ *   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelAccessPointChat -Djuno.board=arduino-nano-esp32 \
+ *   -Djuno.lm.model=../juno-lm/src/main/resources/lm/JUNO.BIN
+ * }</pre>
  */
 @Board({ArduinoNanoEsp32Board.class})
 public final class LanguageModelAccessPointChat {

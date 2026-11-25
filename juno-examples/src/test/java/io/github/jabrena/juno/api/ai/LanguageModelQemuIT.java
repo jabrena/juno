@@ -1,7 +1,9 @@
 package io.github.jabrena.juno.api.ai;
 
+import io.github.jabrena.juno.CompilationRequest;
 import io.github.jabrena.juno.CompilationResult;
 import io.github.jabrena.juno.JunoCompiler;
+import io.github.jabrena.juno.RuntimeConfig;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.lm.JlmInference;
 import io.github.jabrena.juno.lm.JlmReader;
@@ -17,7 +19,6 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Runs the board's JLM1 engine without a board: {@link LanguageModelQemuProgram} is compiled by Juno for the Nano ESP32, built by
  * its Arduino core and booted under Espressif's QEMU in the Xtensa harness image of {@code juno-compiler}, and every
- * answer it prints must match the Java engine reading the bundled JUNO.BIN that {@code begin()} links in. That checks the C++ engine's
+ * answer it prints must match the Java engine reading the JUNO.BIN the build links in for {@code begin()}. That checks the C++ engine's
  * normalization, lookahead and fallback against the reference, including the model copy into PSRAM. QEMU has no
  * Wi-Fi, so the web chat is out of scope. Opt-in: {@code ./mvnw -f juno-examples/pom.xml -Pxtensa verify}; skipped
  * without Docker.
@@ -43,8 +44,8 @@ class LanguageModelQemuIT {
     private static final Path HARNESS = BASEDIR.resolve("../juno-compiler/src/test/docker/xtensa").normalize();
     private static final String BOARD = "arduino-nano-esp32";
     private static final String NAME = "LanguageModelQemuProgram";
-    /** The model {@code LanguageModel.begin()} links in, from juno-lm. */
-    private static final String BUNDLED_MODEL = "/lm/JUNO.BIN";
+    /** The model the build links for {@code LanguageModel.begin()} ({@code juno.lm.model}), from juno-lm. */
+    private static final Path MODEL = BASEDIR.resolve("../juno-lm/src/main/resources/lm/JUNO.BIN").normalize();
     private static final String BEGIN_MARKER = "[juno-begin]\n";
     private static final String EXIT_MARKER = "[juno-exit]\n";
     private static final int RUN_TIMEOUT_SECONDS = Integer.getInteger("juno.xtensaRunTimeoutSeconds", 900);
@@ -58,10 +59,10 @@ class LanguageModelQemuIT {
         // Given
         Path sketch = BASEDIR.resolve("target/lm-qemu").resolve(NAME);
         Files.createDirectories(sketch);
-        CompilationResult result = new JunoCompiler().compileTo(
+        CompilationResult result = new JunoCompiler().compileTo(new CompilationRequest(
                 List.of(programOnly(), codeSource(LanguageModelStatus.class), codeSource(MCU.class)),
-                LanguageModelQemuProgram.class.getName(), sketch.resolve("program.S"), sketch.resolve("shim.cpp"), false,
-                Optional.of(BOARD));
+                LanguageModelQemuProgram.class.getName(), false, Optional.of(BOARD), RuntimeConfig.DEFAULT,
+                Optional.empty(), Optional.of(MODEL)), sketch.resolve("program.S"), sketch.resolve("shim.cpp"));
         Files.writeString(sketch.resolve(NAME + ".ino"), harnessSketch(result.entryPointSymbol()));
 
         // When
@@ -73,11 +74,7 @@ class LanguageModelQemuIT {
 
     /** What the board must print: the load status, then each question with the Java engine's answer. */
     private static String expectedTranscript() throws IOException {
-        JlmInference engine;
-        try (InputStream model = LanguageModelQemuIT.class.getResourceAsStream(BUNDLED_MODEL)) {
-            assertThat(model).as("the bundled model %s on the test classpath", BUNDLED_MODEL).isNotNull();
-            engine = new JlmInference(new JlmReader().read(model.readAllBytes()));
-        }
+        JlmInference engine = new JlmInference(new JlmReader().read(Files.readAllBytes(MODEL)));
         StringBuilder expected = new StringBuilder("load OK\n");
         for (String question : LanguageModelQemuProgram.QUESTIONS) {
             expected.append(question).append(" -> ").append(engine.answer(question)).append('\n');
