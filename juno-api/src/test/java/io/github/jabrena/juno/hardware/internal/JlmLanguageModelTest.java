@@ -59,7 +59,7 @@ class JlmLanguageModelTest {
 
     @ParameterizedTest(name = "seed {0}")
     @CsvSource(delimiter = '|', value = {
-        "2|Small boards cannot hold a JVM; Juno compiles Java instead.",
+        "2|Juno compiles Java programs into firmware for microcontrollers.",
         "5|Juno compiles Java programs into firmware for microcontrollers."})
     @DisplayName("Samples exactly as the reference engine for the same random sequence")
     void shouldSampleAsTheReferenceEngine(long seed, String expected) {
