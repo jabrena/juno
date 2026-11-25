@@ -561,6 +561,8 @@ public final class IntrinsicRegistry {
                     "([F[FI)I"), Intrinsic.LANGUAGE_MODEL_ADD),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/PsramJlmRuntime", "reluKernel",
                     "([FI)I"), Intrinsic.LANGUAGE_MODEL_RELU),
+            Map.entry(new MethodRef("io/github/jabrena/juno/hardware/internal/NativeDecisionModel", "evaluate",
+                    "([I[I)I"), Intrinsic.DECISION_MODEL_EVALUATE),
             Map.entry(new MethodRef("io/github/jabrena/juno/hardware/net/email/Smtp", "send",
                     "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;"
                             + "Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I"), Intrinsic.SMTP_SEND),

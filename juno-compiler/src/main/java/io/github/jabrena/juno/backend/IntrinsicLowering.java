@@ -431,6 +431,8 @@ public final class IntrinsicLowering {
                 ShimFeature.LANGUAGE_MODEL);
         shim(Intrinsic.LANGUAGE_MODEL_RELU, "juno_lm_relu", Result.WORD, List.of(arg(0), arg(1)),
                 ShimFeature.LANGUAGE_MODEL);
+        shim(Intrinsic.DECISION_MODEL_EVALUATE, "juno_dm_evaluate", Result.WORD,
+                List.of(arg(0), arg(1)), ShimFeature.DECISION_MODEL);
     }
 
     /**
