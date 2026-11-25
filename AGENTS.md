@@ -40,7 +40,7 @@ You are a senior Java engineer specializing in compiler and toolchain developmen
   classes of its own.
 - `juno-ai/juno-lm/` – the independent JLM1 model builder: trains a character-level transformer (designed after TINY 2.1)
   from facts files in pure Java, quantizes and writes the JLM1 file (a header with the dimensions, context and
-  alphabet, then signed-byte weights), runs it exactly as the board engine does, and converts TINY 2.1 TNY2 files; its tracked `src/main/resources/lm/JUNO.BIN` is the model the language-model examples link with
+  alphabet, then signed-byte weights), runs it exactly as the board engine does, and converts TINY 2.1 TNY2 files; the tracked `juno-ai/juno-models/src/main/resources/lm/JUNO.BIN` is the model the language-model examples link with
   `-Djuno.lm.model` (`LanguageModel.begin()` links the file that option names; `juno-compiler` has no default model).
   It depends on neither `juno-api` nor `juno-compiler`.
 - `juno-ai/juno-dm/` – the independent JEV1 decision-model core: trains, quantizes, encodes and runs JEV models
@@ -110,7 +110,7 @@ java -cp juno-third-parties/juno-rcx-firmware/target/classes io.github.jabrena.j
 
 # Train JUNO.BIN on demand (the default build never trains; CI only compiles juno-lm). The command writes JUNO.BIN into
 # juno-ai/juno-lm/target/lm, failing below 95% of the facts answered; copy it over
-# src/main/resources/lm/JUNO.BIN to make it the model the examples link with -Djuno.lm.model.
+# juno-ai/juno-models/src/main/resources/lm/JUNO.BIN to make it the model the examples link with -Djuno.lm.model.
 ./mvnw -pl juno-ai/juno-lm -Plm-model process-classes -Dlm.steps=16000
 java -cp juno-ai/juno-lm/target/classes io.github.jabrena.juno.lm.cli.JlmBuilder \
   ask juno-ai/juno-lm/target/lm/JUNO.BIN "What is Juno?"

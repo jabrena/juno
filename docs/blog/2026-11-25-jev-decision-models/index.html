@@ -425,6 +425,7 @@ finds it. A computer move then takes about 80 ms on a Nano ESP32.</p>
 <h2 id="try-it-tictactoewebgame">Try it: TicTacToeWebGame</h2>
 <p><code>TicTacToeWebGame</code> joins Wi-Fi with the credentials in the board's Secret Store and serves a game page; you play <code>O</code>,
 the model plays <code>X</code>:</p>
+<img src="../../images/ia/tic-tac-toe.png" alt="Juno JEV tic-tac-toe web game showing a drawn board" width="460">
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt; -Djuno.secret.key=wifi.ssid
 ./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt; -Djuno.secret.key=wifi.password
 ./mvnw -f juno-examples/pom.xml compile juno:flash \
@@ -547,6 +548,7 @@ search for the cost of 7 × 56 multiply-adds; a better player needs better featu
 allocated once; <code>ConnectFourGameTest</code> replays 300 random games and checks every position's features against
 <code>ConnectFourFeatures</code>, so the board feeds the model exactly what it was trained on. <code>ConnectFourWebGame</code> serves the
 game with the same Secret Store Wi-Fi as the tic-tac-toe example:</p>
+<img src="../../images/ia/connect-four.png" alt="Juno JEV Connect Four web game showing the model winning" width="560">
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.ai.ConnectFourWebGame \
   -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt; \

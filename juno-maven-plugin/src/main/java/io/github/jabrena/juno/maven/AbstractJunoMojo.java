@@ -92,7 +92,7 @@ abstract class AbstractJunoMojo extends AbstractArduinoMojo {
     /**
      * The JLM1 language model that {@code LanguageModel.begin()} links into the firmware, so {@code juno:flash} uploads
      * the program and its model together (for example
-     * {@code -Djuno.lm.model=../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN}, the model {@code juno-lm} trains from the Juno
+     * {@code -Djuno.lm.model=../juno-ai/juno-models/src/main/resources/lm/JUNO.BIN}, the model {@code juno-lm} trains from the Juno
      * facts). A relative path is resolved against the project's directory. Required only by a program that calls
      * {@code begin()}; the build fails without it, and a program that loads its model with
      * {@code begin(SdCard, String)} needs none.

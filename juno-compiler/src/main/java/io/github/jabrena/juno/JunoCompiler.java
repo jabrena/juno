@@ -100,7 +100,7 @@ public final class JunoCompiler {
         }
         Path model = request.languageModel().orElseThrow(() -> new CompileException(
                 "LanguageModel.begin() links the JLM1 model named by -Djuno.lm.model=<file>, and none was given; "
-                        + "pass it (juno-lm's tracked model is juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN), or load the "
+                        + "pass it (juno-models' tracked model is juno-ai/juno-models/src/main/resources/lm/JUNO.BIN), or load the "
                         + "model from an SD card with LanguageModel.begin(SdCard, String)"));
         return LinkedLanguageModel.read(model).source();
     }

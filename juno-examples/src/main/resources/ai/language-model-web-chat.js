@@ -1,0 +1,4 @@
+const $=id=>document.getElementById(id),log=$('log'),q=$('q'),send=$('send');
+fetch('/api/status').then(r=>r.json()).then(s=>{$('dot').classList.toggle('on',s.loaded);$('state').textContent=s.loaded?s.layers+' layers, width '+s.width:'model offline'}).catch(()=>{$('state').textContent='offline'});
+function bubble(cls,text){const d=document.createElement('div');d.className='msg '+cls;d.textContent=text;log.append(d);d.scrollIntoView({block:'end'});return d}
+$('f').onsubmit=async e=>{e.preventDefault();const text=q.value.trim();if(!text)return;q.value='';send.disabled=true;bubble('me',text);const out=bubble('tiny typing','');try{const r=await fetch('/api/chat',{method:'POST',body:text});const reader=r.body.getReader(),d=new TextDecoder();for(;;){const{value,done}=await reader.read();if(done)break;out.textContent+=d.decode(value);out.scrollIntoView({block:'end'})}}catch(x){out.textContent='(no answer)'}out.classList.remove('typing');send.disabled=false;q.focus()};

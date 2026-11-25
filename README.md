@@ -323,7 +323,7 @@ watch for the address it prints:
 ./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSecretStoreChat \
   -Djuno.board=arduino-nano-esp32 \
-  -Djuno.lm.model=../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN
+  -Djuno.lm.model=../juno-ai/juno-models/src/main/resources/lm/JUNO.BIN
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32
 # JLM1: open http://<address>
 ```

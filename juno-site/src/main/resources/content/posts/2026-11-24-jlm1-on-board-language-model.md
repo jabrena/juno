@@ -31,7 +31,7 @@ program and its model together:
 ./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSecretStoreChat \
   -Djuno.board=arduino-nano-esp32 -Djuno.port=<port> \
-  -Djuno.lm.model=../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN
+  -Djuno.lm.model=../juno-ai/juno-models/src/main/resources/lm/JUNO.BIN
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.port=<port>
 ```
 
@@ -89,7 +89,7 @@ likely character had a probability below 0.5 at any of them, it answers `I do no
 
 ## Inside JUNO.BIN
 
-`JUNO.BIN` is 381,907 bytes in the JLM1 format, which Juno defines in `juno-lm`:
+`JUNO.BIN` is 381,907 bytes in the JLM1 format, which Juno defines in `juno-lm` and tracks with the other released models in `juno-models`:
 
 - a 16-byte header: the magic `JLM1`, then width, layers, heads, hidden, context and vocabulary size as little-endian
   16-bit numbers;

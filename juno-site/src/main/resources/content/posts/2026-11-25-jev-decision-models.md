@@ -109,6 +109,8 @@ finds it. A computer move then takes about 80 ms on a Nano ESP32.
 `TicTacToeWebGame` joins Wi-Fi with the credentials in the board's Secret Store and serves a game page; you play `O`,
 the model plays `X`:
 
+<img src="../../images/ia/tic-tac-toe.png" alt="Juno JEV tic-tac-toe web game showing a drawn board" width="460">
+
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-nano-esp32 -Djuno.port=<port> -Djuno.secret.key=wifi.ssid
 ./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-nano-esp32 -Djuno.port=<port> -Djuno.secret.key=wifi.password
@@ -178,6 +180,8 @@ On the board, `ConnectFourGame` keeps the 42 cells in an `int[]` and computes th
 allocated once; `ConnectFourGameTest` replays 300 random games and checks every position's features against
 `ConnectFourFeatures`, so the board feeds the model exactly what it was trained on. `ConnectFourWebGame` serves the
 game with the same Secret Store Wi-Fi as the tic-tac-toe example:
+
+<img src="../../images/ia/connect-four.png" alt="Juno JEV Connect Four web game showing the model winning" width="560">
 
 ```bash
 ./mvnw -f juno-examples/pom.xml compile juno:flash \

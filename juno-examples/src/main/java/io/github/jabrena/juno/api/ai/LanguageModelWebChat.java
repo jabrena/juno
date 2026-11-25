@@ -24,54 +24,7 @@ import static java.net.HttpURLConnection.HTTP_UNAVAILABLE;
 public final class LanguageModelWebChat {
     private static final LanguageModel MODEL = MCU.getLanguageModel();
     private static final byte[] QUESTION = new byte[LanguageModel.MAX_QUESTION];
-    // The juno-site theme (LEGO Mindstorms RCX colors), inline: on the access point there is no internet for assets.
-    private static final String PAGE = """
-            <!doctype html><html lang="en"><head><meta charset="utf-8">
-            <meta name="viewport" content="width=device-width,initial-scale=1"><title>JLM1 on Juno</title><style>
-            :root{--pop:#ffcd03;--pop-tint:#fffbeb;--pop-line:#ffea99;--blue:#0055bf;--blue-dark:#00449a;
-            --black:#1b2a34;--red:#c91a09;--green:#237841;--bg:#fff;--text:#1b2a34;--muted:#5b6b78;--line:#e3e8ec;
-            --answer:#fffbeb;--answer-line:#ffea99;--field:#fff}
-            @media(prefers-color-scheme:dark){:root{--bg:#171717;--text:#eef2f5;--muted:#9aa8b3;--line:#2c3a44;
-            --answer:#2b2000;--answer-line:#5e4700;--field:#1f2a31}}
-            *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);
-            font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;display:flex;
-            flex-direction:column}header{background:var(--pop);color:var(--black);box-shadow:0 1px 0 rgba(0,0,0,.12)}
-            .bar{max-width:760px;margin:auto;height:4rem;padding:0 16px;display:flex;align-items:center;gap:12px}
-            .brand{font-weight:800;font-size:1.25rem;letter-spacing:-.01em}.brick{background:var(--black);color:#fff;
-            border-radius:6px;padding:2px 10px;font-weight:800}.status{margin-left:auto;font-size:.85rem;
-            display:flex;align-items:center;gap:6px}.dot{width:10px;height:10px;border-radius:50%;background:var(--red)}
-            .dot.on{background:var(--green)}main{flex:1;width:100%;max-width:760px;margin:auto;padding:16px;
-            display:flex;flex-direction:column;gap:12px}#log{flex:1;display:flex;flex-direction:column;gap:10px}
-            .hint{color:var(--muted);font-size:.9rem}.msg{max-width:85%;padding:10px 14px;border-radius:14px;
-            white-space:pre-wrap;word-wrap:break-word}.me{align-self:flex-end;background:var(--blue);color:#fff;
-            border-bottom-right-radius:4px}.tiny{align-self:flex-start;background:var(--answer);
-            border:1px solid var(--answer-line);border-bottom-left-radius:4px;font-family:ui-monospace,Menlo,monospace}
-            .tiny.typing::after{content:"\\258b";animation:b 1s steps(1) infinite}@keyframes b{50%{opacity:0}}
-            form{display:flex;gap:8px;position:sticky;bottom:0;background:var(--bg);padding:8px 0}
-            input{flex:1;min-width:0;background:var(--field);color:var(--text);border:2px solid var(--line);
-            border-radius:10px;padding:10px 12px;font:inherit}input:focus{outline:none;border-color:var(--blue)}
-            button{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:10px 18px;font:inherit;
-            font-weight:700;cursor:pointer}button:hover{background:var(--blue-dark)}button:disabled{opacity:.5;
-            cursor:wait}</style></head><body><header><div class="bar"><span class="brick">Juno</span>
-            <span class="brand">JLM1</span><span class="status"><span id="dot" class="dot"></span>
-            <span id="state">connecting</span></span></div></header><main><div id="log">
-            <p class="hint">A small language model running on this board, from PSRAM. Ask about Juno and its boards.</p>
-            </div><form id="f"><input id="q" maxlength="72" autocomplete="off" placeholder="Ask JLM1" autofocus>
-            <button id="send">Send</button></form></main><script>
-            const $=id=>document.getElementById(id),log=$('log'),q=$('q'),send=$('send');
-            fetch('/api/status').then(r=>r.json()).then(s=>{$('dot').classList.toggle('on',s.loaded);
-            $('state').textContent=s.loaded?s.layers+' layers, width '+s.width:'model offline'})
-            .catch(()=>{$('state').textContent='offline'});
-            function bubble(cls,text){const d=document.createElement('div');d.className='msg '+cls;d.textContent=text;
-            log.append(d);d.scrollIntoView({block:'end'});return d}
-            $('f').onsubmit=async e=>{e.preventDefault();const text=q.value.trim();if(!text)return;q.value='';
-            send.disabled=true;bubble('me',text);const out=bubble('tiny typing','');try{
-            const r=await fetch('/api/chat',{method:'POST',body:text});const reader=r.body.getReader(),
-            d=new TextDecoder();for(;;){const{value,done}=await reader.read();if(done)break;
-            out.textContent+=d.decode(value);out.scrollIntoView({block:'end'})}}catch(x){out.textContent='(no answer)'}
-            out.classList.remove('typing');send.disabled=false;q.focus()};
-            </script></body></html>
-            """;
+    private static final byte[] RESOURCE_BUFFER = new byte[512];
 
     private LanguageModelWebChat() {
     }
@@ -80,11 +33,45 @@ public final class LanguageModelWebChat {
     public static void register(HttpServer server) {
         server.createContext("/api/chat", LanguageModelWebChat::chat);
         server.createContext("/api/status", LanguageModelWebChat::status);
+        server.createContext("/ai/language-model-web-chat.css", LanguageModelWebChat::style);
+        server.createContext("/ai/language-model-web-chat.js", LanguageModelWebChat::script);
         server.createContext("/", LanguageModelWebChat::page);
     }
 
     private static void page(HttpExchange exchange) throws IOException {
-        send(exchange, HTTP_OK, "text/html; charset=utf-8", PAGE);
+        try (InputStream resource = LanguageModelWebChat.class.getResourceAsStream(
+                "/ai/language-model-web-chat.html")) {
+            sendResource(exchange, resource, "text/html; charset=utf-8");
+        }
+    }
+
+    private static void style(HttpExchange exchange) throws IOException {
+        try (InputStream resource = LanguageModelWebChat.class.getResourceAsStream(
+                "/ai/language-model-web-chat.css")) {
+            sendResource(exchange, resource, "text/css; charset=utf-8");
+        }
+    }
+
+    private static void script(HttpExchange exchange) throws IOException {
+        try (InputStream resource = LanguageModelWebChat.class.getResourceAsStream(
+                "/ai/language-model-web-chat.js")) {
+            sendResource(exchange, resource, "text/javascript; charset=utf-8");
+        }
+    }
+
+    private static void sendResource(HttpExchange exchange, InputStream resource, String contentType) throws IOException {
+        if (resource == null) {
+            send(exchange, 404, "text/plain; charset=utf-8", "resource not found");
+            return;
+        }
+        exchange.getResponseHeaders().set("Content-Type", contentType);
+        exchange.sendResponseHeaders(HTTP_OK, resource.available());
+        try (OutputStream output = exchange.getResponseBody()) {
+            int count;
+            while ((count = resource.read(RESOURCE_BUFFER, 0, RESOURCE_BUFFER.length)) >= 0) {
+                if (count > 0) output.write(RESOURCE_BUFFER, 0, count);
+            }
+        }
     }
 
     private static void status(HttpExchange exchange) throws IOException {
@@ -126,9 +113,7 @@ public final class LanguageModelWebChat {
         int length = 0;
         while (length < QUESTION.length) {
             int count = body.read(QUESTION, length, QUESTION.length - length);
-            if (count <= 0) {
-                break;
-            }
+            if (count <= 0) break;
             length += count;
         }
         return length;
@@ -143,15 +128,11 @@ public final class LanguageModelWebChat {
     }
 
     private static void writeText(OutputStream output, String text) throws IOException {
-        for (int i = 0; i < text.length(); i++) {
-            output.write(text.charAt(i));
-        }
+        for (int i = 0; i < text.length(); i++) output.write(text.charAt(i));
     }
 
     private static void writeNumber(OutputStream output, int value) throws IOException {
-        if (value >= 10) {
-            writeNumber(output, value / 10);
-        }
+        if (value >= 10) writeNumber(output, value / 10);
         output.write('0' + value % 10);
     }
 }
