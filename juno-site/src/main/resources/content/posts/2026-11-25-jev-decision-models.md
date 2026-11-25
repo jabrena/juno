@@ -1,6 +1,6 @@
 ---
 title: "JEV: decision models that run on the board"
-description: "How Juno stores a decision model as a JEV1 file, picks the best legal action with it on a Nano ESP32, builds a perfect tic-tac-toe player from a minimax oracle and trains a Connect Four player."
+description: "How Juno stores a decision model as a JEV1 file, picks the best legal action on ESP32 and Portenta boards, builds a perfect tic-tac-toe player and trains a Connect Four player."
 date: 2026-11-25
 layout: post
 link: /blog/2026-11-25-jev-decision-models/
@@ -17,8 +17,8 @@ trained Connect Four player.
 | Field | Value |
 |---|---|
 | Sources | [`juno-dm`](https://github.com/jabrena/juno/tree/main/juno-ai/juno-dm) (format, trainer, reference inference), [`juno-models`](https://github.com/jabrena/juno/tree/main/juno-ai/juno-models) (datasets, oracles, tracked `.JEV` files), [`api/ai`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/ai) (examples) |
-| Boards supported | [`Nano ESP32`](../../boards/arduino-nano-esp32) for the examples; a model linked into flash needs no PSRAM, a model loaded from an SD card does |
-| Features used | `MCU.getDecisionModel()`, flash tables, PSRAM (optional), SD card (optional), Secret Store, Wi-Fi, JDK `HttpServer` |
+| Boards supported | [`Nano ESP32`](../../boards/arduino-nano-esp32), [`AI Thinker ESP32-CAM`](../../boards/ai-thinker-esp32-cam) and [`Portenta H7`](../../boards/arduino-portenta-h7); linked JEV models run from flash |
+| Features used | `MCU.getDecisionModel()`, flash tables, Secret Store, Wi-Fi, JDK `HttpServer` |
 
 ## What a JEV model computes
 
@@ -66,8 +66,8 @@ int move = model.evaluate(STATE, LEGAL_ACTIONS);
   and length, and emits it as a `const` table, so it lives in flash and one `juno:flash` uploads the program and its
   model together. A program that calls `begin()` without the option fails to build, on the laptop rather than on the
   board.
-- `begin(card, path)` copies a JEV1 file from a mounted SD card into PSRAM through a 1 KiB buffer instead, so a model
-  can change without reflashing. Only this path needs PSRAM.
+- `begin(card, path)` is an optional SD-card variant for boards and carriers that provide a card. The web examples use
+  the linked model and the Secret Store only, so they do not require SD-card support.
 - `evaluate(state, legalActions)` reads both caller-owned `int[]` buffers in place and allocates nothing, so it can run
   in a main loop. It returns `-1` when no model is loaded, the state has the wrong length, or none of the legal
   actions belongs to the model.
@@ -125,6 +125,10 @@ The monitor prints the board's address; open it in a browser on the same network
 `GET /api/state`, `POST /api/move` and `POST /api/reset`, and the board answers each from a buffer it allocated once at
 startup. `TicTacToeDecisionModel` is the minimal version with no network: it loads the model and prints its opening
 move on the serial port every five seconds.
+
+The same web example is supported on the AI Thinker ESP32-CAM and Portenta H7. Provision `wifi.ssid` and
+`wifi.password` with `juno:secret` on the selected board. The Portenta stores the credentials in its SE050 Secret Store;
+it does not use an SD card for Wi-Fi or for these linked JEV models.
 
 ## Training instead of solving: Connect Four
 
