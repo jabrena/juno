@@ -5,8 +5,37 @@ import io.github.jabrena.juno.dm.QuantizedJevInference;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TicTacToeModelTest {
+    @Test
+    void invalidPositionsAreRejected() {
+        assertThatThrownBy(() -> new TicTacToePosition(1 << TicTacToePosition.BOARD_SIZE, 0, true))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new TicTacToePosition(1, 1, true))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new TicTacToePosition(0, 1, false))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new TicTacToePosition(0, 0, false))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new TicTacToePosition(7, 88, true))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new TicTacToePosition(27, 7, false))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void invalidMovesAreRejected() {
+        assertThatThrownBy(() -> TicTacToePosition.empty().play(-1))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> TicTacToePosition.empty().play(TicTacToePosition.BOARD_SIZE))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> TicTacToePosition.empty().play(0).play(0))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new TicTacToePosition(7, 24, false).play(8))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
     @Test
     void exhaustiveDatasetContainsEveryReachableNonTerminalPosition() {
         var dataset = TicTacToeDataset.exhaustive();
