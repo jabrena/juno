@@ -187,6 +187,7 @@ public enum Intrinsic {
     SOCKET_OUTPUT_STREAM_INIT,
     /** {@code new InputStream()} from a board-side subclass's constructor: nothing to set up. */
     INPUT_STREAM_INIT,
+    CLASS_GET_RESOURCE_AS_STREAM,
     SOCKET_OUTPUT_STREAM_WRITE_BYTE,
     SOCKET_OUTPUT_STREAM_CLOSE,
     SD_BEGIN,
@@ -653,6 +654,7 @@ public enum Intrinsic {
     public boolean ignoresReceiver() {
         return PORT_OPERATIONS.contains(this) || WIFI_OPERATIONS.contains(this)
                 || SD_CARD_OPERATIONS.contains(this) || CAMERA_OPERATIONS.contains(this) || PSRAM_OPERATIONS.contains(this)
-                || LANGUAGE_MODEL_OPERATIONS.contains(this) || DECISION_MODEL_OPERATIONS.contains(this);
+                || LANGUAGE_MODEL_OPERATIONS.contains(this) || DECISION_MODEL_OPERATIONS.contains(this)
+                || this == CLASS_GET_RESOURCE_AS_STREAM;
     }
 }

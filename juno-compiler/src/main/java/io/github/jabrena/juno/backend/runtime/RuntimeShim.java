@@ -238,7 +238,7 @@ public final class RuntimeShim {
         }
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER,
                 ShimFeature.RUNTIME_STRINGS, ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3,
-                ShimFeature.SD, ShimFeature.FLOAT, ShimFeature.DOUBLE, ShimFeature.SYSTEM_ARRAYCOPY,
+                ShimFeature.SD, ShimFeature.INPUT_STREAMS, ShimFeature.FLOAT, ShimFeature.DOUBLE, ShimFeature.SYSTEM_ARRAYCOPY,
                 ShimFeature.DECISION_MODEL)) {
             shim.append("#include <string.h>\n");
         }

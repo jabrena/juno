@@ -749,6 +749,8 @@ public final class IntrinsicLowering {
      * {@code common/streams.cpp} when the program has a board-side stream.
      */
     private void registerInputStreams() {
+        shim(Intrinsic.CLASS_GET_RESOURCE_AS_STREAM, "juno_resource_open", Result.WORD,
+                List.of(literal(0)), ShimFeature.INPUT_STREAMS);
         shim(Intrinsic.INPUT_STREAM_INIT, "juno_input_stream_init", Result.NONE, List.of(RECEIVER),
                 ShimFeature.INPUT_STREAMS);
         if (inputStreamRoute == InputStreamRoute.STREAMS) {

@@ -85,6 +85,30 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Embeds an absolute classpath resource opened through Class.getResourceAsStream")
+        void shouldEmbedClasspathResourceForClassGetResourceAsStream() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import java.io.InputStream;
+                    public final class ResourceProgram {
+                        public static void main(String[] args) throws Exception {
+                            InputStream input = ResourceProgram.class.getResourceAsStream("/hello.txt");
+                            input.read();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.ResourceProgram", source);
+            Files.writeString(temporaryDirectory.resolve("hello.txt"), "hello");
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ResourceProgram");
+
+            // Then
+    assertThat(result.runtimeShim()).contains("juno_resource_open", "104, 101, 108, 108, 111");
+        }
+
+        @Test
         @DisplayName("Compiles the static PSRAM API only on an ESP32 target and emits helpers once")
         void shouldCompileStaticPsramApiOnNanoEsp32() throws Exception {
             String source = """

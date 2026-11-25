@@ -19,6 +19,7 @@ import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
 import static io.github.jabrena.juno.bytecode.Opcodes.INVOKESTATIC;
+import static io.github.jabrena.juno.bytecode.Opcodes.INVOKEVIRTUAL;
 import static io.github.jabrena.juno.bytecode.Opcodes.LDC;
 import static io.github.jabrena.juno.bytecode.Opcodes.LDC2_W;
 import static io.github.jabrena.juno.bytecode.Opcodes.LDC_W;
@@ -55,6 +56,9 @@ public final class ClojureSupport {
     /** The class-loading step of a namespace's {@code <clinit>}; Juno's loader does nothing here. */
     public static final MethodRef LOAD_WITH_CLASS =
             new MethodRef(UTIL, "loadWithClass", "(Ljava/lang/String;Ljava/lang/Class;)" + OBJECT);
+    /** The one board-side class-literal operation Juno supports without materializing a Class object. */
+    public static final MethodRef GET_RESOURCE_AS_STREAM = new MethodRef("java/lang/Class", "getResourceAsStream",
+            "(Ljava/lang/String;)Ljava/io/InputStream;");
     public static final MethodRef APPLY_TO = new MethodRef(IFN, "applyTo", "(Lclojure/lang/ISeq;)" + OBJECT);
     /**
      * {@code (int x)} and {@code (unchecked-int x)}: a long narrowed to an int. Juno does not emit the checked form's
@@ -239,10 +243,18 @@ public final class ClojureSupport {
         JavaClass owner = linked.owner();
         boolean classLiteral = (instruction.opcode() == LDC || instruction.opcode() == LDC_W)
                 && owner.constantPool().isClass(instruction.operandA());
-        if (classLiteral && linked.instructions().stream().noneMatch(internsVar(owner))) {
+        if (classLiteral && linked.instructions().stream().noneMatch(internsVar(owner))
+                && linked.instructions().stream().noneMatch(candidate -> candidate.opcode() == INVOKEVIRTUAL
+                        && isResourceLookup(owner.constantPool().methodRef(candidate.operandA())))) {
             throw new CompileException(linked.method().reference().displayName() + ": a class literal is supported "
                     + "only in a Clojure namespace's loader, not in user code");
         }
+    }
+
+    private static boolean isResourceLookup(MethodRef method) {
+        return method.owner().equals(GET_RESOURCE_AS_STREAM.owner())
+                && method.name().equals(GET_RESOURCE_AS_STREAM.name())
+                && method.descriptor().equals(GET_RESOURCE_AS_STREAM.descriptor());
     }
 
     private static Predicate<Instruction> internsVar(JavaClass owner) {

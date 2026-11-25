@@ -5,6 +5,7 @@ import io.github.jabrena.juno.backend.GeneratedCode;
 import io.github.jabrena.juno.backend.avr.AvrAsmBackend;
 import io.github.jabrena.juno.backend.runtime.LinkedDecisionModel;
 import io.github.jabrena.juno.backend.runtime.LinkedLanguageModel;
+import io.github.jabrena.juno.backend.runtime.LinkedResources;
 import io.github.jabrena.juno.backend.thumb2.Thumb2AsmBackend;
 import io.github.jabrena.juno.backend.xtensa.XtensaAsmBackend;
 import io.github.jabrena.juno.board.Board;
@@ -32,7 +33,7 @@ public final class JunoCompiler {
         GeneratedCode code = backendFor(program.board(), request.gcLoggingEnabled(), runtimeConfig)
                 .generate(optimized);
         String runtimeShim = code.runtimeShim() + linkedDecisionModel(request, report)
-                + linkedLanguageModel(request, report);
+                + linkedLanguageModel(request, report) + LinkedResources.read(request.classPath(), optimized).source();
         return new CompilationResult(code.assembly(), runtimeShim, code.entryPointSymbol(), report,
                 program.board().fqbn() + code.fqbnOptions(), code.mainLauncher(), code.coprocessor());
     }
