@@ -19,6 +19,7 @@ public final class JevDecisionModel implements DecisionModel {
     private final DecisionModelRuntime runtime;
     private final byte[] chunk = new byte[CHUNK_BYTES];
 
+    /** An engine with no model loaded, over {@code runtime}: the board's {@link NativeDecisionModel} or a test double. */
     public JevDecisionModel(DecisionModelRuntime runtime) {
         this.runtime = runtime;
     }
