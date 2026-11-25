@@ -270,16 +270,7 @@ public final class RuntimeShim {
             shim.append(DefaultLanguageModel.bundled().source());
         }
         if (uses(ShimFeature.DECISION_MODEL)) {
-            shim.append("""
-
-                    // The model-specific JEV weights are linked by the decision-model resource step.
-                    // Until a model is linked, preserve the API contract with a deterministic legal-action fallback.
-                    extern "C" int32_t juno_dm_evaluate(const int32_t* state, const int32_t* legalActions) {
-                      (void) state;
-                      int32_t legalActionCount = legalActions[-1];
-                      return legalActionCount > 0 ? legalActions[0] : -1;
-                    }
-                    """);
+            shim.append(DefaultDecisionModel.bundled().source());
         }
         if (uses(ShimFeature.SERIAL_WRITE)) {
             shim.append("""
