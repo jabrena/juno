@@ -17,7 +17,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -41,6 +45,9 @@ class JunoCompilerTest {
     @Nested
     @DisplayName("Compilation and class model")
     class CompilationAndClassModel {
+        /** The model juno-lm trains from the Juno facts, which the language-model examples link. */
+        private static final Path JUNO_BIN = Path.of("../juno-lm/src/main/resources/lm/JUNO.BIN");
+
         @TempDir
         Path temporaryDirectory;
 
@@ -155,9 +162,11 @@ class JunoCompilerTest {
                     """;
             CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoLanguageModel", source);
 
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoLanguageModel");
+            CompilationResult result = CompilerTestSupport.compileJunoWithLanguageModel(temporaryDirectory,
+                    "demo.NanoLanguageModel", JUNO_BIN);
 
-            assertThat(result.runtimeShim()).contains("juno_lm_bundled_model", "juno_lm_default_model[381907]",
+            assertThat(result.runtimeShim()).contains("juno_lm_bundled_model", "juno_lm_linked_model[381907]",
+                    "The linked JLM1 model (JUNO.BIN, 381907 bytes)",
                     "juno_lm_multiply_rows", "juno_lm_accumulate_rows", "juno_lm_quantize_row", "juno_lm_read_floats",
                     "juno_psram_find", "#include <esp_heap_caps.h>")
                     .doesNotContain("juno_language_model");
@@ -168,34 +177,141 @@ class JunoCompilerTest {
         }
 
         @Test
-        @DisplayName("Compiles the decision model API on the Nano ESP32")
-        void shouldCompileDecisionModelOnNanoEsp32() throws Exception {
-            String source = """
+        @DisplayName("Fails the build when LanguageModel.begin() has no juno.lm.model to link")
+        void shouldRequireALanguageModelForBegin() throws Exception {
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoUnlinkedLanguageModel", """
                     package demo;
                     import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
                     import io.github.jabrena.juno.annotations.Board;
                     import io.github.jabrena.juno.hardware.MCU;
                     import io.github.jabrena.juno.hardware.serial.Serial;
                     @Board(ArduinoNanoEsp32Board.class)
-                    public final class NanoDecisionModel {
+                    public final class NanoUnlinkedLanguageModel {
                         public static void main(String[] args) {
-                            int[] state = new int[9];
-                            int[] legalActions = new int[9];
-                            Serial.println(MCU.getDecisionModel().evaluate(state, legalActions));
+                            Serial.println(MCU.getLanguageModel().begin().ordinal());
                         }
                     }
-                    """;
-            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoDecisionModel", source);
+                    """);
+            Path notAModel = Files.writeString(temporaryDirectory.resolve("NOTES.TXT"), "not a model");
 
-            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoDecisionModel");
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory,
+                    "demo.NanoUnlinkedLanguageModel"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("-Djuno.lm.model=<file>");
+            assertThatThrownBy(() -> CompilerTestSupport.compileJunoWithLanguageModel(temporaryDirectory,
+                    "demo.NanoUnlinkedLanguageModel", notAModel))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("is not a JLM1 model");
+        }
+
+        @Test
+        @DisplayName("Links the juno.dm.model file into a program that calls DecisionModel.begin()")
+        void shouldLinkTheDecisionModelForBegin() throws Exception {
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoDecisionModel", decisionModelProgram(
+                    "ArduinoNanoEsp32Board", "NanoDecisionModel", "model.begin()"));
+
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoDecisionModel",
+                    jevModel("TINY.JEV", tinyJevModel()));
 
             assertThat(result.runtimeShim()).contains(
-                    "juno_dm_tic_tac_toe_weights[9][4520]",
-                    "juno_dm_tic_tac_toe_scales[9]",
-                    "juno_dm_evaluate",
-                    "juno_dm_tic_tac_toe_feature_count = 4520")
-                    .doesNotContain("deterministic legal-action fallback");
-            assertThat(result.assembly()).contains("juno_dm_evaluate");
+                    "juno_dm_linked_model[31]", "TINY.JEV, 31 bytes, 2 actions, 3 features",
+                    "extern \"C\" int32_t juno_dm_begin_linked()", "static int32_t juno_dm_use(",
+                    "extern \"C\" int32_t juno_dm_evaluate(", "extern \"C\" void juno_dm_unload()")
+                    .doesNotContain("juno_dm_begin_psram", "juno_dm_tic_tac_toe");
+            assertThat(result.assembly()).contains("juno_dm_begin_linked", "juno_dm_evaluate", "juno_dm_actions");
+        }
+
+        @Test
+        @DisplayName("Fails the build when DecisionModel.begin() has no juno.dm.model to link")
+        void shouldRequireADecisionModelForBegin() throws Exception {
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoUnlinkedModel", decisionModelProgram(
+                    "ArduinoNanoEsp32Board", "NanoUnlinkedModel", "model.begin()"));
+
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoUnlinkedModel"))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("-Djuno.dm.model=<file>");
+        }
+
+        @Test
+        @DisplayName("Rejects a juno.dm.model file that is not a complete JEV1 model")
+        void shouldRejectAnInvalidDecisionModel() throws Exception {
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoBrokenModel", decisionModelProgram(
+                    "ArduinoNanoEsp32Board", "NanoBrokenModel", "model.begin()"));
+            byte[] truncated = Arrays.copyOf(tinyJevModel(), 30);
+            Path model = jevModel("BROKEN.JEV", truncated);
+
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoBrokenModel", model))
+                    .isInstanceOf(CompileException.class)
+                    .hasMessageContaining("not a JEV1 model")
+                    .hasMessageContaining("need 31 bytes, not 30");
+        }
+
+        @Test
+        @DisplayName("Loads a decision model from an SD card into PSRAM without linking one")
+        void shouldLoadTheDecisionModelFromAnSdCard() throws Exception {
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoSdDecisionModel", decisionModelProgram(
+                    "ArduinoNanoEsp32Board", "NanoSdDecisionModel",
+                    "model.begin(new io.github.jabrena.juno.hardware.device.carrier.NanoConnectorCarrier("
+                            + "MCU.getGpio()).getSdCard(), \"/MODEL.JEV\")"));
+
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoSdDecisionModel");
+
+            assertThat(result.runtimeShim()).contains("extern \"C\" int32_t juno_dm_begin_psram(", "juno_psram_find",
+                    "juno_psram_write").doesNotContain("juno_dm_linked_model", "juno_dm_begin_linked");
+        }
+
+        @Test
+        @DisplayName("Links a decision model on the UNO R4 but rejects loading one into PSRAM there")
+        void shouldKeepPsramLoadingToBoardsWithPsram() throws Exception {
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.UnoDecisionModel", decisionModelProgram(
+                    "ArduinoUnoR4WiFiBoard", "UnoDecisionModel", "model.begin()"));
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.UnoSdDecisionModel", decisionModelProgram(
+                    "ArduinoUnoR4WiFiBoard", "UnoSdDecisionModel",
+                    "model.begin(new io.github.jabrena.juno.hardware.device.sd.DataLoggerShield().getSdCard(), "
+                            + "\"/MODEL.JEV\")"));
+
+            CompilationResult linked = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UnoDecisionModel",
+                    jevModel("TINY.JEV", tinyJevModel()));
+
+            assertThat(linked.runtimeShim()).contains("juno_dm_linked_model[31]");
+            assertThatThrownBy(() -> CompilerTestSupport.compileJuno(temporaryDirectory, "demo.UnoSdDecisionModel"))
+                    .hasMessageContaining("PSRAM");
+        }
+
+        /** A program on {@code board} that runs {@code begin} on the decision model, then evaluates one state. */
+        private static String decisionModelProgram(String board, String className, String begin) {
+            return """
+                    package demo;
+                    import io.github.jabrena.juno.ai.DecisionModel;
+                    import io.github.jabrena.juno.annotations.%1$s;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    @Board(%1$s.class)
+                    public final class %2$s {
+                        public static void main(String[] args) {
+                            DecisionModel model = MCU.getDecisionModel();
+                            Serial.println(%3$s.ordinal());
+                            int[] state = new int[3];
+                            int[] legalActions = {0, 1};
+                            Serial.println(model.evaluate(state, legalActions));
+                            Serial.println(model.actions() + model.features());
+                        }
+                    }
+                    """.formatted(board, className, begin);
+        }
+
+        /** A 2-action, 3-feature JEV1 model: 9 header bytes, then per action a scale, a bias and 3 weights. */
+        private static byte[] tinyJevModel() {
+            ByteBuffer model = ByteBuffer.allocate(31);
+            model.put(new byte[] {'J', 'E', 'V', '1', 1}).putShort((short) 2).putShort((short) 3);
+            model.putFloat(0.5f).putFloat(0f).put(new byte[] {1, 2, 3});
+            model.putFloat(0.25f).putFloat(1f).put(new byte[] {3, 2, 1});
+            return model.array();
+        }
+
+        private Path jevModel(String name, byte[] contents) throws IOException {
+            return Files.write(temporaryDirectory.resolve(name), contents);
         }
 
         @Test

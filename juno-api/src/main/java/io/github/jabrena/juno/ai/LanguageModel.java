@@ -6,9 +6,10 @@ import io.github.jabrena.juno.hardware.device.sd.SdCard;
  * A JLM1 character-level language model held in PSRAM, answering one question at a time, one character at a time.
  *
  * <p>Take the model from its board once, at startup, with
- * {@link io.github.jabrena.juno.hardware.MCU#getLanguageModel()}, and {@link #begin()} it: the compiler links the
- * bundled JUNO.BIN, trained from the Juno facts, into the firmware, and the engine copies it into PSRAM with its
- * attention cache. {@link #begin(SdCard, String)} loads another JLM1 file from an SD card instead, so a model can
+ * {@link io.github.jabrena.juno.hardware.MCU#getLanguageModel()}, and {@link #begin()} it: the build links the JLM1
+ * file named by {@code -Djuno.lm.model} into the firmware (such as {@code juno-lm}'s JUNO.BIN, trained from the Juno
+ * facts), so one {@code juno:flash} uploads the program and its model together, and the engine copies it into PSRAM
+ * with its attention cache. {@link #begin(SdCard, String)} loads a JLM1 file from an SD card instead, so a model can
  * change without reflashing. Then {@link #ask(String, int)} a question and call {@link #nextChar()} until it returns
  * {@link #END}. Each character is handed over as soon as it is generated, so the same loop can print it to the serial
  * port, write it to an HTTP response or send it over TCP, and nothing is allocated per answer.
@@ -31,8 +32,9 @@ public interface LanguageModel {
     int MAX_CREATIVITY = 9;
 
     /**
-     * Loads the bundled JUNO.BIN, which the compiler links into the firmware of a program that calls this method,
-     * replacing any model loaded before. Returns {@link ModelStatus#OK}, or why it could not.
+     * Loads the JLM1 model the build linked into the firmware, replacing any model loaded before. A program that calls
+     * this method must be built with {@code -Djuno.lm.model=<file>}, or the build fails. Returns {@link ModelStatus#OK},
+     * or why it could not.
      */
     ModelStatus begin();
 

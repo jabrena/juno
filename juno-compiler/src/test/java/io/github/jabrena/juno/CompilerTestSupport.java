@@ -103,6 +103,20 @@ public final class CompilerTestSupport {
                 requestedBoard(classes, mainClass), runtimeConfig));
     }
 
+    /** Compiles {@code mainClass} with {@code decisionModel} as the {@code juno.dm.model} file. */
+    public static CompilationResult compileJuno(Path classes, String mainClass, Path decisionModel) {
+        return new JunoCompiler().compile(new CompilationRequest(classpath(classes), mainClass, false,
+                requestedBoard(classes, mainClass), RuntimeConfig.DEFAULT, Optional.of(decisionModel),
+                Optional.empty()));
+    }
+
+    /** Compiles {@code mainClass} with {@code languageModel} as the {@code juno.lm.model} file. */
+    public static CompilationResult compileJunoWithLanguageModel(Path classes, String mainClass, Path languageModel) {
+        return new JunoCompiler().compile(new CompilationRequest(classpath(classes), mainClass, false,
+                requestedBoard(classes, mainClass), RuntimeConfig.DEFAULT, Optional.empty(),
+                Optional.of(languageModel)));
+    }
+
     public static Program link(Path classes, String mainClass) {
         return link(classes, mainClass, requestedBoard(classes, mainClass));
     }

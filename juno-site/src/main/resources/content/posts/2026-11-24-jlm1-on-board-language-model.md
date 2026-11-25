@@ -22,14 +22,16 @@ and explains what is inside the model.
 ## Try it: LanguageModelSecretStoreChat
 
 `LanguageModelSecretStoreChat` serves a chat page from the board. Store the Wi-Fi credentials once, then flash it and
-read the address it prints:
+read the address it prints. `-Djuno.lm.model` names the model to link into the firmware, so the upload carries the
+program and its model together:
 
 ```bash
 ./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-nano-esp32 -Djuno.port=<port> -Djuno.secret.key=wifi.ssid
 ./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-nano-esp32 -Djuno.port=<port> -Djuno.secret.key=wifi.password
 ./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSecretStoreChat \
-  -Djuno.board=arduino-nano-esp32 -Djuno.port=<port>
+  -Djuno.board=arduino-nano-esp32 -Djuno.port=<port> \
+  -Djuno.lm.model=../juno-lm/src/main/resources/lm/JUNO.BIN
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.port=<port>
 ```
 
@@ -45,8 +47,9 @@ curl -X POST --data 'What is Juno?' http://<address>/api/chat
 
 The program does four things, all in ordinary Java:
 
-1. `MCU.getLanguageModel().begin()` copies the bundled `JUNO.BIN`, which the compiler linked into the firmware's
-   flash, into PSRAM, and allocates the attention cache next to it.
+1. `MCU.getLanguageModel().begin()` copies `JUNO.BIN`, which the build linked into the firmware's flash from
+   `-Djuno.lm.model`, into PSRAM, and allocates the attention cache next to it. A program that calls `begin()` without
+   that option fails to build, so a missing model shows up on the laptop, not on the board.
 2. It reads `wifi.ssid` and `wifi.password` from the board's Secret Store and joins the network, so no password is in
    the code or on an SD card.
 3. It starts the JDK's `com.sun.net.httpserver.HttpServer` on port 80. `LanguageModelWebChat` registers three routes:
@@ -57,7 +60,7 @@ The program does four things, all in ordinary Java:
 
 Three variants share the same page: `LanguageModelAccessPointChat` opens its own Wi-Fi network instead of joining
 one, `LanguageModelSdCardSecretStoreChat` loads `JUNO.BIN` from the Nano Connector Carrier's microSD card with
-`begin(card, "/JUNO.BIN")`, and `LanguageModelSdCardHttpsChat` serves the same chat over HTTPS with a certificate from
+`begin(card, "/JUNO.BIN")` (it needs no `-Djuno.lm.model`), and `LanguageModelSdCardHttpsChat` serves the same chat over HTTPS with a certificate from
 the card. `LanguageModelSerialChat` needs no network: type a question on the serial port.
 
 ## What 96 × 4 × 256 means
@@ -143,7 +146,7 @@ rate 0.003, warm-up, cosine decay), dropout 0.1 and weight decay 0.01, then quan
 ```
 
 The build fails if the model answers fewer than 95% of the trained questions exactly. A separate held-out set of
-wordings that are never trained measures how well it copes with new phrasings. The bundled model, trained on 477
+wordings that are never trained measures how well it copes with new phrasings. The tracked model, trained on 477
 facts and 1,892 question wordings, scores:
 
 | Set | Exact answers |
@@ -160,8 +163,9 @@ character costs more time on the board.
 JLM1 is small, so it behaves like a well-read index rather than a chat assistant. It answers best when a question is
 close to one it was trained on, it remembers nothing between questions, and a question is cut at 72 characters. When
 it is unsure, it says so; when a new wording lands near the wrong fact, it can still answer confidently and wrongly,
-which the held-out numbers above measure. A new model only needs new facts and a training run: copy the new
-`JUNO.BIN` onto an SD card and `begin(card, path)` loads it without reflashing.
+which the held-out numbers above measure. A new model only needs new facts and a training run: pass the new
+`JUNO.BIN` to `-Djuno.lm.model` and flash again, or copy it onto an SD card and `begin(card, path)` loads it without
+reflashing.
 
 The network design follows WollyMonjac's [TINY 2.1](https://github.com/WollyMonjac/Tiny-2.1) (MIT), which runs a model
 of the same shape under DOS. Juno's trainer, the JLM1 format and the board engine are its own, and `JlmBuilder convert`

@@ -25,17 +25,6 @@
             <artifactId>juno-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.github.jabrena</groupId>
-            <artifactId>juno-models</artifactId>
-        </dependency>
-        <!-- Runtime scope: DefaultLanguageModel reads its lm/JUNO.BIN, the model LanguageModel.begin() links into
-             a program's firmware; no class of it is used. -->
-        <dependency>
-            <groupId>io.github.jabrena</groupId>
-            <artifactId>juno-lm</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
@@ -89,10 +78,6 @@
                             <ignoredNonTestScopedDependencies>
                                 <ignoredNonTestScopedDependency>io.github.jabrena:juno-api</ignoredNonTestScopedDependency>
                             </ignoredNonTestScopedDependencies>
-                            <!-- juno-lm provides a resource, the bundled model, not classes. -->
-                            <ignoredUnusedDeclaredDependencies>
-                                <ignoredUnusedDeclaredDependency>io.github.jabrena:juno-lm</ignoredUnusedDeclaredDependency>
-                            </ignoredUnusedDeclaredDependencies>
                         </configuration>
                     </execution>
                 </executions>

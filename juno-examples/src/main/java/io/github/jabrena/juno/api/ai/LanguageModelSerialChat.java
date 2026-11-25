@@ -14,6 +14,12 @@ import io.github.jabrena.juno.util.Delay;
  * Chats with the on-board JLM1 model over the serial port at 115200 baud: type a question and press Enter, and the
  * answer is printed one character at a time as the model generates it. Every 10 seconds it also answers the next of
  * a few fixed questions, so {@code juno:monitor} shows the model working whenever it attaches.
+ *
+ * <pre>{@code
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
+ *   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSerialChat -Djuno.board=arduino-nano-esp32 \
+ *   -Djuno.lm.model=../juno-lm/src/main/resources/lm/JUNO.BIN
+ * }</pre>
  */
 @Board({ArduinoNanoEsp32Board.class})
 public final class LanguageModelSerialChat {

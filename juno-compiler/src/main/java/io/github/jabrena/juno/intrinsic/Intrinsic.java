@@ -285,6 +285,11 @@ public enum Intrinsic {
     LANGUAGE_MODEL_ADD,
     LANGUAGE_MODEL_RELU,
     DECISION_MODEL_EVALUATE,
+    DECISION_MODEL_BEGIN_LINKED,
+    DECISION_MODEL_BEGIN_PSRAM,
+    DECISION_MODEL_ACTIONS,
+    DECISION_MODEL_FEATURES,
+    DECISION_MODEL_UNLOAD,
     SERIAL_WRITE,
     SMTP_SEND,
     SMTP_SEND_TLS,
@@ -607,8 +612,10 @@ public enum Intrinsic {
             LANGUAGE_MODEL_QUANTIZE_ROW, LANGUAGE_MODEL_EXPONENTIALS, LANGUAGE_MODEL_ATTEND, LANGUAGE_MODEL_RMS_NORM,
             LANGUAGE_MODEL_ADD, LANGUAGE_MODEL_RELU);
 
-    /** The embedded decision-model call, which is implemented by the board-side JEV runtime. */
-    private static final Set<Intrinsic> DECISION_MODEL_OPERATIONS = EnumSet.of(DECISION_MODEL_EVALUATE);
+    /** The embedded decision-model runtime's calls, implemented by the board-side JEV1 evaluator. */
+    private static final Set<Intrinsic> DECISION_MODEL_OPERATIONS = EnumSet.of(DECISION_MODEL_EVALUATE,
+            DECISION_MODEL_BEGIN_LINKED, DECISION_MODEL_BEGIN_PSRAM, DECISION_MODEL_ACTIONS, DECISION_MODEL_FEATURES,
+            DECISION_MODEL_UNLOAD);
 
     /**
      * The families that touch only Juno's own runtime: monitors, locks and the other {@code java.util.concurrent}
