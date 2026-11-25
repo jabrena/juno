@@ -1,5 +1,6 @@
 package io.github.jabrena.juno.hardware;
 
+import io.github.jabrena.juno.ai.DecisionModel;
 import io.github.jabrena.juno.ai.LanguageModel;
 import io.github.jabrena.juno.hardware.audio.Audio;
 import io.github.jabrena.juno.hardware.device.camera.Camera;
@@ -16,6 +17,7 @@ import io.github.jabrena.juno.hardware.internal.NativeBoardMemory;
 import io.github.jabrena.juno.hardware.internal.NativeBoardModel;
 import io.github.jabrena.juno.hardware.internal.NativeCamera;
 import io.github.jabrena.juno.hardware.internal.NativeClock;
+import io.github.jabrena.juno.hardware.internal.NativeDecisionModel;
 import io.github.jabrena.juno.hardware.internal.NativeDisplay;
 import io.github.jabrena.juno.hardware.internal.NativeGpio;
 import io.github.jabrena.juno.hardware.internal.NativeI2c;
@@ -97,6 +99,11 @@ public final class MCU {
     /** The board's JLM1 language-model engine, which runs a model from PSRAM. */
     public static LanguageModel getLanguageModel() {
         return JlmLanguageModel.languageModel();
+    }
+
+    /** The board's embedded decision-model engine. */
+    public static DecisionModel getDecisionModel() {
+        return NativeDecisionModel.decisionModel();
     }
 
     /** The card in the selected board's onboard SD socket. */
