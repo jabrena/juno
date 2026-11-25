@@ -105,7 +105,7 @@ class JunoCompilerTest {
             CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ResourceProgram");
 
             // Then
-    assertThat(result.runtimeShim()).contains("juno_resource_open", "104, 101, 108, 108, 111");
+            assertThat(result.runtimeShim()).contains("juno_resource_open", "104, 101, 108, 108, 111", "if (count == 0) return -1;", "JUNO_INPUT_STREAM_CAPACITY = 4");
         }
 
         @Test
