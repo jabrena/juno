@@ -30,11 +30,13 @@ on:
     types: [published]
 
 # About 20 jobs start together; on a cold or new per-job Maven cache they all fetch from Maven Central at once, which can
-# answer 429 Too Many Requests. Resolver retries 429/503 by default only 3 times, 5 s apart; wait it out longer.
+# answer 429 Too Many Requests. Retry a few times with a growing delay (5, 10, 15, 20 s: under a minute per artifact),
+# then fail: with 10 retries 10 s apart one artifact could wait about 9 minutes, and a 429 storm kept a job busy for an
+# hour before it failed anyway. A failed job is cheaper to rerun than to wait for.
 env:
   MAVEN_ARGS: >-
-    -Daether.transport.http.retryHandler.count=10
-    -Daether.transport.http.retryHandler.interval=10000
+    -Daether.transport.http.retryHandler.count=4
+    -Daether.transport.http.retryHandler.interval=5000
 
 jobs:
   changes:
@@ -299,9 +301,11 @@ jobs:
           submodules: true
       - uses: ./.github/actions/setup-maven
       - name: Build
+        timeout-minutes: 45
         run: ./mvnw --batch-mode --no-transfer-progress verify -b turbo -T1C
 
       - name: Javadoc gate for juno-api
+        timeout-minutes: 25
         env:
           # Ratchet: undocumented public members and empty package descriptions may not grow past this count.
           # Lower it as members are documented; never raise it.
@@ -351,8 +355,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull QEMU image
+        timeout-minutes: 10
         run: docker pull ${{ needs.qemu-image.outputs.ref }}
       - name: Run Thumb-2 programs under QEMU
+        timeout-minutes: 30
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -am -Pqemu
           verify -Dtest=None -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=QemuRunIT
@@ -406,6 +412,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull Xtensa image
+        timeout-minutes: 15
         run: docker pull ${{ needs.xtensa-image.outputs.ref }}
       - name: Run Xtensa programs under QEMU (${{ matrix.board }})
         # Nano ESP32: 32 programs at ~10 s each (~6 min). Cardputer and ESP32-CAM: the 10 runtime programs at ~70 s each
@@ -465,11 +472,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull Arduino CLI image
+        timeout-minutes: 30
         shell: bash
         run: |
           set -euo pipefail
           for attempt in 1 2 3 4 5; do
-            if docker pull "${{ needs.arduino-cli-image.outputs.ref }}"; then
+            # A stalled pull is cut after 10 minutes; the layers it finished stay, so the next attempt resumes.
+            if timeout 600 docker pull "${{ needs.arduino-cli-image.outputs.ref }}"; then
               exit 0
             fi
             echo "Arduino CLI image pull failed (attempt $attempt of 5); retrying in $((attempt * 10)) s"
@@ -488,6 +497,7 @@ jobs:
           cp -a .ci/integration-build/m2/. "$HOME/.m2/repository/"
           cp -a ".ci/integration-build/juno-compiler/target" "juno-compiler/"
       - name: Compile Pico 2 W programs with arduino-cli
+        timeout-minutes: 30
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -Parduino-cli
           failsafe:integration-test failsafe:verify -Dit.test=ArduinoCliCompileIT
@@ -584,6 +594,7 @@ jobs:
           submodules: true
       - uses: ./.github/actions/setup-maven
       - name: Compile juno-lm
+        timeout-minutes: 15
         run: ./mvnw --batch-mode --no-transfer-progress -pl juno-lm compile
 
   integration-build:
@@ -597,6 +608,7 @@ jobs:
           submodules: true
       - uses: ./.github/actions/setup-maven
       - name: Install reactor artifacts without integration tests
+        timeout-minutes: 30
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-examples -am install
           -DskipTests -DskipITs -b turbo -T1C
@@ -643,11 +655,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull Arduino CLI image
+        timeout-minutes: 30
         shell: bash
         run: |
           set -euo pipefail
           for attempt in 1 2 3 4 5; do
-            if docker pull "${{ needs.arduino-cli-image.outputs.ref }}"; then
+            # A stalled pull is cut after 10 minutes; the layers it finished stay, so the next attempt resumes.
+            if timeout 600 docker pull "${{ needs.arduino-cli-image.outputs.ref }}"; then
               exit 0
             fi
             echo "Arduino CLI image pull failed (attempt $attempt of 5); retrying in $((attempt * 10)) s"
@@ -668,6 +682,7 @@ jobs:
             cp -a ".ci/integration-build/$module/target" "$module/"
           done
       - name: Compile API and shield fixtures
+        timeout-minutes: 30
         if: matrix.language == 'full'
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-compiler -Parduino-cli
@@ -675,6 +690,7 @@ jobs:
           -Dfailsafe.failIfNoSpecifiedTests=false
           -Djuno.arduinoCliImage=${{ needs.arduino-cli-image.outputs.ref }}
       - name: Compile language examples
+        timeout-minutes: 30
         if: matrix.language != 'full'
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-examples -Parduino-cli
@@ -722,11 +738,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Pull Arduino CLI image
+        timeout-minutes: 30
         shell: bash
         run: |
           set -euo pipefail
           for attempt in 1 2 3 4 5; do
-            if docker pull "${{ needs.arduino-cli-image.outputs.ref }}"; then
+            # A stalled pull is cut after 10 minutes; the layers it finished stay, so the next attempt resumes.
+            if timeout 600 docker pull "${{ needs.arduino-cli-image.outputs.ref }}"; then
               exit 0
             fi
             echo "Arduino CLI image pull failed (attempt $attempt of 5); retrying in $((attempt * 10)) s"
@@ -747,6 +765,7 @@ jobs:
             cp -a ".ci/integration-build/$module/target" "$module/"
           done
       - name: Compile Java examples
+        timeout-minutes: 30
         run: >-
           ./mvnw --batch-mode --no-transfer-progress -pl juno-examples -Parduino-cli
           failsafe:integration-test failsafe:verify -Dit.test=LanguageExamplesArduinoCliIT
