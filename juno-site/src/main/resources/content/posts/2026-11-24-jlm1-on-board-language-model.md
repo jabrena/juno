@@ -15,7 +15,7 @@ and explains what is inside the model.
 
 | Field | Value |
 |---|---|
-| Sources | [`api/ai`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/ai) (examples), [`juno-lm`](https://github.com/jabrena/juno/tree/main/juno-lm) (trainer and format), [`JlmLanguageModel`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/internal/JlmLanguageModel.java) (board engine) |
+| Sources | [`api/ai`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/ai) (examples), [`juno-lm`](https://github.com/jabrena/juno/tree/main/juno-ai/juno-lm) (trainer and format), [`JlmLanguageModel`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/internal/JlmLanguageModel.java) (board engine) |
 | Boards supported | [`Nano ESP32`](../../boards/arduino-nano-esp32) for the examples; the engine needs PSRAM, which the Nano ESP32 and the ESP32-CAM have |
 | Features used | `MCU.getLanguageModel()`, PSRAM, Secret Store, Wi-Fi, JDK `HttpServer`, SD card (optional), serial output |
 
@@ -31,7 +31,7 @@ program and its model together:
 ./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSecretStoreChat \
   -Djuno.board=arduino-nano-esp32 -Djuno.port=<port> \
-  -Djuno.lm.model=../juno-lm/src/main/resources/lm/JUNO.BIN
+  -Djuno.lm.model=../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.port=<port>
 ```
 
@@ -129,7 +129,7 @@ That is roughly 30 ms per character, question included.
 ## How it is trained
 
 `juno-lm` trains the model on the build machine, in pure Java with hand-written backpropagation and no ML library. The
-training data is plain text in `juno-lm/src/main/resources/lm/facts`: one fact per line, several wordings of a
+training data is plain text in `juno-ai/juno-lm/src/main/resources/lm/facts`: one fact per line, several wordings of a
 question and the answer:
 
 ```text
@@ -142,7 +142,7 @@ rate 0.003, warm-up, cosine decay), dropout 0.1 and weight decay 0.01, then quan
 `JUNO.BIN`. It takes about 40 minutes on an 8-core laptop:
 
 ```bash
-./mvnw -pl juno-lm -Plm-model process-classes -Dlm.steps=16000
+./mvnw -pl juno-ai/juno-lm -Plm-model process-classes -Dlm.steps=16000
 ```
 
 The build fails if the model answers fewer than 95% of the trained questions exactly. A separate held-out set of

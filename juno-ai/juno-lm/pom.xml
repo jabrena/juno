@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.jabrena</groupId>
+        <artifactId>juno-parent</artifactId>
+        <version>0.1.0</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>juno-lm</artifactId>
+    <name>Juno JLM1 Model Builder</name>
+    <description>Trains, quantizes and exports JLM1 character-level transformer models; its JUNO.BIN is the model LanguageModel.begin() links into a program</description>
+
+    <properties>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- NullAway (via Error Prone) checks the host-side model builder. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgs>
+                        <arg>-XDcompilePolicy=simple</arg>
+                        <arg>--should-stop=ifError=FLOW</arg>
+                        <arg>${nullaway.errorprone.arg}</arg>
+                    </compilerArgs>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.google.errorprone</groupId>
+                            <artifactId>error_prone_core</artifactId>
+                            <version>${error-prone.version}</version>
+                        </path>
+                        <path>
+                            <groupId>com.uber.nullaway</groupId>
+                            <artifactId>nullaway</artifactId>
+                            <version>${nullaway.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- On demand only: trains JUNO.BIN from the bundled facts into target/lm; a default build never trains, and
+             CI never trains a model.
+             ./mvnw -pl juno-ai/juno-lm -Plm-model process-classes [-Dlm.steps=3000]
+             To release the result, copy target/lm/JUNO.BIN to src/main/resources/lm/: it is the model
+             LanguageModel.begin() links into a program's firmware. -->
+        <profile>
+            <id>lm-model</id>
+            <properties>
+                <lm.steps>3000</lm.steps>
+                <lm.seed>1</lm.seed>
+                <lm.minAccuracy>0.95</lm.minAccuracy>
+                <!-- The held-out questions in src/main/resources/lm/heldout are never trained on; the profile keeps
+                     the checkpoint that answers most of them and fails below this fraction. -->
+                <lm.minHeldOutAccuracy>0</lm.minHeldOutAccuracy>
+                <!-- TINY 2.1's shape: a 382 KB JUNO.BIN that runs on the Nano ESP32. The engine's largest shape is
+                     -Dlm.width=128 -Dlm.layers=8 -Dlm.hidden=512 (1.6 M parameters, 1.65 MB). -->
+                <lm.width>96</lm.width>
+                <lm.layers>4</lm.layers>
+                <lm.heads>4</lm.heads>
+                <lm.hidden>256</lm.hidden>
+                <lm.outputDirectory>${project.build.directory}/lm</lm.outputDirectory>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${exec-maven-plugin.version}</version>
+                        <configuration>
+                            <mainClass>io.github.jabrena.juno.lm.cli.JlmBuilder</mainClass>
+                            <!-- JlmBuilder exits with 1 on a model below the accuracy gate; fail the build instead. -->
+                            <blockSystemExit>true</blockSystemExit>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>train-model</id>
+                                <phase>process-classes</phase>
+                                <goals>
+                                    <goal>java</goal>
+                                </goals>
+                                <configuration>
+                                    <arguments>
+                                        <argument>train</argument>
+                                        <argument>${project.basedir}/src/main/resources/lm/facts</argument>
+                                        <argument>${lm.outputDirectory}/JUNO.BIN</argument>
+                                        <argument>--steps</argument>
+                                        <argument>${lm.steps}</argument>
+                                        <argument>--seed</argument>
+                                        <argument>${lm.seed}</argument>
+                                        <argument>--min-accuracy</argument>
+                                        <argument>${lm.minAccuracy}</argument>
+                                        <argument>--width</argument>
+                                        <argument>${lm.width}</argument>
+                                        <argument>--layers</argument>
+                                        <argument>${lm.layers}</argument>
+                                        <argument>--heads</argument>
+                                        <argument>${lm.heads}</argument>
+                                        <argument>--hidden</argument>
+                                        <argument>${lm.hidden}</argument>
+                                        <argument>--held-out</argument>
+                                        <argument>${project.basedir}/src/main/resources/lm/heldout</argument>
+                                        <argument>--min-held-out</argument>
+                                        <argument>${lm.minHeldOutAccuracy}</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

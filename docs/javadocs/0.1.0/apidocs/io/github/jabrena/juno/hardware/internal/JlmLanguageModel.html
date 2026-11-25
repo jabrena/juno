@@ -194,8 +194,7 @@ once, at its largest size, so asking and answering allocate nothing.</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../../ai/ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#begin()" class="member-name-link">begin</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Loads the bundled JUNO.BIN, which the compiler links into the firmware of a program that calls this method,
-replacing any model loaded before.</div>
+<div class="block">Loads the JLM1 model the build linked into the firmware, replacing any model loaded before.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../../ai/ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)" class="member-name-link">begin</a><wbr>(<a href="../device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a>&nbsp;card,
@@ -283,8 +282,9 @@ replacing any model loaded before.</div>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../../ai/ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></span>&nbsp;<span class="element-name">begin</span>()</div>
 <div class="block"><span class="description-from-type-label">Description copied from interface:&nbsp;<code><a href="../../ai/LanguageModel.html#begin()">LanguageModel</a></code></span></div>
-<div class="block">Loads the bundled JUNO.BIN, which the compiler links into the firmware of a program that calls this method,
-replacing any model loaded before. Returns <a href="../../ai/ModelStatus.html#OK"><code>ModelStatus.OK</code></a>, or why it could not.</div>
+<div class="block">Loads the JLM1 model the build linked into the firmware, replacing any model loaded before. A program that calls
+this method must be built with <code>-Djuno.lm.model=&lt;file&gt;</code>, or the build fails. Returns <a href="../../ai/ModelStatus.html#OK"><code>ModelStatus.OK</code></a>,
+or why it could not.</div>
 <dl class="notes">
 <dt>Specified by:</dt>
 <dd><code><a href="../../ai/LanguageModel.html#begin()">begin</a></code>&nbsp;in interface&nbsp;<code><a href="../../ai/LanguageModel.html" title="interface in io.github.jabrena.juno.ai">LanguageModel</a></code></dd>

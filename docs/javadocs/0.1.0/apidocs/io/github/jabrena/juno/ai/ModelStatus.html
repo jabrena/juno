@@ -111,7 +111,8 @@ initTheme();
 <div class="horizontal-scroll">
 <div class="type-signature"><span class="modifiers">public enum </span><span class="element-name type-name-label">ModelStatus</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/Enum.html" title="class in java.lang" class="external-link">Enum</a>&lt;<a href="ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a>&gt;</span></div>
-<div class="block">The outcome of <a href="LanguageModel.html" title="interface in io.github.jabrena.juno.ai"><code>LanguageModel</code></a>'s <code>begin</code> methods and of <a href="LanguageModel.html#ask(java.lang.String,int)"><code>LanguageModel.ask(String, int)</code></a>.</div>
+<div class="block">The outcome of the <code>begin</code> methods of <a href="LanguageModel.html" title="interface in io.github.jabrena.juno.ai"><code>LanguageModel</code></a> and <a href="DecisionModel.html" title="interface in io.github.jabrena.juno.ai"><code>DecisionModel</code></a>, and of
+<a href="LanguageModel.html#ask(java.lang.String,int)"><code>LanguageModel.ask(String, int)</code></a>.</div>
 </div>
 </section>
 <section class="summary">
@@ -135,7 +136,7 @@ initTheme();
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code><a href="#EXHAUSTED" class="member-name-link">EXHAUSTED</a></code></div>
 <div class="col-last even-row-color">
-<div class="block"><code>begin</code>: PSRAM has no room for the weights and the attention cache.</div>
+<div class="block"><code>begin</code>: PSRAM has no room for the model (and, for a language model, its attention cache).</div>
 </div>
 <div class="col-first odd-row-color"><code><a href="#INVALID_ARGUMENT" class="member-name-link">INVALID_ARGUMENT</a></code></div>
 <div class="col-last odd-row-color">
@@ -148,7 +149,7 @@ initTheme();
 </div>
 <div class="col-first odd-row-color"><code><a href="#INVALID_MODEL" class="member-name-link">INVALID_MODEL</a></code></div>
 <div class="col-last odd-row-color">
-<div class="block"><code>begin</code>: the model is not a complete JLM1 file the engine accepts.</div>
+<div class="block"><code>begin</code>: the model is not a complete JLM1 (language) or JEV1 (decision) file the engine accepts.</div>
 </div>
 <div class="col-first even-row-color"><code><a href="#NOT_LOADED" class="member-name-link">NOT_LOADED</a></code></div>
 <div class="col-last even-row-color">
@@ -230,7 +231,7 @@ the order they are declared.</div>
 <h3>INVALID_MODEL</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></span>&nbsp;<span class="element-name">INVALID_MODEL</span></div>
-<div class="block"><code>begin</code>: the model is not a complete JLM1 file the engine accepts.</div>
+<div class="block"><code>begin</code>: the model is not a complete JLM1 (language) or JEV1 (decision) file the engine accepts.</div>
 </div>
 </section>
 </li>
@@ -239,7 +240,7 @@ the order they are declared.</div>
 <h3>EXHAUSTED</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="modifiers">public static final</span>&nbsp;<span class="return-type"><a href="ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></span>&nbsp;<span class="element-name">EXHAUSTED</span></div>
-<div class="block"><code>begin</code>: PSRAM has no room for the weights and the attention cache.</div>
+<div class="block"><code>begin</code>: PSRAM has no room for the model (and, for a language model, its attention cache).</div>
 </div>
 </section>
 </li>

@@ -24,7 +24,7 @@ import java.net.InetSocketAddress;
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.ai.TicTacToeWebGame -Djuno.board=arduino-nano-esp32 \
- *   -Djuno.dm.model=../juno-models/src/main/resources/dm/TIC_TAC_TOE.JEV
+ *   -Djuno.dm.model=../juno-ai/juno-models/src/main/resources/dm/TIC_TAC_TOE.JEV
  * }</pre>
  */
 @Board(ArduinoNanoEsp32Board.class)

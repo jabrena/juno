@@ -41,6 +41,7 @@
   <!-- SEO IMAGE -->
   <meta name="twitter:card" content="summary">
   <!-- SEO COLLECTION PAGES -->
+  <link rel="prev" href="https://jabrena.github.io/juno/blog/2026-11-25-jev-decision-models/" />
   <link rel="next" href="https://jabrena.github.io/juno/blog/2026-11-23-juno-concurrency-virtual-threads/" />
   <!-- SEO LOCALE -->
   <meta property="og:locale" content="es_ES" />
@@ -319,7 +320,7 @@ and explains what is inside the model.</p>
 <tbody>
 <tr>
 <td>Sources</td>
-<td><a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/ai"><code>api/ai</code></a> (examples), <a href="https://github.com/jabrena/juno/tree/main/juno-lm"><code>juno-lm</code></a> (trainer and format), <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/internal/JlmLanguageModel.java"><code>JlmLanguageModel</code></a> (board engine)</td>
+<td><a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/ai"><code>api/ai</code></a> (examples), <a href="https://github.com/jabrena/juno/tree/main/juno-ai/juno-lm"><code>juno-lm</code></a> (trainer and format), <a href="https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/internal/JlmLanguageModel.java"><code>JlmLanguageModel</code></a> (board engine)</td>
 </tr>
 <tr>
 <td>Boards supported</td>
@@ -333,12 +334,14 @@ and explains what is inside the model.</p>
 </table>
 <h2 id="try-it-languagemodelsecretstorechat">Try it: LanguageModelSecretStoreChat</h2>
 <p><code>LanguageModelSecretStoreChat</code> serves a chat page from the board. Store the Wi-Fi credentials once, then flash it and
-read the address it prints:</p>
+read the address it prints. <code>-Djuno.lm.model</code> names the model to link into the firmware, so the upload carries the
+program and its model together:</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt; -Djuno.secret.key=wifi.ssid
 ./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt; -Djuno.secret.key=wifi.password
 ./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSecretStoreChat \
-  -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt;
+  -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt; \
+  -Djuno.lm.model=../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt;
 </code></pre>
 <p>The serial monitor shows <code>JLM1: model online</code> and <code>JLM1: open http://&lt;address&gt;</code>. Open that address in a browser on
@@ -350,8 +353,9 @@ curl -X POST --data 'What is Juno?' http://&lt;address&gt;/api/chat
 </code></pre>
 <p>The program does four things, all in ordinary Java:</p>
 <ol>
-<li><code>MCU.getLanguageModel().begin()</code> copies the bundled <code>JUNO.BIN</code>, which the compiler linked into the firmware's
-flash, into PSRAM, and allocates the attention cache next to it.</li>
+<li><code>MCU.getLanguageModel().begin()</code> copies <code>JUNO.BIN</code>, which the build linked into the firmware's flash from
+<code>-Djuno.lm.model</code>, into PSRAM, and allocates the attention cache next to it. A program that calls <code>begin()</code> without
+that option fails to build, so a missing model shows up on the laptop, not on the board.</li>
 <li>It reads <code>wifi.ssid</code> and <code>wifi.password</code> from the board's Secret Store and joins the network, so no password is in
 the code or on an SD card.</li>
 <li>It starts the JDK's <code>com.sun.net.httpserver.HttpServer</code> on port 80. <code>LanguageModelWebChat</code> registers three routes:
@@ -362,7 +366,7 @@ appearing letter by letter, and nothing is allocated per answer.</li>
 </ol>
 <p>Three variants share the same page: <code>LanguageModelAccessPointChat</code> opens its own Wi-Fi network instead of joining
 one, <code>LanguageModelSdCardSecretStoreChat</code> loads <code>JUNO.BIN</code> from the Nano Connector Carrier's microSD card with
-<code>begin(card, &quot;/JUNO.BIN&quot;)</code>, and <code>LanguageModelSdCardHttpsChat</code> serves the same chat over HTTPS with a certificate from
+<code>begin(card, &quot;/JUNO.BIN&quot;)</code> (it needs no <code>-Djuno.lm.model</code>), and <code>LanguageModelSdCardHttpsChat</code> serves the same chat over HTTPS with a certificate from
 the card. <code>LanguageModelSerialChat</code> needs no network: type a question on the serial port.</p>
 <h2 id="what-96--4--256-means">What 96 × 4 × 256 means</h2>
 <p>JLM1 is a decoder-only transformer that reads and writes one character at a time. Its shape is written as
@@ -478,7 +482,7 @@ kernels it is a little faster than the C engine it replaced, measured on the boa
 <p>That is roughly 30 ms per character, question included.</p>
 <h2 id="how-it-is-trained">How it is trained</h2>
 <p><code>juno-lm</code> trains the model on the build machine, in pure Java with hand-written backpropagation and no ML library. The
-training data is plain text in <code>juno-lm/src/main/resources/lm/facts</code>: one fact per line, several wordings of a
+training data is plain text in <code>juno-ai/juno-lm/src/main/resources/lm/facts</code>: one fact per line, several wordings of a
 question and the answer:</p>
 <pre><code class="language-text">What is Juno? | Tell me about Juno | What does Juno do? =&gt; Juno compiles Java programs into firmware for microcontrollers.
 </code></pre>
@@ -486,10 +490,10 @@ question and the answer:</p>
 answer <code>I do not know.</code> to questions outside Juno. Training runs 16,000 steps of 32 examples with Adam (peak learning
 rate 0.003, warm-up, cosine decay), dropout 0.1 and weight decay 0.01, then quantizes the weights and writes
 <code>JUNO.BIN</code>. It takes about 40 minutes on an 8-core laptop:</p>
-<pre><code class="language-bash">./mvnw -pl juno-lm -Plm-model process-classes -Dlm.steps=16000
+<pre><code class="language-bash">./mvnw -pl juno-ai/juno-lm -Plm-model process-classes -Dlm.steps=16000
 </code></pre>
 <p>The build fails if the model answers fewer than 95% of the trained questions exactly. A separate held-out set of
-wordings that are never trained measures how well it copes with new phrasings. The bundled model, trained on 477
+wordings that are never trained measures how well it copes with new phrasings. The tracked model, trained on 477
 facts and 1,892 question wordings, scores:</p>
 <table>
 <thead>
@@ -516,8 +520,9 @@ character costs more time on the board.</p>
 <p>JLM1 is small, so it behaves like a well-read index rather than a chat assistant. It answers best when a question is
 close to one it was trained on, it remembers nothing between questions, and a question is cut at 72 characters. When
 it is unsure, it says so; when a new wording lands near the wrong fact, it can still answer confidently and wrongly,
-which the held-out numbers above measure. A new model only needs new facts and a training run: copy the new
-<code>JUNO.BIN</code> onto an SD card and <code>begin(card, path)</code> loads it without reflashing.</p>
+which the held-out numbers above measure. A new model only needs new facts and a training run: pass the new
+<code>JUNO.BIN</code> to <code>-Djuno.lm.model</code> and flash again, or copy it onto an SD card and <code>begin(card, path)</code> loads it without
+reflashing.</p>
 <p>The network design follows WollyMonjac's <a href="https://github.com/WollyMonjac/Tiny-2.1">TINY 2.1</a> (MIT), which runs a model
 of the same shape under DOS. Juno's trainer, the JLM1 format and the board engine are its own, and <code>JlmBuilder convert</code>
 turns a TINY 2.1 model file into JLM1.</p>

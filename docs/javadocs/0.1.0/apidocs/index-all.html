@@ -111,6 +111,18 @@ truncated to <code>bodyBufferLength</code>, and returns how many body bytes it w
 <div class="block">Adds to <code>out[outOffset + c]</code>, for each row <code>r</code> whose weight is not zero, value <code>skip + c</code> of
 the row times <code>weights[r] * scale / divisor</code>, row by row.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html#actionCount()" class="member-name-link">actionCount()</a> - Method in interface io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html" title="interface in io.github.jabrena.juno.hardware.internal">DecisionModelRuntime</a></dt>
+<dd>
+<div class="block">The loaded model's action count, or 0.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html#actionCount()" class="member-name-link">actionCount()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDecisionModel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/ai/DecisionModel.html#actions()" class="member-name-link">actions()</a> - Method in interface io.github.jabrena.juno.ai.<a href="io/github/jabrena/juno/ai/DecisionModel.html" title="interface in io.github.jabrena.juno.ai">DecisionModel</a></dt>
+<dd>
+<div class="block">The loaded model's number of actions, or 0.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html#actions()" class="member-name-link">actions()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">JevDecisionModel</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveLightV12.html#ADC_10_BIT" class="member-name-link">ADC_10_BIT</a> - Static variable in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveLightV12.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveLightV12</a></dt>
 <dd>
 <div class="block">Full scale of a 10-bit ADC, the default on the UNO boards.</div>
@@ -149,10 +161,16 @@ the row times <code>weights[r] * scale / divisor</code>, row by row.</div>
 <dd>
 <div class="block">Action must be taken immediately.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html#allocate(int)" class="member-name-link">allocate(int)</a> - Method in interface io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html" title="interface in io.github.jabrena.juno.hardware.internal">DecisionModelRuntime</a></dt>
+<dd>
+<div class="block">A new PSRAM buffer of <code>bytes</code>: its handle, or a value of 0 or less when it does not fit.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/JlmRuntime.html#allocate(int)" class="member-name-link">allocate(int)</a> - Method in interface io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/JlmRuntime.html" title="interface in io.github.jabrena.juno.hardware.internal">JlmRuntime</a></dt>
 <dd>
 <div class="block">A zeroed block of <code>bytes</code>, or <code>null</code> when it does not fit.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html#allocate(int)" class="member-name-link">allocate(int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDecisionModel</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/Psram.html#allocate(int)" class="member-name-link">allocate(int)</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Psram.html" title="class in io.github.jabrena.juno.hardware">Psram</a></dt>
 <dd>
 <div class="block">Allocates a zero-initialized caller-owned PSRAM buffer.</div>
@@ -498,10 +516,13 @@ reported it.</div>
 <dd>
 <div class="block">Common baud rates exposed as named values by Juno's USB serial API.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/ai/DecisionModel.html#begin()" class="member-name-link">begin()</a> - Method in interface io.github.jabrena.juno.ai.<a href="io/github/jabrena/juno/ai/DecisionModel.html" title="interface in io.github.jabrena.juno.ai">DecisionModel</a></dt>
+<dd>
+<div class="block">Uses the JEV1 model the build linked into the firmware, replacing any model loaded before.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/ai/LanguageModel.html#begin()" class="member-name-link">begin()</a> - Method in interface io.github.jabrena.juno.ai.<a href="io/github/jabrena/juno/ai/LanguageModel.html" title="interface in io.github.jabrena.juno.ai">LanguageModel</a></dt>
 <dd>
-<div class="block">Loads the bundled JUNO.BIN, which the compiler links into the firmware of a program that calls this method,
-replacing any model loaded before.</div>
+<div class="block">Loads the JLM1 model the build linked into the firmware, replacing any model loaded before.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/camera/Camera.html#begin()" class="member-name-link">begin()</a> - Method in interface io.github.jabrena.juno.hardware.device.camera.<a href="io/github/jabrena/juno/hardware/device/camera/Camera.html" title="interface in io.github.jabrena.juno.hardware.device.camera">Camera</a></dt>
 <dd>
@@ -531,6 +552,8 @@ replacing any model loaded before.</div>
 <dd>
 <div class="block">Starts the bus as a controller, at the default 100 kHz.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">JevDecisionModel</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/JlmLanguageModel.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/JlmLanguageModel.html" title="class in io.github.jabrena.juno.hardware.internal">JlmLanguageModel</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeCamera.html#begin()" class="member-name-link">begin()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeCamera.html" title="class in io.github.jabrena.juno.hardware.internal">NativeCamera</a></dt>
@@ -590,11 +613,18 @@ replacing any model loaded before.</div>
 <dd>
 <div class="block">Uses <code>dataPins</code> (<a href="io/github/jabrena/juno/hardware/device/tft/ParallelBus.html#WIDTH"><code>ParallelBus.WIDTH</code></a> of them, bit 0 first) and <code>strobePin</code>, which is left high.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/ai/DecisionModel.html#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)" class="member-name-link">begin(SdCard, String)</a> - Method in interface io.github.jabrena.juno.ai.<a href="io/github/jabrena/juno/ai/DecisionModel.html" title="interface in io.github.jabrena.juno.ai">DecisionModel</a></dt>
+<dd>
+<div class="block">Loads the JEV1 file at <code>path</code> on <code>card</code>, which must already be mounted with its own
+<a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#begin()"><code>SdCard.begin()</code></a>, into PSRAM, replacing any model loaded before.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/ai/LanguageModel.html#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)" class="member-name-link">begin(SdCard, String)</a> - Method in interface io.github.jabrena.juno.ai.<a href="io/github/jabrena/juno/ai/LanguageModel.html" title="interface in io.github.jabrena.juno.ai">LanguageModel</a></dt>
 <dd>
 <div class="block">Loads the JLM1 file at <code>path</code> on <code>card</code>, which must already be mounted with its own
 <a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#begin()"><code>SdCard.begin()</code></a>, replacing any model loaded before.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)" class="member-name-link">begin(SdCard, String)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">JevDecisionModel</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/JlmLanguageModel.html#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)" class="member-name-link">begin(SdCard, String)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/JlmLanguageModel.html" title="class in io.github.jabrena.juno.hardware.internal">JlmLanguageModel</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/serial/Serial.html#begin(io.github.jabrena.juno.hardware.serial.BaudRate)" class="member-name-link">begin(BaudRate)</a> - Static method in class io.github.jabrena.juno.hardware.serial.<a href="io/github/jabrena/juno/hardware/serial/Serial.html" title="class in io.github.jabrena.juno.hardware.serial">Serial</a></dt>
@@ -626,6 +656,12 @@ directly (typically to serve a provisioning page, as <a href="io/github/jabrena/
 <dd>
 <div class="block">Configures HX-53/HX-M121 pins and the bit rate, e.g.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html#beginLinked()" class="member-name-link">beginLinked()</a> - Method in interface io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html" title="interface in io.github.jabrena.juno.hardware.internal">DecisionModelRuntime</a></dt>
+<dd>
+<div class="block">Points the evaluator at the JEV1 table the build linked into flash.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html#beginLinked()" class="member-name-link">beginLinked()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDecisionModel</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html#beginObject()" class="member-name-link">beginObject()</a> - Method in class io.github.jabrena.juno.hardware.net.http.<a href="io/github/jabrena/juno/hardware/net/http/JsonWriter.html" title="class in io.github.jabrena.juno.hardware.net.http">JsonWriter</a></dt>
 <dd>
 <div class="block">Opens an object with an opening brace, preceded by a comma when needed.</div>
@@ -642,6 +678,13 @@ differ, in one pass with no flicker.</div>
 streaming pixels with <a href="io/github/jabrena/juno/hardware/device/tft/TftTouchShield.html#pushPixel(int)"><code>TftTouchShield.pushPixel(int)</code></a>, row by row from the top-left — the fast way to draw
 a small custom bitmap.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html#beginPsram(int,int)" class="member-name-link">beginPsram(int, int)</a> - Method in interface io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html" title="interface in io.github.jabrena.juno.hardware.internal">DecisionModelRuntime</a></dt>
+<dd>
+<div class="block">Points the evaluator at the <code>size</code> JEV1 bytes in PSRAM buffer <code>handle</code>, which the runtime then owns
+and frees on <a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html#unload()"><code>DecisionModelRuntime.unload()</code></a>.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html#beginPsram(int,int)" class="member-name-link">beginPsram(int, int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDecisionModel</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html#beginTls(int,byte%5B%5D,int,byte%5B%5D,int)" class="member-name-link">beginTls(int, byte[], int, byte[], int)</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeHttpServer.html" title="class in io.github.jabrena.juno.hardware.internal">NativeHttpServer</a></dt>
 <dd>
 <div class="block">Starts listening for HTTPS on <code>port</code>, presenting <code>certificate</code> (PEM) and proving it with
@@ -1267,6 +1310,19 @@ other program keeps the board's own trust, and links no code to change it.</div>
 <dd>
 <div class="block">Debug-level message.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html#decisionModel()" class="member-name-link">decisionModel()</a> - Static method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDecisionModel</a></dt>
+<dd>
+<div class="block">The selected board's shared decision-model engine.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/ai/DecisionModel.html" class="type-name-link" title="interface in io.github.jabrena.juno.ai">DecisionModel</a> - Interface in <a href="io/github/jabrena/juno/ai/package-summary.html">io.github.jabrena.juno.ai</a></dt>
+<dd>
+<div class="block">The board's embedded decision-model engine: a JEV1 model that picks one action among the legal ones for a state.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html" class="type-name-link" title="interface in io.github.jabrena.juno.hardware.internal">DecisionModelRuntime</a> - Interface in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
+<dd>
+<div class="block">What the decision-model engine needs from the board: the native JEV1 evaluator, which works on whichever model it
+was pointed at, and PSRAM buffers for a model loaded from an SD card.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/jdk/util/Base64.Decoder.html#decode(java.lang.String)" class="member-name-link">decode(String)</a> - Method in class io.github.jabrena.juno.jdk.util.<a href="io/github/jabrena/juno/jdk/util/Base64.Decoder.html" title="class in io.github.jabrena.juno.jdk.util">Base64.Decoder</a></dt>
 <dd>
 <div class="block">Decodes <code>source</code> into a 2 KiB array, of which the first <a href="io/github/jabrena/juno/jdk/util/Base64.Decoder.html#decodedLength()"><code>Base64.Decoder.decodedLength()</code></a> bytes are the result.</div>
@@ -1796,9 +1852,24 @@ the coprocessor firmware 0.4.1 or later; an older one leaves the store unavailab
 <dd>
 <div class="block">Opens the board's NVS namespace.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/ai/DecisionModel.html#evaluate(int%5B%5D,int%5B%5D)" class="member-name-link">evaluate(int[], int[])</a> - Method in interface io.github.jabrena.juno.ai.<a href="io/github/jabrena/juno/ai/DecisionModel.html" title="interface in io.github.jabrena.juno.ai">DecisionModel</a></dt>
+<dd>
+<div class="block">Returns the selected action from <code>legalActions</code> for <code>state</code>, or -1 when no model is loaded, the
+state does not have <a href="io/github/jabrena/juno/ai/DecisionModel.html#features()"><code>DecisionModel.features()</code></a> entries or no legal action is one of the model's.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html#evaluate(int%5B%5D,int%5B%5D)" class="member-name-link">evaluate(int[], int[])</a> - Method in interface io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html" title="interface in io.github.jabrena.juno.hardware.internal">DecisionModelRuntime</a></dt>
+<dd>
+<div class="block">The selected action from <code>legalActions</code> for <code>state</code>, or -1.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html#evaluate(int%5B%5D,int%5B%5D)" class="member-name-link">evaluate(int[], int[])</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">JevDecisionModel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html#evaluate(int%5B%5D,int%5B%5D)" class="member-name-link">evaluate(int[], int[])</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDecisionModel</a></dt>
+<dd>
+<div class="block">Runs the loaded JEV1 model over caller-owned buffers.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/ai/ModelStatus.html#EXHAUSTED" class="member-name-link">EXHAUSTED</a> - Enum constant in enum class io.github.jabrena.juno.ai.<a href="io/github/jabrena/juno/ai/ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></dt>
 <dd>
-<div class="block"><code>begin</code>: PSRAM has no room for the weights and the attention cache.</div>
+<div class="block"><code>begin</code>: PSRAM has no room for the model (and, for a language model, its attention cache).</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html#exists(java.lang.String)" class="member-name-link">exists(String)</a> - Method in interface io.github.jabrena.juno.hardware.device.sd.<a href="io/github/jabrena/juno/hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a></dt>
 <dd>
@@ -1835,6 +1906,18 @@ the coprocessor firmware 0.4.1 or later; an older one leaves the store unavailab
 <dd>
 <div class="block">Returns the cached fault bits of the last status read.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html#featureCount()" class="member-name-link">featureCount()</a> - Method in interface io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html" title="interface in io.github.jabrena.juno.hardware.internal">DecisionModelRuntime</a></dt>
+<dd>
+<div class="block">The loaded model's feature count, or 0.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html#featureCount()" class="member-name-link">featureCount()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDecisionModel</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/ai/DecisionModel.html#features()" class="member-name-link">features()</a> - Method in interface io.github.jabrena.juno.ai.<a href="io/github/jabrena/juno/ai/DecisionModel.html" title="interface in io.github.jabrena.juno.ai">DecisionModel</a></dt>
+<dd>
+<div class="block">The loaded model's number of state features, which is the length <a href="io/github/jabrena/juno/ai/DecisionModel.html#evaluate(int%5B%5D,int%5B%5D)"><code>DecisionModel.evaluate(int[], int[])</code></a> expects, or 0.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html#features()" class="member-name-link">features()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">JevDecisionModel</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.html#fetchSample(float%5B%5D,int)" class="member-name-link">fetchSample(float[], int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GroveDht11.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GroveDht11</a></dt>
 <dd>
 <div class="block">Writes the temperature in degrees Celsius and the relative humidity from 0 to 1, starting at <code>offset</code>;
@@ -2061,6 +2144,12 @@ centered, and <a href="io/github/jabrena/juno/hardware/device/tft/Mhs35TftDispla
 <dd>
 <div class="block"><a href="io/github/jabrena/juno/hardware/device/ir/Infrared.html#readByte(int)"><code>Infrared.readByte(int)</code></a> result when a byte arrived with a wrong parity bit or stop bit.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html#free(int)" class="member-name-link">free(int)</a> - Method in interface io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html" title="interface in io.github.jabrena.juno.hardware.internal">DecisionModelRuntime</a></dt>
+<dd>
+<div class="block">Frees a PSRAM buffer the runtime does not own.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html#free(int)" class="member-name-link">free(int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDecisionModel</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/Psram.html#freeBytes()" class="member-name-link">freeBytes()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Psram.html" title="class in io.github.jabrena.juno.hardware">Psram</a></dt>
 <dd>
 <div class="block">Current free PSRAM bytes; fragmentation can make the largest request smaller.</div>
@@ -2313,6 +2402,10 @@ entries), in the same form as <a href="io/github/jabrena/juno/hardware/net/Wifi.
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html#getD8()" class="member-name-link">getD8()</a> - Method in class io.github.jabrena.juno.hardware.device.grove.<a href="io/github/jabrena/juno/hardware/device/grove/GroveBaseShield.html" title="class in io.github.jabrena.juno.hardware.device.grove">GroveBaseShield</a></dt>
 <dd>
 <div class="block">The UNO pin behind the D8 socket.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/MCU.html#getDecisionModel()" class="member-name-link">getDecisionModel()</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/MCU.html" title="class in io.github.jabrena.juno.hardware">MCU</a></dt>
+<dd>
+<div class="block">The board's embedded decision-model engine.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html#getDefault()" class="member-name-link">getDefault()</a> - Static method in class io.github.jabrena.juno.javax.net.ssl.<a href="io/github/jabrena/juno/javax/net/ssl/SSLContext.html" title="class in io.github.jabrena.juno.javax.net.ssl">SSLContext</a></dt>
 <dd>
@@ -3766,7 +3859,7 @@ it ignores motor, sensor and sound commands until firmware is loaded), or <a hre
 </dd>
 <dt><a href="io/github/jabrena/juno/ai/ModelStatus.html#INVALID_MODEL" class="member-name-link">INVALID_MODEL</a> - Enum constant in enum class io.github.jabrena.juno.ai.<a href="io/github/jabrena/juno/ai/ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></dt>
 <dd>
-<div class="block"><code>begin</code>: the model is not a complete JLM1 file the engine accepts.</div>
+<div class="block"><code>begin</code>: the model is not a complete JLM1 (language) or JEV1 (decision) file the engine accepts.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html#INVERT_LEFT_MOTOR" class="member-name-link">INVERT_LEFT_MOTOR</a> - Static variable in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxRegulatedPair.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxRegulatedPair</a></dt>
 <dd>
@@ -4162,10 +4255,16 @@ reads every name as missing and refuses every write.</div>
 <dd>
 <div class="block">Whether <code>key</code> is currently pressed.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/ai/DecisionModel.html#isLoaded()" class="member-name-link">isLoaded()</a> - Method in interface io.github.jabrena.juno.ai.<a href="io/github/jabrena/juno/ai/DecisionModel.html" title="interface in io.github.jabrena.juno.ai">DecisionModel</a></dt>
+<dd>
+<div class="block">Whether a model is loaded.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/ai/LanguageModel.html#isLoaded()" class="member-name-link">isLoaded()</a> - Method in interface io.github.jabrena.juno.ai.<a href="io/github/jabrena/juno/ai/LanguageModel.html" title="interface in io.github.jabrena.juno.ai">LanguageModel</a></dt>
 <dd>
 <div class="block">Whether a model is loaded.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html#isLoaded()" class="member-name-link">isLoaded()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">JevDecisionModel</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/JlmLanguageModel.html#isLoaded()" class="member-name-link">isLoaded()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/JlmLanguageModel.html" title="class in io.github.jabrena.juno.hardware.internal">JlmLanguageModel</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html#isLowSpeed()" class="member-name-link">isLowSpeed()</a> - Method in class io.github.jabrena.juno.hardware.device.usb.<a href="io/github/jabrena/juno/hardware/device/usb/UsbHostShield.html" title="class in io.github.jabrena.juno.hardware.device.usb">UsbHostShield</a></dt>
@@ -4321,6 +4420,15 @@ device unplugged, or it stopped answering) closes it, and <a href="io/github/jab
 </dd>
 <dt><a href="io/github/jabrena/juno/util/image/JavaLogoImage.html#%3Cinit%3E(io.github.jabrena.juno.hardware.device.tft.TftTouchShield)" class="member-name-link">JavaLogoImage(TftTouchShield)</a> - Constructor for class io.github.jabrena.juno.util.image.<a href="io/github/jabrena/juno/util/image/JavaLogoImage.html" title="class in io.github.jabrena.juno.util.image">JavaLogoImage</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">JevDecisionModel</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
+<dd>
+<div class="block">The decision-model engine over a <a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html" title="interface in io.github.jabrena.juno.hardware.internal"><code>DecisionModelRuntime</code></a>: it chooses the model and copies an SD-card file into
+PSRAM, and the runtime evaluates.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html#%3Cinit%3E(io.github.jabrena.juno.hardware.internal.DecisionModelRuntime)" class="member-name-link">JevDecisionModel(DecisionModelRuntime)</a> - Constructor for class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">JevDecisionModel</a></dt>
+<dd>
+<div class="block">An engine with no model loaded, over <code>runtime</code>: the board's <a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal"><code>NativeDecisionModel</code></a> or a test double.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/JlmLanguageModel.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">JlmLanguageModel</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
 <dd>
 <div class="block">The board's JLM1 engine behind <a href="io/github/jabrena/juno/hardware/MCU.html#getLanguageModel()"><code>MCU.getLanguageModel()</code></a>, in Java: it reads the
@@ -4921,7 +5029,8 @@ the <code>REMOTE_*</code> values.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/ai/ModelStatus.html" class="type-name-link" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a> - Enum Class in <a href="io/github/jabrena/juno/ai/package-summary.html">io.github.jabrena.juno.ai</a></dt>
 <dd>
-<div class="block">The outcome of <a href="io/github/jabrena/juno/ai/LanguageModel.html" title="interface in io.github.jabrena.juno.ai"><code>LanguageModel</code></a>'s <code>begin</code> methods and of <a href="io/github/jabrena/juno/ai/LanguageModel.html#ask(java.lang.String,int)"><code>LanguageModel.ask(String, int)</code></a>.</div>
+<div class="block">The outcome of the <code>begin</code> methods of <a href="io/github/jabrena/juno/ai/LanguageModel.html" title="interface in io.github.jabrena.juno.ai"><code>LanguageModel</code></a> and <a href="io/github/jabrena/juno/ai/DecisionModel.html" title="interface in io.github.jabrena.juno.ai"><code>DecisionModel</code></a>, and of
+<a href="io/github/jabrena/juno/ai/LanguageModel.html#ask(java.lang.String,int)"><code>LanguageModel.ask(String, int)</code></a>.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/device/grove/sensors/GrovePirMotion.html#motionDetected(int)" class="member-name-link">motionDetected(int)</a> - Method in class io.github.jabrena.juno.hardware.device.grove.sensors.<a href="io/github/jabrena/juno/hardware/device/grove/sensors/GrovePirMotion.html" title="class in io.github.jabrena.juno.hardware.device.grove.sensors">GrovePirMotion</a></dt>
 <dd>
@@ -5033,6 +5142,11 @@ core's <code>esp_camera</code> driver, so they have no Java body and cannot run,
 <dd>
 <div class="block">The board's <a href="io/github/jabrena/juno/hardware/time/Clock.html" title="interface in io.github.jabrena.juno.hardware.time"><code>Clock</code></a>: each method is a clock intrinsic the compiler lowers to the Arduino core call, so it has
 no Java body and cannot run, or be mocked, on a desktop JVM.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeDecisionModel</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
+<dd>
+<div class="block">The board's <a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html" title="interface in io.github.jabrena.juno.hardware.internal"><code>DecisionModelRuntime</code></a>: compiler intrinsics for the native JEV1 evaluator, which reads either the
+table the build linked into flash or a PSRAM copy of an SD-card file in place, and <a href="io/github/jabrena/juno/hardware/Psram.html" title="class in io.github.jabrena.juno.hardware"><code>Psram</code></a> for that copy.</div>
 </dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/NativeDigitalOutput.html" class="type-name-link" title="class in io.github.jabrena.juno.hardware.internal">NativeDigitalOutput</a> - Class in <a href="io/github/jabrena/juno/hardware/internal/package-summary.html">io.github.jabrena.juno.hardware.internal</a></dt>
 <dd>
@@ -6450,10 +6564,16 @@ counter-clockwise, the shorter way: <code>-179_999</code> through <code>180_000<
 <dd>
 <div class="block">Returns the relay state from a decrypted discovery or system-information reply.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/ai/DecisionModel.html#release()" class="member-name-link">release()</a> - Method in interface io.github.jabrena.juno.ai.<a href="io/github/jabrena/juno/ai/DecisionModel.html" title="interface in io.github.jabrena.juno.ai">DecisionModel</a></dt>
+<dd>
+<div class="block">Unloads the model and frees its PSRAM; <a href="io/github/jabrena/juno/ai/DecisionModel.html#isLoaded()"><code>DecisionModel.isLoaded()</code></a> is false afterwards.</div>
+</dd>
 <dt><a href="io/github/jabrena/juno/ai/LanguageModel.html#release()" class="member-name-link">release()</a> - Method in interface io.github.jabrena.juno.ai.<a href="io/github/jabrena/juno/ai/LanguageModel.html" title="interface in io.github.jabrena.juno.ai">LanguageModel</a></dt>
 <dd>
 <div class="block">Frees the model's PSRAM; <a href="io/github/jabrena/juno/ai/LanguageModel.html#isLoaded()"><code>LanguageModel.isLoaded()</code></a> is false afterwards.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html#release()" class="member-name-link">release()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/JevDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">JevDecisionModel</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/JlmLanguageModel.html#release()" class="member-name-link">release()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/JlmLanguageModel.html" title="class in io.github.jabrena.juno.hardware.internal">JlmLanguageModel</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/internal/ModelMemory.html#release()" class="member-name-link">release()</a> - Method in interface io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/ModelMemory.html" title="interface in io.github.jabrena.juno.hardware.internal">ModelMemory</a></dt>
@@ -8335,6 +8455,12 @@ the <a href="io/github/jabrena/juno/javax/net/ssl/TrustManager.html" title="inte
 <dd>
 <div class="block">Takes the virtual port <code>virtualPort</code> apart, so the two motors are driven separately again.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html#unload()" class="member-name-link">unload()</a> - Method in interface io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html" title="interface in io.github.jabrena.juno.hardware.internal">DecisionModelRuntime</a></dt>
+<dd>
+<div class="block">Detaches the evaluator from its model and frees the PSRAM copy it owns, if any.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html#unload()" class="member-name-link">unload()</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDecisionModel</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html#unlock()" class="member-name-link">unlock()</a> - Method in class io.github.jabrena.juno.remote.lego.rcx.<a href="io/github/jabrena/juno/remote/lego/rcx/RcxFirmware.html" title="class in io.github.jabrena.juno.remote.lego.rcx">RcxFirmware</a></dt>
 <dd>
 <div class="block">Starts the downloaded firmware once the brick has checked it.</div>
@@ -8847,6 +8973,12 @@ for raw protocols such as a secure element's command frames.</div>
 <dd>
 <div class="block">Turns the servo on <code>channel</code> to <code>angleDegrees</code>, clamped to <code>0..180</code>.</div>
 </dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html#write(int,int,byte%5B%5D,int)" class="member-name-link">write(int, int, byte[], int)</a> - Method in interface io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/DecisionModelRuntime.html" title="interface in io.github.jabrena.juno.hardware.internal">DecisionModelRuntime</a></dt>
+<dd>
+<div class="block">Copies <code>length</code> bytes of <code>source</code> to <code>offset</code> in <code>handle</code>; <code>length</code>, or an error.</div>
+</dd>
+<dt><a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html#write(int,int,byte%5B%5D,int)" class="member-name-link">write(int, int, byte[], int)</a> - Method in class io.github.jabrena.juno.hardware.internal.<a href="io/github/jabrena/juno/hardware/internal/NativeDecisionModel.html" title="class in io.github.jabrena.juno.hardware.internal">NativeDecisionModel</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="io/github/jabrena/juno/hardware/Psram.html#write(int,int,byte%5B%5D,int,int)" class="member-name-link">write(int, int, byte[], int, int)</a> - Static method in class io.github.jabrena.juno.hardware.<a href="io/github/jabrena/juno/hardware/Psram.html" title="class in io.github.jabrena.juno.hardware">Psram</a></dt>
 <dd>
 <div class="block">Copies bytes from a caller-owned Java array into PSRAM.</div>
