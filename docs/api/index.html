@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="APIs">
   <meta property="og:site_name" content="Juno: Java for Microcontrollers">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="The hardware and network APIs a Juno program can use, in five categories: observability, storage, internet, utils and hardware.">
-  <meta property="og:description" content="The hardware and network APIs a Juno program can use, in five categories: observability, storage, internet, utils and hardware." />
-  <meta name="twitter:description" content="The hardware and network APIs a Juno program can use, in five categories: observability, storage, internet, utils and hardware.">
+  <meta name="description" content="The hardware, network and AI APIs a Juno program can use.">
+  <meta property="og:description" content="The hardware, network and AI APIs a Juno program can use." />
+  <meta name="twitter:description" content="The hardware, network and AI APIs a Juno program can use.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/api/" />
@@ -310,7 +310,7 @@ document.addEventListener('DOMContentLoaded', function () {
   <h1>APIs</h1>
 </header>
     <div class="content-prose">
-<p>Juno's APIs fall into five categories. Each category page lists its APIs with what they provide and a complete example.</p>
+<p>Juno's APIs fall into six categories. Each category page lists its APIs with what they provide and a complete example.</p>
 <table>
 <thead>
 <tr>
@@ -320,6 +320,11 @@ document.addEventListener('DOMContentLoaded', function () {
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><a href="ai">AI</a></td>
+<td><a href="ai/jev">JEV decision models</a>, <a href="ai/lm">JLM language models</a></td>
+<td>JEV selects a legal action from a caller-owned state and action list. JLM1 generates text one character at a time from a model linked into the firmware.</td>
+</tr>
 <tr>
 <td><a href="observability">Observability</a></td>
 <td><a href="observability/serial">Serial</a>, <a href="observability/syslog">Syslog</a></td>

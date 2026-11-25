@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="JEV: decision models that run on the board">
   <meta property="og:site_name" content="Juno: Java for Microcontrollers">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="How Juno stores a decision model as a JEV1 file, picks the best legal action with it on a Nano ESP32, builds a perfect tic-tac-toe player from a minimax oracle and trains a Connect Four player.">
-  <meta property="og:description" content="How Juno stores a decision model as a JEV1 file, picks the best legal action with it on a Nano ESP32, builds a perfect tic-tac-toe player from a minimax oracle and trains a Connect Four player." />
-  <meta name="twitter:description" content="How Juno stores a decision model as a JEV1 file, picks the best legal action with it on a Nano ESP32, builds a perfect tic-tac-toe player from a minimax oracle and trains a Connect Four player.">
+  <meta name="description" content="How Juno stores a decision model as a JEV1 file, picks the best legal action on ESP32 and Portenta boards, builds a perfect tic-tac-toe player and trains a Connect Four player.">
+  <meta property="og:description" content="How Juno stores a decision model as a JEV1 file, picks the best legal action on ESP32 and Portenta boards, builds a perfect tic-tac-toe player and trains a Connect Four player." />
+  <meta name="twitter:description" content="How Juno stores a decision model as a JEV1 file, picks the best legal action on ESP32 and Portenta boards, builds a perfect tic-tac-toe player and trains a Connect Four player.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/blog/2026-11-25-jev-decision-models/" />
@@ -324,11 +324,11 @@ trained Connect Four player.</p>
 </tr>
 <tr>
 <td>Boards supported</td>
-<td><a href="../../boards/arduino-nano-esp32"><code>Nano ESP32</code></a> for the examples; a model linked into flash needs no PSRAM, a model loaded from an SD card does</td>
+<td><a href="../../boards/arduino-nano-esp32"><code>Nano ESP32</code></a>, <a href="../../boards/ai-thinker-esp32-cam"><code>AI Thinker ESP32-CAM</code></a> and <a href="../../boards/arduino-portenta-h7"><code>Portenta H7</code></a>; linked JEV models run from flash</td>
 </tr>
 <tr>
 <td>Features used</td>
-<td><code>MCU.getDecisionModel()</code>, flash tables, PSRAM (optional), SD card (optional), Secret Store, Wi-Fi, JDK <code>HttpServer</code></td>
+<td><code>MCU.getDecisionModel()</code>, flash tables, Secret Store, Wi-Fi, JDK <code>HttpServer</code></td>
 </tr>
 </tbody>
 </table>
@@ -389,8 +389,8 @@ int move = model.evaluate(STATE, LEGAL_ACTIONS);
 and length, and emits it as a <code>const</code> table, so it lives in flash and one <code>juno:flash</code> uploads the program and its
 model together. A program that calls <code>begin()</code> without the option fails to build, on the laptop rather than on the
 board.</li>
-<li><code>begin(card, path)</code> copies a JEV1 file from a mounted SD card into PSRAM through a 1 KiB buffer instead, so a model
-can change without reflashing. Only this path needs PSRAM.</li>
+<li><code>begin(card, path)</code> is an optional SD-card variant for boards and carriers that provide a card. The web examples use
+the linked model and the Secret Store only, so they do not require SD-card support.</li>
 <li><code>evaluate(state, legalActions)</code> reads both caller-owned <code>int[]</code> buffers in place and allocates nothing, so it can run
 in a main loop. It returns <code>-1</code> when no model is loaded, the state has the wrong length, or none of the legal
 actions belongs to the model.</li>
@@ -438,6 +438,9 @@ the model plays <code>X</code>:</p>
 <code>GET /api/state</code>, <code>POST /api/move</code> and <code>POST /api/reset</code>, and the board answers each from a buffer it allocated once at
 startup. <code>TicTacToeDecisionModel</code> is the minimal version with no network: it loads the model and prints its opening
 move on the serial port every five seconds.</p>
+<p>The same web example is supported on the AI Thinker ESP32-CAM and Portenta H7. Provision <code>wifi.ssid</code> and
+<code>wifi.password</code> with <code>juno:secret</code> on the selected board. The Portenta stores the credentials in its SE050 Secret Store;
+it does not use an SD card for Wi-Fi or for these linked JEV models.</p>
 <h2 id="training-instead-of-solving-connect-four">Training instead of solving: Connect Four</h2>
 <p>Not every problem fits in a table. Connect Four has about 4.5 trillion positions, so <code>CONNECT_FOUR.JEV</code> is trained
 instead. It is 457 bytes: 7 actions, one per column, and 56 features, a block of 8 per column that describes what

@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="JLM1: a language model that runs on the board">
   <meta property="og:site_name" content="Juno: Java for Microcontrollers">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="How Juno trains a small character-level transformer in Java, stores it as JUNO.BIN and runs it on a Nano ESP32 web chat.">
-  <meta property="og:description" content="How Juno trains a small character-level transformer in Java, stores it as JUNO.BIN and runs it on a Nano ESP32 web chat." />
-  <meta name="twitter:description" content="How Juno trains a small character-level transformer in Java, stores it as JUNO.BIN and runs it on a Nano ESP32 web chat.">
+  <meta name="description" content="How Juno trains a small character-level transformer in Java, stores it as JUNO.BIN and runs it in web chats on ESP32 and Portenta boards.">
+  <meta property="og:description" content="How Juno trains a small character-level transformer in Java, stores it as JUNO.BIN and runs it in web chats on ESP32 and Portenta boards." />
+  <meta name="twitter:description" content="How Juno trains a small character-level transformer in Java, stores it as JUNO.BIN and runs it in web chats on ESP32 and Portenta boards.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/blog/2026-11-24-jlm1-on-board-language-model/" />
@@ -308,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function () {
       <section class="content-prose">
 <p>JLM1 is a small language model that answers questions about Juno, and it runs on the board itself: no cloud, no
 internet connection, no host computer. It is trained in pure Java on the build machine, stored in one file,
-<code>JUNO.BIN</code>, and run on a Nano ESP32 by an engine that Juno compiles from Java. This article shows the web chat example
+<code>JUNO.BIN</code>, and run by an engine that Juno compiles from Java. This article shows the web chat example
 and explains what is inside the model.</p>
 <table>
 <thead>
@@ -324,11 +324,11 @@ and explains what is inside the model.</p>
 </tr>
 <tr>
 <td>Boards supported</td>
-<td><a href="../../boards/arduino-nano-esp32"><code>Nano ESP32</code></a> for the examples; the engine needs PSRAM, which the Nano ESP32 and the ESP32-CAM have</td>
+<td><a href="../../boards/arduino-nano-esp32"><code>Nano ESP32</code></a>, <a href="../../boards/ai-thinker-esp32-cam"><code>AI Thinker ESP32-CAM</code></a> and <a href="../../boards/arduino-portenta-h7"><code>Portenta H7</code></a>; the engine uses PSRAM on ESP32 and external SDRAM on Portenta</td>
 </tr>
 <tr>
 <td>Features used</td>
-<td><code>MCU.getLanguageModel()</code>, PSRAM, Secret Store, Wi-Fi, JDK <code>HttpServer</code>, SD card (optional), serial output</td>
+<td><code>MCU.getLanguageModel()</code>, external model memory, Secret Store, Wi-Fi, JDK <code>HttpServer</code>, serial output</td>
 </tr>
 </tbody>
 </table>
@@ -364,7 +364,9 @@ the code or on an SD card.</li>
 returns <code>END</code>, writing each character to the response as soon as it is generated. The page shows the answer
 appearing letter by letter, and nothing is allocated per answer.</li>
 </ol>
-<p>Three variants share the same page: <code>LanguageModelAccessPointChat</code> opens its own Wi-Fi network instead of joining
+<p>The web example is also supported on the AI Thinker ESP32-CAM and Portenta H7. On all three boards it reads
+<code>wifi.ssid</code> and <code>wifi.password</code> from the Secret Store; the Portenta path uses its SE050 and does not require an SD card.</p>
+<p>Three other variants share the same page: <code>LanguageModelAccessPointChat</code> opens its own Wi-Fi network instead of joining
 one, <code>LanguageModelSdCardSecretStoreChat</code> loads <code>JUNO.BIN</code> from the Nano Connector Carrier's microSD card with
 <code>begin(card, &quot;/JUNO.BIN&quot;)</code> (it needs no <code>-Djuno.lm.model</code>), and <code>LanguageModelSdCardHttpsChat</code> serves the same chat over HTTPS with a certificate from
 the card. <code>LanguageModelSerialChat</code> needs no network: type a question on the serial port.</p>
