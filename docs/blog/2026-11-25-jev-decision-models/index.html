@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es-ES">
+<head>
+
+<meta charset="utf-8">
+
+<!-- Prevent flash of unstyled content for dark mode -->
+<script>
+  const savedTheme = localStorage.getItem('darkMode');
+  const isDark = savedTheme !== null
+    ? savedTheme === 'true'
+    : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (isDark) {
+    document.documentElement.classList.add('dark');
+  }
+</script>
+
+
+
+  <!-- SEO TITLE -->
+  
+  <title>JEV: decision models that run on the board - Juno: Java for Microcontrollers</title>
+  <meta property="og:title" content="JEV: decision models that run on the board" />
+  <meta name="twitter:title" content="JEV: decision models that run on the board">
+  <meta property="og:site_name" content="Juno: Java for Microcontrollers">
+  <!-- SEO DESCRIPTION -->
+  <meta name="description" content="How Juno stores a decision model as a JEV1 file, picks the best legal action with it on a Nano ESP32, builds a perfect tic-tac-toe player from a minimax oracle and trains a Connect Four player.">
+  <meta property="og:description" content="How Juno stores a decision model as a JEV1 file, picks the best legal action with it on a Nano ESP32, builds a perfect tic-tac-toe player from a minimax oracle and trains a Connect Four player." />
+  <meta name="twitter:description" content="How Juno stores a decision model as a JEV1 file, picks the best legal action with it on a Nano ESP32, builds a perfect tic-tac-toe player from a minimax oracle and trains a Connect Four player.">
+
+  <!-- SEO URL -->
+  <link rel="canonical" href="https://jabrena.github.io/juno/blog/2026-11-25-jev-decision-models/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/blog/2026-11-25-jev-decision-models/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/blog/2026-11-25-jev-decision-models/">
+
+
+  <!-- SEO TYPE -->
+  <meta property="og:type" content="article" />
+  <meta property="article:published_time" content="2026-11-25T00:00+01:00[Europe/Madrid]" />
+
+  <!-- SEO IMAGE -->
+  <meta name="twitter:card" content="summary">
+  <!-- SEO COLLECTION PAGES -->
+  <link rel="next" href="https://jabrena.github.io/juno/blog/2026-11-24-jlm1-on-board-language-model/" />
+  <!-- SEO LOCALE -->
+  <meta property="og:locale" content="es_ES" />
+  <!-- SEO GENERATOR -->
+  <meta name="generator" content="Quarkus Roq v2.2.1" />
+
+<!-- Favicon -->
+
+<base href="/juno/blog/2026-11-25-jev-decision-models/">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<meta name="theme-color" content="#ffcd03">
+<meta name="msapplication-navbutton-color" content="#ffcd03">
+<meta name="apple-mobile-web-app-status-bar-style" content="#ffcd03">
+
+
+    <script type="module" src="/juno/static/bundle/app-P5LY5ZJW.js"></script>
+      <link rel="stylesheet" href="/juno/static/bundle/app-K4K7IZCN.css" />
+
+</head>
+<body>
+
+
+
+<div class="wrapper default">
+<!-- Site chrome shared by the home page and the docs pages: top navigation bar and footer. -->
+<header class="juno-topbar">
+  <div class="juno-topbar-inner">
+    <a class="juno-brand" href="/juno/">JUno</a>
+    <nav class="juno-topnav" id="juno-topnav" aria-label="Main">
+<form class="juno-search juno-search-mobile" role="search" autocomplete="off">
+  <i class="fa-solid fa-magnifying-glass juno-search-icon" aria-hidden="true"></i>
+  <input type="search" class="juno-search-input" placeholder="Search" aria-label="Search the site"
+         aria-controls="juno-search-results-mobile" aria-autocomplete="list"
+         data-index-src="/juno/search-index.js">
+  <ul class="juno-search-results" id="juno-search-results-mobile" role="listbox" hidden></ul>
+</form>
+      <a class="" href="/juno/getting-started" >Getting Started</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/getting-started">Getting Started</a>
+        <a class="" href="/juno/getting-started/create-your-first-project">Create your first project</a>
+      </div>
+      <a class="" href="/juno/features" >Features</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/features">Overview</a>
+        <a class="" href="/juno/features/java-subset">Java subset</a>
+        <a class="" href="/juno/features/board-features">Board features</a>
+        <a class="" href="/juno/features/memory-model">Memory Model</a>
+        <a class="" href="/juno/features/jls-17-conformance">JLS 17 Conformance</a>
+        <a class="" href="/juno/features/juno-maven-plugin">Maven Plugin</a>
+      </div>
+      <a class="" href="/juno/boards" >Boards</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/boards">Overview</a>
+        <a class="" href="/juno/boards/arduino-portenta-h7">Portenta H7</a>
+        <a class="" href="/juno/boards/arduino-nano-esp32">Nano ESP32</a>
+        <a class="" href="/juno/boards/m5stack-cardputer">M5Stack Cardputer</a>
+        <a class="" href="/juno/boards/ai-thinker-esp32-cam">ESP32-CAM</a>
+        <a class="" href="/juno/boards/raspberry-pi-pico-2-w">Pico 2 W</a>
+        <a class="" href="/juno/boards/arduino-uno-r4-wifi">UNO R4 WiFi</a>
+        <a class="" href="/juno/boards/arduino-uno-r3">UNO R3</a>
+      </div>
+      <a class="" href="/juno/api" >APIs</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/api">Overview</a>
+        <a class="" href="/juno/api/observability">Observability</a>
+        <a class="" href="/juno/api/storage">Storage</a>
+        <a class="" href="/juno/api/internet">Internet</a>
+        <a class="" href="/juno/api/utils">Utils</a>
+        <a class="" href="/juno/api/hardware">Hardware</a>
+      </div>
+      <a class="" href="/juno/third-parties" >Third parties</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/third-parties">Overview</a>
+        <a class="" href="/juno/third-parties/arduino-shields">Arduino Shields</a>
+        <a class="" href="/juno/third-parties/grove-system">Grove system</a>
+        <a class="" href="/juno/third-parties/lego-ecosystem">LEGO ecosystem</a>
+      </div>
+      <a class="" href="/juno/blog" >Blog</a>
+      <div class="juno-topnav-children">
+        <a class="" href="/juno/blog">Overview</a>
+      </div>
+      <a class="" href="/juno/javadocs/0.1.0/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
+    </nav>
+    <div class="juno-topbar-actions">
+<form class="juno-search juno-search-desktop" role="search" autocomplete="off">
+  <i class="fa-solid fa-magnifying-glass juno-search-icon" aria-hidden="true"></i>
+  <input type="search" class="juno-search-input" placeholder="Search" aria-label="Search the site"
+         aria-controls="juno-search-results-desktop" aria-autocomplete="list"
+         data-index-src="/juno/search-index.js">
+  <ul class="juno-search-results" id="juno-search-results-desktop" role="listbox" hidden></ul>
+</form>
+      <a class="juno-icon-link" href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="Juno on GitHub"><i class="fa-brands fa-github"></i></a>
+    </div>
+    <button type="button" class="juno-menu-toggle" aria-controls="juno-topnav" aria-expanded="false" aria-label="Open menu">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+  </div>
+</header>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var toggle = document.querySelector('.juno-menu-toggle');
+  var nav = document.getElementById('juno-topnav');
+  if (!toggle || !nav) return;
+  toggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    toggle.querySelector('i').className = open ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  });
+});
+</script>
+<script>
+(function () {
+  var MAX_RESULTS = 8;
+  var entries = null;
+  var loading = null;
+
+  // Loads search-index.js once: a plain script tag, so it also works when the site is opened from disk.
+  function loadIndex(src) {
+    if (entries) return Promise.resolve(entries);
+    if (!loading) {
+      loading = new Promise(function (resolve, reject) {
+        var script = document.createElement('script');
+        script.src = src;
+        script.onload = function () { resolve(window.JUNO_SEARCH_INDEX || []); };
+        script.onerror = function () { reject(new Error('Search index failed to load')); };
+        document.head.appendChild(script);
+      }).then(function (list) {
+        entries = list;
+        return list;
+      });
+    }
+    return loading;
+  }
+
+  // Score = 0 when some term is missing; otherwise a higher score for matches in the title than in the body.
+  function score(entry, terms) {
+    var title = entry.title.toLowerCase();
+    var description = entry.description.toLowerCase();
+    var text = entry.text.toLowerCase();
+    var total = 0;
+    for (var i = 0; i < terms.length; i++) {
+      if (title.indexOf(terms[i]) !== -1) total += 10;
+      else if (description.indexOf(terms[i]) !== -1) total += 4;
+      else if (text.indexOf(terms[i]) !== -1) total += 1;
+      else return 0;
+    }
+    return total;
+  }
+
+  // The index keeps the page's HTML text, so entities such as &lt; come through escaped.
+  function snippet(entry, term) {
+    var text = entry.text
+      .replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'").replace(/&amp;/g, '&')
+      .replace(/\s+/g, ' ');
+    var at = text.toLowerCase().indexOf(term);
+    if (at === -1) return entry.description;
+    var start = Math.max(0, at - 50);
+    return (start > 0 ? '…' : '') + text.slice(start, at + 90).trim() + '…';
+  }
+
+  function search(query) {
+    var terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!terms.length) return [];
+    return entries
+      .map(function (entry) { return { entry: entry, score: score(entry, terms), term: terms[0] }; })
+      .filter(function (hit) { return hit.score > 0; })
+      .sort(function (a, b) { return b.score - a.score || a.entry.title.localeCompare(b.entry.title); })
+      .slice(0, MAX_RESULTS);
+  }
+
+  function render(form, query) {
+    var list = form.querySelector('.juno-search-results');
+    list.textContent = '';
+    if (!query.trim()) {
+      list.hidden = true;
+      return;
+    }
+    var hits = search(query);
+    if (!hits.length) {
+      var empty = document.createElement('li');
+      empty.className = 'juno-search-empty';
+      empty.textContent = 'No results for “' + query + '”';
+      list.appendChild(empty);
+    }
+    hits.forEach(function (hit) {
+      var item = document.createElement('li');
+      var link = document.createElement('a');
+      var title = document.createElement('span');
+      var excerpt = document.createElement('span');
+      link.href = hit.entry.url;
+      link.setAttribute('role', 'option');
+      title.className = 'juno-search-title';
+      title.textContent = hit.entry.title;
+      excerpt.className = 'juno-search-excerpt';
+      excerpt.textContent = snippet(hit.entry, hit.term);
+      link.appendChild(title);
+      link.appendChild(excerpt);
+      item.appendChild(link);
+      list.appendChild(item);
+    });
+    list.hidden = false;
+  }
+
+  function hide(form) {
+    form.querySelector('.juno-search-results').hidden = true;
+  }
+
+  function attach(form) {
+    var input = form.querySelector('.juno-search-input');
+    var src = input.getAttribute('data-index-src');
+    input.addEventListener('focus', function () { loadIndex(src).catch(function () {}); });
+    input.addEventListener('input', function () {
+      loadIndex(src).then(function () { render(form, input.value); }).catch(function () {});
+    });
+    // Keys are handled on the form so they work from the input and from the result links alike.
+    form.addEventListener('keydown', function (event) {
+      var links = Array.prototype.slice.call(form.querySelectorAll('.juno-search-results a'));
+      var current = links.indexOf(document.activeElement);
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        if (!links.length) return;
+        event.preventDefault();
+        var step = event.key === 'ArrowDown' ? 1 : -1;
+        links[(current + step + links.length) % links.length].focus();
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        var target = current !== -1 ? links[current] : links[0];
+        if (target) window.location.href = target.href;
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        input.value = '';
+        hide(form);
+        input.focus();
+      }
+    });
+    // On touch screens a tap on a result moves focus off the input before the click lands, and the list would hide
+    // first. Keeping the press on the input stops that blur; the click still reaches the link.
+    form.querySelector('.juno-search-results').addEventListener('pointerdown', function (event) {
+      event.preventDefault();
+    });
+    form.addEventListener('focusout', function (event) {
+      if (!form.contains(event.relatedTarget)) hide(form);
+    });
+    form.addEventListener('submit', function (event) { event.preventDefault(); });
+  }
+
+  document.querySelectorAll('.juno-search').forEach(attach);
+})();
+</script>
+<!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
+<main class="juno-docs">
+
+
+
+<article class="article-page" xmlns="http://www.w3.org/1999/html">
+  <section class="page-content">
+    <section class="wrap-content">
+<header class="juno-page-header">
+  <h1>JEV: decision models that run on the board</h1>
+</header>
+      <section class="content-prose">
+<p>A language model answers questions; a decision model chooses. Given the state of a game or a machine and the actions
+that are allowed right now, a JEV model returns the one it scores highest. Juno builds these models on the build
+machine in pure Java, stores each one in a single JEV1 file, and evaluates it on the board without allocating. This
+article explains the format, how the board uses it, and the first two models: a tic-tac-toe player that never loses, and a
+trained Connect Four player.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sources</td>
+<td><a href="https://github.com/jabrena/juno/tree/main/juno-ai/juno-dm"><code>juno-dm</code></a> (format, trainer, reference inference), <a href="https://github.com/jabrena/juno/tree/main/juno-ai/juno-models"><code>juno-models</code></a> (datasets, oracles, tracked <code>.JEV</code> files), <a href="https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/ai"><code>api/ai</code></a> (examples)</td>
+</tr>
+<tr>
+<td>Boards supported</td>
+<td><a href="../../boards/arduino-nano-esp32"><code>Nano ESP32</code></a> for the examples; a model linked into flash needs no PSRAM, a model loaded from an SD card does</td>
+</tr>
+<tr>
+<td>Features used</td>
+<td><code>MCU.getDecisionModel()</code>, flash tables, PSRAM (optional), SD card (optional), Secret Store, Wi-Fi, JDK <code>HttpServer</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-a-jev-model-computes">What a JEV model computes</h2>
+<p>JEV stands for <em>Juno EValuation</em>. A model has a fixed number of <strong>actions</strong> (the moves it can choose between) and a
+fixed number of <strong>features</strong> (the numbers that describe a state). Every action owns one row of weights and a bias, and
+its score for a state is a dot product:</p>
+<pre><code class="language-text">score(action) = bias[action] + Σ weight[action][feature] × state[feature]
+</code></pre>
+<p>The caller passes the state and the list of actions that are legal in it; the model scores only those and returns the
+best one, keeping the first on a tie. An illegal action can never be chosen, because it is never scored. That is the
+whole engine: no layers, no activation functions, no sampling. What makes a model good is entirely in its features and
+its weights, and both are decided on the build machine.</p>
+<h2 id="the-jev1-file">The JEV1 file</h2>
+<p>A JEV1 file is big-endian and has no padding:</p>
+<table>
+<thead>
+<tr>
+<th>Bytes</th>
+<th>Content</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4</td>
+<td>The magic <code>JEV1</code></td>
+</tr>
+<tr>
+<td>1</td>
+<td>Version, <code>1</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Action count</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Feature count</td>
+</tr>
+<tr>
+<td>per action</td>
+<td>a 32-bit float scale, a 32-bit float bias, then one signed byte per feature</td>
+</tr>
+</tbody>
+</table>
+<p>A weight is <code>byte × scale</code>, with one scale per action: <code>QuantizedJevModel.from(model)</code> picks the scale so that the
+row's largest weight becomes ±127. The size is therefore exact and predictable, <code>9 + actions × (8 + features)</code> bytes,
+and both the compiler and the board check it before using a file.</p>
+<h2 id="on-the-board">On the board</h2>
+<p><code>DecisionModel</code> in <code>juno-api</code> mirrors <code>LanguageModel</code>. Take it once at startup with <code>MCU.getDecisionModel()</code> and call
+<code>begin()</code>:</p>
+<pre><code class="language-java">DecisionModel model = MCU.getDecisionModel();
+ModelStatus status = model.begin();          // the model -Djuno.dm.model linked into flash
+int move = model.evaluate(STATE, LEGAL_ACTIONS);
+</code></pre>
+<ul>
+<li><code>begin()</code> uses the JEV1 file that the build names with <code>-Djuno.dm.model</code>. The compiler reads it, checks its header
+and length, and emits it as a <code>const</code> table, so it lives in flash and one <code>juno:flash</code> uploads the program and its
+model together. A program that calls <code>begin()</code> without the option fails to build, on the laptop rather than on the
+board.</li>
+<li><code>begin(card, path)</code> copies a JEV1 file from a mounted SD card into PSRAM through a 1 KiB buffer instead, so a model
+can change without reflashing. Only this path needs PSRAM.</li>
+<li><code>evaluate(state, legalActions)</code> reads both caller-owned <code>int[]</code> buffers in place and allocates nothing, so it can run
+in a main loop. It returns <code>-1</code> when no model is loaded, the state has the wrong length, or none of the legal
+actions belongs to the model.</li>
+</ul>
+<p>The evaluator itself is one small C function, the same for every model: for each legal action it reads that action's
+row where it lies (flash or PSRAM), adds <code>weight × scale × state[feature]</code> for every non-zero feature, and keeps the
+best. Skipping zero features matters: the tic-tac-toe model below has 4,520 features, and exactly one of them is
+non-zero for any position.</p>
+<h2 id="the-first-model-tic-tac-toe">The first model: tic-tac-toe</h2>
+<p><code>juno-models</code> holds the datasets and oracles that turn a problem into a JEV1 file. The tic-tac-toe model is built in
+three steps, all deterministic:</p>
+<ol>
+<li><code>TicTacToeDataset.exhaustive()</code> walks the game tree from the empty board and keeps every reachable position that is
+not finished: 4,520 of them.</li>
+<li><code>TicTacToeOracle</code> solves the game with memoized minimax, scoring each move from the side to move: <code>1</code> wins, <code>0</code>
+draws, <code>-1</code> loses with best play.</li>
+<li><code>TicTacToeModelFactory</code> makes one <strong>feature per position</strong> (a one-hot encoding) and one action per cell. The
+weight of action <em>c</em> on feature <em>p</em> is the oracle's value of playing <em>c</em> in position <em>p</em>.</li>
+</ol>
+<p>Because exactly one feature is set, a move's score is simply its minimax value, and choosing the highest-scoring legal
+move is playing perfectly. Every weight is <code>-1</code>, <code>0</code> or <code>1</code>, so quantization is lossless: each row's scale is <code>1/127</code>
+and its bytes are <code>-127</code>, <code>0</code> or <code>127</code>. The file, <code>TIC_TAC_TOE.JEV</code>, is 9 actions × 4,520 features, which is
+<code>9 + 9 × (8 + 4,520) = 40,761</code> bytes.</p>
+<p>This is a lookup table dressed as a model, and that is deliberate: it is small enough to verify completely, so it
+tests the format, the quantization and the board evaluator rather than a learning algorithm. <code>TicTacToeOptimalityTest</code>
+in <code>juno-dm</code> and <code>TicTacToeModelTest</code> in <code>juno-models</code> check every one of the 4,520 positions against the oracle, for
+the float model and the quantized one, and the tracked <code>TIC_TAC_TOE.JEV</code> must match the factory's output byte for
+byte.</p>
+<p>The price of a one-hot model is that the program must know which feature a position is. <code>TicTacToeWebGame</code> keeps a
+table in flash that maps each position, written as a base-3 number, to its feature index, sorted so a binary search
+finds it. A computer move then takes about 80 ms on a Nano ESP32.</p>
+<h2 id="try-it-tictactoewebgame">Try it: TicTacToeWebGame</h2>
+<p><code>TicTacToeWebGame</code> joins Wi-Fi with the credentials in the board's Secret Store and serves a game page; you play <code>O</code>,
+the model plays <code>X</code>:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt; -Djuno.secret.key=wifi.ssid
+./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt; -Djuno.secret.key=wifi.password
+./mvnw -f juno-examples/pom.xml compile juno:flash \
+  -Djuno.main=io.github.jabrena.juno.api.ai.TicTacToeWebGame \
+  -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt; \
+  -Djuno.dm.model=../juno-ai/juno-models/src/main/resources/dm/TIC_TAC_TOE.JEV
+./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt;
+</code></pre>
+<p>The monitor prints the board's address; open it in a browser on the same network. The page calls three routes,
+<code>GET /api/state</code>, <code>POST /api/move</code> and <code>POST /api/reset</code>, and the board answers each from a buffer it allocated once at
+startup. <code>TicTacToeDecisionModel</code> is the minimal version with no network: it loads the model and prints its opening
+move on the serial port every five seconds.</p>
+<h2 id="training-instead-of-solving-connect-four">Training instead of solving: Connect Four</h2>
+<p>Not every problem fits in a table. Connect Four has about 4.5 trillion positions, so <code>CONNECT_FOUR.JEV</code> is trained
+instead. It is 457 bytes: 7 actions, one per column, and 56 features, a block of 8 per column that describes what
+dropping a disc there would do for the player to move:</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Meaning</th>
+<th>Learned weight</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WIN</code></td>
+<td>the move wins</td>
+<td>127</td>
+</tr>
+<tr>
+<td><code>LOSES</code></td>
+<td>after the move the opponent can win at once, on the cell above or on a threat left open</td>
+<td>−122</td>
+</tr>
+<tr>
+<td><code>DENIED</code></td>
+<td>lines through the cell that held two or more opponent discs and none of ours</td>
+<td>9</td>
+</tr>
+<tr>
+<td><code>CENTRE</code></td>
+<td>3 minus the distance from the centre column</td>
+<td>9</td>
+</tr>
+<tr>
+<td><code>THREES</code></td>
+<td>lines the move leaves with three own discs and one empty cell</td>
+<td>8</td>
+</tr>
+<tr>
+<td><code>TWOS</code></td>
+<td>lines the move leaves with two own discs and two empty cells</td>
+<td>4</td>
+</tr>
+<tr>
+<td><code>SPOIL</code></td>
+<td>the move makes our own winning cell above it playable, so the opponent blocks it</td>
+<td>−7</td>
+</tr>
+<tr>
+<td><code>BLOCK</code></td>
+<td>the opponent would have won on that cell</td>
+<td>−6</td>
+</tr>
+</tbody>
+</table>
+<p><code>BLOCK</code> ends up slightly negative, most likely because <code>LOSES</code> already does its job: not blocking a threat is a move
+after which the opponent wins.</p>
+<p>The weights are learned in three deterministic steps:</p>
+<ol>
+<li><code>ConnectFourDataset</code> plays 400 seeded games, collecting 6,047 distinct positions. Each move is the oracle's,
+except a random column a quarter of the time, so the games also reach the positions an imperfect opponent creates.</li>
+<li><code>ConnectFourOracle</code>, a depth-6 negamax search with alpha-beta pruning and an open-line heuristic, labels every
+position with its preferred column. It does not solve the game: that needs a far deeper search than a training run
+can afford for every position.</li>
+<li><code>SharedWeightJevTrainer</code> in <code>juno-dm</code>, an averaged perceptron, learns one set of 8 weights that every column
+shares, because a winning or blocking move means the same in every column. The result is still an ordinary JEV
+model: each action's row holds the shared weights on its own block and zeros elsewhere.</li>
+</ol>
+<p>Sharing the weights is what makes it work. <code>JevTrainer</code>, a plain perceptron with an independent row per column,
+agreed with the oracle on only 33% of new positions, took 42 of 118 available wins and won 19 of 200 games against the
+depth-4 search below; with shared weights the model takes every win. The held-out positions below come from 100
+seeded games the model never trained on, the ones <code>ConnectFourModelTest</code> checks; every match starts from two random
+moves so the games differ:</p>
+<table>
+<thead>
+<tr>
+<th>Measure</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agrees with the oracle on unseen positions</td>
+<td>61.4%</td>
+</tr>
+<tr>
+<td>Takes an immediate win when one exists</td>
+<td>118 of 118</td>
+</tr>
+<tr>
+<td>Lets the opponent win at once when another move avoids it</td>
+<td>0 of 1,498 positions</td>
+</tr>
+<tr>
+<td>Against a random player, 100 games with each colour</td>
+<td>199 wins, 1 loss</td>
+</tr>
+<tr>
+<td>Against a depth-4 search that plays a random move one time in ten, 200 games</td>
+<td>90 wins, 17 draws, 93 losses</td>
+</tr>
+</tbody>
+</table>
+<p>That is the trade a JEV model makes: its features look one reply ahead, and it plays about as well as a four-move
+search for the cost of 7 × 56 multiply-adds; a better player needs better features rather than a bigger engine.</p>
+<h2 id="try-it-connectfourwebgame">Try it: ConnectFourWebGame</h2>
+<p>On the board, <code>ConnectFourGame</code> keeps the 42 cells in an <code>int[]</code> and computes the same 56 features, from buffers
+allocated once; <code>ConnectFourGameTest</code> replays 300 random games and checks every position's features against
+<code>ConnectFourFeatures</code>, so the board feeds the model exactly what it was trained on. <code>ConnectFourWebGame</code> serves the
+game with the same Secret Store Wi-Fi as the tic-tac-toe example:</p>
+<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
+  -Djuno.main=io.github.jabrena.juno.api.ai.ConnectFourWebGame \
+  -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt; \
+  -Djuno.dm.model=../juno-ai/juno-models/src/main/resources/dm/CONNECT_FOUR.JEV
+./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.port=&lt;port&gt; -Djuno.baudRate=115200
+</code></pre>
+<p>You play yellow and the model plays red; two buttons start a new game with either side moving first. The routes are
+the tic-tac-toe ones: <code>GET /api/state</code> returns the 42 cells column by column from the bottom, the status and the last
+cell played, <code>POST /api/move</code> takes a column, and <code>POST /api/reset</code> takes <code>h</code> or <code>m</code> for who starts:</p>
+<pre><code class="language-bash">curl -X POST --data m http://&lt;address&gt;/api/reset
+# {&quot;board&quot;:&quot;------------------M-----------------------&quot;,&quot;status&quot;:&quot;turn&quot;,&quot;last&quot;:18}
+</code></pre>
+<p>On a Nano ESP32 a move, the feature encoding, the model's evaluation and the HTTP round trip over Wi-Fi together take
+about 60 ms.</p>
+<h2 id="what-to-expect">What to expect</h2>
+<p>A JEV model is as good as the features it is given: the evaluator is linear and looks one decision ahead, so it does
+not search. In exchange it is tiny, its cost is known in advance (one pass over the legal actions' rows), and it never
+allocates, which is what a microcontroller can afford inside a control loop. Build a new model on the laptop, pass the
+file to <code>-Djuno.dm.model</code> and flash again, or copy it to an SD card and load it with <code>begin(card, path)</code>.</p>
+      </section>
+      <div class="page-footer">
+        <div class="footer-links">
+<div class="page-share">
+  <span class="page-share-label">Share this article</span>
+  <div class="page-share-links">
+      <a href="https://x.com/intent/post?text=JEV%3A+decision+models+that+run+on+the+board&amp;url=https%3A%2F%2Fjabrena.github.io%2Fjuno%2Fblog%2F2026-11-25-jev-decision-models%2F" title="Share on X"
+        aria-label="Share on X" rel="nofollow noopener noreferrer" target="_blank"><i class="fa-brands fa-x-twitter" aria-hidden="true"></i></a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fjabrena.github.io%2Fjuno%2Fblog%2F2026-11-25-jev-decision-models%2F" title="Share on Facebook"
+        aria-label="Share on Facebook" rel="nofollow noopener noreferrer" target="_blank"><i class="fa-brands fa-facebook" aria-hidden="true"></i></a>
+      <a href="https://bsky.app/intent/compose?text=JEV%3A+decision+models+that+run+on+the+board%0Ahttps%3A%2F%2Fjabrena.github.io%2Fjuno%2Fblog%2F2026-11-25-jev-decision-models%2F" title="Share on Bluesky"
+        aria-label="Share on Bluesky" rel="nofollow noopener noreferrer" target="_blank"><i class="fa-brands fa-bluesky" aria-hidden="true"></i></a>
+      <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fjabrena.github.io%2Fjuno%2Fblog%2F2026-11-25-jev-decision-models%2F" title="Share on LinkedIn"
+        aria-label="Share on LinkedIn" rel="nofollow noopener noreferrer" target="_blank"><i class="fa-brands fa-linkedin" aria-hidden="true"></i></a>
+  </div>
+</div>
+          <div class="page-tag">
+            <a href="/juno/posts/tag/ai" class="tag">&#35; ai</a>
+            <a href="/juno/posts/tag/decision-model" class="tag">&#35; decision-model</a>
+            <a href="/juno/posts/tag/nano-esp32" class="tag">&#35; nano-esp32</a>
+            <a href="/juno/posts/tag/http" class="tag">&#35; http</a>
+          </div>
+
+        </div>
+      </div>
+    </section> <!-- End Wrap Content -->
+  </section> <!-- End Page Content -->
+</article> <!-- End Article Page -->
+
+</main>
+
+<footer class="juno-footer">
+  <div class="juno-footer-inner">
+    <div class="juno-footer-links">
+      <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+      <a href="/juno/javadocs/0.1.0/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
+    </div>
+    <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
+  </div>
+</footer>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-FPC5GLQPGY"></script>
+<script src="/juno/gtag.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.juno-docs pre > code.language-bash').forEach(function (code) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'roq-copy-btn juno-copy-btn';
+    button.setAttribute('aria-label', 'Copy command');
+    button.title = 'Copy to clipboard';
+    button.innerHTML = '<i class="fa-regular fa-copy"></i>';
+    code.parentElement.appendChild(button);
+  });
+});
+</script>
+
+</div>
+
+</body>
+</html>

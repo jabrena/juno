@@ -97,7 +97,8 @@ transformer, Juno's model format that <code>juno-lm</code> trains, from PSRAM.</
 <div class="col-first even-row-color"><code>enum&nbsp;</code></div>
 <div class="col-second even-row-color"><code><a href="../ModelStatus.html" class="type-name-link" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
 <div class="col-last even-row-color">
-<div class="block">The outcome of <a href="../LanguageModel.html" title="interface in io.github.jabrena.juno.ai"><code>LanguageModel</code></a>'s <code>begin</code> methods and of <a href="../LanguageModel.html#ask(java.lang.String,int)"><code>LanguageModel.ask(String, int)</code></a>.</div>
+<div class="block">The outcome of the <code>begin</code> methods of <a href="../LanguageModel.html" title="interface in io.github.jabrena.juno.ai"><code>LanguageModel</code></a> and <a href="../DecisionModel.html" title="interface in io.github.jabrena.juno.ai"><code>DecisionModel</code></a>, and of
+<a href="../LanguageModel.html#ask(java.lang.String,int)"><code>LanguageModel.ask(String, int)</code></a>.</div>
 </div>
 </div>
 <div class="caption"><span>Methods in <a href="../package-summary.html">io.github.jabrena.juno.ai</a> that return <a href="../ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></span></div>
@@ -119,10 +120,21 @@ transformer, Juno's model format that <code>juno-lm</code> trains, from PSRAM.</
 <div class="block">Starts answering <code>question</code>, discarding any answer in progress.</div>
 </div>
 <div class="col-first even-row-color"><code><a href="../ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">DecisionModel.</span><code><a href="../DecisionModel.html#begin()" class="member-name-link">begin</a>()</code></div>
+<div class="col-last even-row-color">
+<div class="block">Uses the JEV1 model the build linked into the firmware, replacing any model loaded before.</div>
+</div>
+<div class="col-first odd-row-color"><code><a href="../ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">DecisionModel.</span><code><a href="../DecisionModel.html#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)" class="member-name-link">begin</a><wbr>(<a href="../../hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a>&nbsp;card,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
+<div class="col-last odd-row-color">
+<div class="block">Loads the JEV1 file at <code>path</code> on <code>card</code>, which must already be mounted with its own
+<a href="../../hardware/device/sd/SdCard.html#begin()"><code>SdCard.begin()</code></a>, into PSRAM, replacing any model loaded before.</div>
+</div>
+<div class="col-first even-row-color"><code><a href="../ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
 <div class="col-second even-row-color"><span class="type-name-label">LanguageModel.</span><code><a href="../LanguageModel.html#begin()" class="member-name-link">begin</a>()</code></div>
 <div class="col-last even-row-color">
-<div class="block">Loads the bundled JUNO.BIN, which the compiler links into the firmware of a program that calls this method,
-replacing any model loaded before.</div>
+<div class="block">Loads the JLM1 model the build linked into the firmware, replacing any model loaded before.</div>
 </div>
 <div class="col-first odd-row-color"><code><a href="../ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
 <div class="col-second odd-row-color"><span class="type-name-label">LanguageModel.</span><code><a href="../LanguageModel.html#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)" class="member-name-link">begin</a><wbr>(<a href="../../hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a>&nbsp;card,
@@ -161,6 +173,13 @@ the order they are declared.</div>
 <div class="col-first odd-row-color"><code><a href="../ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
 <div class="col-second odd-row-color"><span class="type-name-label">JlmLanguageModel.</span><code><a href="../../hardware/internal/JlmLanguageModel.html#ask(java.lang.String,int)" class="member-name-link">ask</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;text,
  int&nbsp;creativity)</code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code><a href="../ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
+<div class="col-second even-row-color"><span class="type-name-label">JevDecisionModel.</span><code><a href="../../hardware/internal/JevDecisionModel.html#begin()" class="member-name-link">begin</a>()</code></div>
+<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-first odd-row-color"><code><a href="../ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">JevDecisionModel.</span><code><a href="../../hardware/internal/JevDecisionModel.html#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)" class="member-name-link">begin</a><wbr>(<a href="../../hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a>&nbsp;card,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
 <div class="col-last odd-row-color">&nbsp;</div>
 <div class="col-first even-row-color"><code><a href="../ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
 <div class="col-second even-row-color"><span class="type-name-label">JlmLanguageModel.</span><code><a href="../../hardware/internal/JlmLanguageModel.html#begin()" class="member-name-link">begin</a>()</code></div>

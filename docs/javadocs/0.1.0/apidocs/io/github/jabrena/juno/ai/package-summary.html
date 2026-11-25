@@ -95,13 +95,18 @@ transformer, Juno's model format that <code>juno-lm</code> trains, from PSRAM. I
 <div class="summary-table two-column-summary">
 <div class="table-header col-first">Class</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color class-summary class-summary-tab1"><a href="LanguageModel.html" title="interface in io.github.jabrena.juno.ai">LanguageModel</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab1"><a href="DecisionModel.html" title="interface in io.github.jabrena.juno.ai">DecisionModel</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab1">
+<div class="block">The board's embedded decision-model engine: a JEV1 model that picks one action among the legal ones for a state.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab1"><a href="LanguageModel.html" title="interface in io.github.jabrena.juno.ai">LanguageModel</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab1">
 <div class="block">A JLM1 character-level language model held in PSRAM, answering one question at a time, one character at a time.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab3"><a href="ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab3">
-<div class="block">The outcome of <a href="LanguageModel.html" title="interface in io.github.jabrena.juno.ai"><code>LanguageModel</code></a>'s <code>begin</code> methods and of <a href="LanguageModel.html#ask(java.lang.String,int)"><code>LanguageModel.ask(String, int)</code></a>.</div>
+<div class="col-first even-row-color class-summary class-summary-tab3"><a href="ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab3">
+<div class="block">The outcome of the <code>begin</code> methods of <a href="LanguageModel.html" title="interface in io.github.jabrena.juno.ai"><code>LanguageModel</code></a> and <a href="DecisionModel.html" title="interface in io.github.jabrena.juno.ai"><code>DecisionModel</code></a>, and of
+<a href="LanguageModel.html#ask(java.lang.String,int)"><code>LanguageModel.ask(String, int)</code></a>.</div>
 </div>
 </div>
 </div>

@@ -110,9 +110,10 @@ initTheme();
 <div class="block">A JLM1 character-level language model held in PSRAM, answering one question at a time, one character at a time.
 
 <p>Take the model from its board once, at startup, with
-<a href="../hardware/MCU.html#getLanguageModel()"><code>MCU.getLanguageModel()</code></a>, and <a href="#begin()"><code>begin()</code></a> it: the compiler links the
-bundled JUNO.BIN, trained from the Juno facts, into the firmware, and the engine copies it into PSRAM with its
-attention cache. <a href="#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)"><code>begin(SdCard, String)</code></a> loads another JLM1 file from an SD card instead, so a model can
+<a href="../hardware/MCU.html#getLanguageModel()"><code>MCU.getLanguageModel()</code></a>, and <a href="#begin()"><code>begin()</code></a> it: the build links the JLM1
+file named by <code>-Djuno.lm.model</code> into the firmware (such as <code>juno-lm</code>'s JUNO.BIN, trained from the Juno
+facts), so one <code>juno:flash</code> uploads the program and its model together, and the engine copies it into PSRAM
+with its attention cache. <a href="#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)"><code>begin(SdCard, String)</code></a> loads a JLM1 file from an SD card instead, so a model can
 change without reflashing. Then <a href="#ask(java.lang.String,int)"><code>ask(String, int)</code></a> a question and call <a href="#nextChar()"><code>nextChar()</code></a> until it returns
 <a href="#END"><code>END</code></a>. Each character is handed over as soon as it is generated, so the same loop can print it to the serial
 port, write it to an HTTP response or send it over TCP, and nothing is allocated per answer.
@@ -181,8 +182,7 @@ the model is unsure of any of them, the answer is "I do not know." instead of a 
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#begin()" class="member-name-link">begin</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
-<div class="block">Loads the bundled JUNO.BIN, which the compiler links into the firmware of a program that calls this method,
-replacing any model loaded before.</div>
+<div class="block">Loads the JLM1 model the build linked into the firmware, replacing any model loaded before.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)" class="member-name-link">begin</a><wbr>(<a href="../hardware/device/sd/SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a>&nbsp;card,
@@ -294,8 +294,9 @@ replacing any model loaded before.</div>
 <h3>begin</h3>
 <div class="horizontal-scroll">
 <div class="member-signature"><span class="return-type"><a href="ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></span>&nbsp;<span class="element-name">begin</span>()</div>
-<div class="block">Loads the bundled JUNO.BIN, which the compiler links into the firmware of a program that calls this method,
-replacing any model loaded before. Returns <a href="ModelStatus.html#OK"><code>ModelStatus.OK</code></a>, or why it could not.</div>
+<div class="block">Loads the JLM1 model the build linked into the firmware, replacing any model loaded before. A program that calls
+this method must be built with <code>-Djuno.lm.model=&lt;file&gt;</code>, or the build fails. Returns <a href="ModelStatus.html#OK"><code>ModelStatus.OK</code></a>,
+or why it could not.</div>
 </div>
 </section>
 </li>

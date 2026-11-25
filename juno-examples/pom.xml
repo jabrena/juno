@@ -45,6 +45,18 @@
             <!-- Test scope: LanguageModelQemuIT checks the board's answers against the Java engine and the bundled model. -->
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>io.github.jabrena</groupId>
+            <artifactId>juno-models</artifactId>
+            <!-- Test scope: ConnectFourGameTest checks the board's features against the ones the model was trained on. -->
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.jabrena</groupId>
+            <artifactId>juno-dm</artifactId>
+            <!-- Test scope: ConnectFourGameTest runs the tracked model with the reference inference. -->
+            <scope>test</scope>
+        </dependency>
         <!-- Eclipse Collections is present while compiling and linking examples, but is not a board runtime dependency. -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>
