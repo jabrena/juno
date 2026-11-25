@@ -4,7 +4,9 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import io.github.jabrena.juno.ai.DecisionModel;
 import io.github.jabrena.juno.ai.ModelStatus;
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -29,7 +31,7 @@ import java.net.InetSocketAddress;
  *   -Djuno.dm.model=../juno-ai/juno-models/src/main/resources/dm/CONNECT_FOUR.JEV
  * }</pre>
  */
-@Board(ArduinoNanoEsp32Board.class)
+@Board({ArduinoNanoEsp32Board.class, AiThinkerEsp32CamBoard.class, ArduinoPortentaH7Board.class})
 public final class ConnectFourWebGame {
     private static final ConnectFourGame GAME = new ConnectFourGame();
     private static final DecisionModel MODEL = MCU.getDecisionModel();

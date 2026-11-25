@@ -201,6 +201,29 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Compiles the language model on Portenta with its SDRAM model-memory service")
+        void shouldCompileLanguageModelOnPortenta() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    @Board(ArduinoPortentaH7Board.class)
+                    public final class PortentaLanguageModel {
+                        public static void main(String[] args) {
+                            MCU.getLanguageModel().begin();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.PortentaLanguageModel", source);
+
+            CompilationResult result = CompilerTestSupport.compileJunoWithLanguageModel(temporaryDirectory,
+                    "demo.PortentaLanguageModel", JUNO_BIN);
+
+            assertThat(result.runtimeShim()).contains("#include <SDRAM.h>", "SDRAM.malloc", "juno_lm_multiply_rows");
+        }
+
+        @Test
         @DisplayName("Fails the build when LanguageModel.begin() has no juno.lm.model to link")
         void shouldRequireALanguageModelForBegin() throws Exception {
             CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoUnlinkedLanguageModel", """
