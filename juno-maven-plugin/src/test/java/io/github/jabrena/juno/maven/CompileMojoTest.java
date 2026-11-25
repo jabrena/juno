@@ -215,7 +215,7 @@ class CompileMojoTest extends AbstractMojoTestCase {
                 .set("arduinoCli", "arduino-cli")
                 .set("mainClass", "io.github.jabrena.juno.maven.fixture.LanguageModelProgram")
                 .set("board", "arduino-nano-esp32")
-                .set("languageModel", "../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN")
+                .set("languageModel", "../juno-ai/juno-models/src/main/resources/lm/JUNO.BIN")
                 .set("outputDirectory", "target/juno-mojo-test/lm-linked")
                 .list("classpathElements", "classpathElement", TinyProgramClasspath.elements())
                 .build());

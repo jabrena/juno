@@ -2,8 +2,26 @@ window.JUNO_SEARCH_INDEX = [
   {
     "url": "/juno/api/",
     "title": "APIs",
-    "description": "The hardware and network APIs a Juno program can use, in five categories: observability, storage, internet, utils and hardware.",
-    "text": "Juno's APIs fall into five categories. Each category page lists its APIs with what they provide and a complete example.\n\nCategory\nAPIs\nWhat it covers\n\nObservability\nSerial, Syslog\nSerial is for USB output and input, the first thing to try. Syslog is for remote logging over Wi-Fi, so juno:monitor can follow a board without a cable.\n\nStorage\nSD Card, SecretStore\nSD Card is for files on a microSD card, such as configuration and Wi-Fi credentials read at boot. SecretStore is for named secrets kept in the secure element or the ESP32's NVS, out of the SD card and the firmware image.\n\nInternet\nWifi, Time, HTTP client, HTTP server, Email\nWifi joins a network. Time reads UTC over SNTP and measures intervals. The HTTP client sends requests and reads JSON responses, and the HTTP server answers requests on the board. Email sends mail over SMTP and reads a mailbox over POP3.\n\nUtils\nMVC\nMVC structures a multi-screen app with a model, views, a navigator and a router, so each screen stays separate from the logic that drives it.\n\nHardware\nGpio, Delay, Clock\nGpio drives and reads the board's pins. Delay pauses a program for a fixed time. Clock reads the board's timer for measuring intervals."
+    "description": "The hardware, network and AI APIs a Juno program can use.",
+    "text": "Juno's APIs fall into six categories. Each category page lists its APIs with what they provide and a complete example.\n\nCategory\nAPIs\nWhat it covers\n\nAI\nJEV decision models, JLM language models\nJEV selects a legal action from a caller-owned state and action list. JLM1 generates text one character at a time from a model linked into the firmware.\n\nObservability\nSerial, Syslog\nSerial is for USB output and input, the first thing to try. Syslog is for remote logging over Wi-Fi, so juno:monitor can follow a board without a cable.\n\nStorage\nSD Card, SecretStore\nSD Card is for files on a microSD card, such as configuration and Wi-Fi credentials read at boot. SecretStore is for named secrets kept in the secure element or the ESP32's NVS, out of the SD card and the firmware image.\n\nInternet\nWifi, Time, HTTP client, HTTP server, Email\nWifi joins a network. Time reads UTC over SNTP and measures intervals. The HTTP client sends requests and reads JSON responses, and the HTTP server answers requests on the board. Email sends mail over SMTP and reads a mailbox over POP3.\n\nUtils\nMVC\nMVC structures a multi-screen app with a model, views, a navigator and a router, so each screen stays separate from the logic that drives it.\n\nHardware\nGpio, Delay, Clock\nGpio drives and reads the board's pins. Delay pauses a program for a fixed time. Clock reads the board's timer for measuring intervals."
+  },
+  {
+    "url": "/juno/api/ai/",
+    "title": "AI",
+    "description": "Juno's on-board decision-model and language-model APIs.",
+    "text": "Juno's AI APIs run models on the board. The compiler links a model from juno-models into the firmware, while the\nboard-side APIs keep inference predictable and suitable for a constrained application loop.\n\nAPI\nWhat it provides\nComplete example\n\nJEV\nScores caller-owned state features for a caller-owned list of legal actions and returns the best action.\nConnectFourWebGame\n\nJLM\nRuns the JLM1 character-level transformer and streams generated characters from the board.\nLanguageModelSecretStoreChat"
+  },
+  {
+    "url": "/juno/api/ai/jev/",
+    "title": "JEV decision models",
+    "description": "Use JEV1 decision models from Java programs running on a Juno board.",
+    "text": "DecisionModel evaluates a fixed set of legal actions against a caller-owned state and returns the highest-scoring\naction. Load a model once with MCU.getDecisionModel().begin(), then call evaluate(state, legalActions) whenever the\napplication needs a decision.\n\n./mvnw -f juno-examples/pom.xml compile juno:verify \\\n -Djuno.main=io.github.jabrena.juno.api.ai.TicTacToeWebGame \\\n -Djuno.board=arduino-portenta-h7 \\\n -Djuno.dm.model=../juno-ai/juno-models/src/main/resources/dm/TIC_TAC_TOE.JEV\n\nJEV web examples use wifi.ssid and wifi.password from MCU.getSecretStore() and do not require an SD card. The\nHTML, CSS and JavaScript are separate classpath resources. The examples run on the Nano ESP32, AI Thinker ESP32-CAM\nand Portenta H7.\n\nSee the detailed JEV decision-model article."
+  },
+  {
+    "url": "/juno/api/ai/lm/",
+    "title": "JLM language models",
+    "description": "Use JLM1 language models from Java programs running on a Juno board.",
+    "text": "LanguageModel runs the JLM1 character-level transformer on the board. begin() loads JUNO.BIN into external model\nmemory, and ask/nextChar provide the streaming inference API.\n\n./mvnw -f juno-examples/pom.xml compile juno:verify \\\n -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSecretStoreChat \\\n -Djuno.board=arduino-portenta-h7 \\\n -Djuno.lm.model=../juno-ai/juno-models/src/main/resources/lm/JUNO.BIN\n\nThe Nano ESP32 and ESP32-CAM use PSRAM; the Portenta H7 uses external SDRAM. The web example reads Wi-Fi credentials\nfrom the Secret Store and does not require an SD card. JUNO.BIN is maintained in\njuno-ai/juno-models/src/main/resources/lm/.\n\nSee the detailed JLM1 article."
   },
   {
     "url": "/juno/api/hardware/",

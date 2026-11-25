@@ -18,7 +18,7 @@ import io.github.jabrena.juno.util.Delay;
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSerialChat -Djuno.board=arduino-nano-esp32 \
- *   -Djuno.lm.model=../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN
+ *   -Djuno.lm.model=../juno-ai/juno-models/src/main/resources/lm/JUNO.BIN
  * }</pre>
  */
 @Board({ArduinoNanoEsp32Board.class})

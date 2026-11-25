@@ -156,8 +156,7 @@ public enum Capability {
     PSRAM("explicit PSRAM buffers") {
         @Override
         public String unsupportedReason(Board board) {
-            return board.displayName() + " is outside Juno's explicit PSRAM-buffer support; only the Nano ESP32 and AI "
-                    + "Thinker ESP32-CAM are supported";
+            return board.displayName() + " is outside Juno's explicit external-model-memory support";
         }
     },
     WATCHDOG("@Watchdog") {

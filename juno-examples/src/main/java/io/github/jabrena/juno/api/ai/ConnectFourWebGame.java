@@ -4,7 +4,9 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import io.github.jabrena.juno.ai.DecisionModel;
 import io.github.jabrena.juno.ai.ModelStatus;
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -14,6 +16,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
@@ -28,50 +31,13 @@ import java.net.InetSocketAddress;
  *   -Djuno.dm.model=../juno-ai/juno-models/src/main/resources/dm/CONNECT_FOUR.JEV
  * }</pre>
  */
-@Board(ArduinoNanoEsp32Board.class)
+@Board({ArduinoNanoEsp32Board.class, AiThinkerEsp32CamBoard.class, ArduinoPortentaH7Board.class})
 public final class ConnectFourWebGame {
     private static final ConnectFourGame GAME = new ConnectFourGame();
     private static final DecisionModel MODEL = MCU.getDecisionModel();
     private static final int[] IP = new int[4];
     private static final byte[] RESPONSE = new byte[96];
-    private static final String PAGE = """
-            <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,">
-            <title>Juno JEV Connect Four</title>
-            <style>
-            body{font:18px system-ui,sans-serif;max-width:30rem;margin:2rem auto;padding:0 1rem;text-align:center;background:#f6f7f9;color:#1d2330}
-            #board{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin:1.5rem auto;padding:8px;border-radius:12px;background:#2a5bd7}
-            .cell{aspect-ratio:1;border:0;border-radius:50%;background:#fff;cursor:pointer;padding:0}
-            .cell:disabled{cursor:default}.cell.H{background:#f2c230}.cell.M{background:#d43f3a}.cell.last{box-shadow:inset 0 0 0 4px #1d2330}
-            #msg{min-height:1.6rem;font-weight:600}button.new{font-size:1rem;padding:.5rem 1rem;margin:.25rem;border-radius:8px;border:1px solid #9aa3b5;background:#fff;cursor:pointer}
-            </style>
-            <h1>Juno JEV</h1><p>You play <b style="color:#c59400">yellow</b>. The Nano ESP32 model plays <b style="color:#d43f3a">red</b>.</p>
-            <div id="board"></div><p id="msg">Loading...</p>
-            <button class="new" id="you">New game: you start</button><button class="new" id="model">New game: model starts</button>
-            <script>
-            const board=document.getElementById('board'),msg=document.getElementById('msg'),cells=[];
-            const text={turn:'Your turn: pick a column',thinking:'Model is thinking...',lost:'The model wins',won:'You win!',draw:'Draw'};
-            let busy=false,state={board:'-'.repeat(42),status:'turn',last:-1};
-            for(let r=5;r>=0;r--)for(let c=0;c<7;c++){const b=document.createElement('button');b.className='cell';b.onclick=()=>play(c);board.append(b);cells[c*6+r]=b}
-            function draw(){const done=state.status!=='turn';
-            cells.forEach((b,i)=>{const v=state.board[i];b.className='cell '+(v==='-'?'':v)+(i===state.last?' last':'');b.disabled=busy||done||state.board[Math.floor(i/6)*6+5]!=='-'});
-            msg.textContent=busy?text.thinking:text[state.status]}
-            const wait=ms=>new Promise(r=>setTimeout(r,ms));
-            function request(path,body){return fetch(path,body===undefined?{cache:'no-store'}:{method:'POST',body:body})
-            .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})}
-            // The board serves one connection at a time, so a request can fail while it is busy: retry, but reread the
-            // board before resending a move or a reset, so neither is ever applied twice.
-            async function call(path,body,applied){busy=true;draw();let error;
-            for(let attempt=0;attempt<4;attempt++){
-            try{if(attempt>0){await wait(700*attempt);if(applied){const s=await request('/api/state');if(applied(s)){state=s;busy=false;draw();return}}}
-            state=await request(path,body);busy=false;draw();return}catch(e){error=e}}
-            busy=false;draw();msg.textContent='Board busy ('+error.message+'), try again'}
-            const discs=s=>s.board.split('').filter(v=>v==='H').length;
-            function play(c){if(busy||state.status!=='turn')return;const before=discs(state);call('/api/move',''+c,s=>discs(s)>before)}
-            const reset=who=>call('/api/reset',who,s=>discs(s)===0&&s.status==='turn');
-            document.getElementById('you').onclick=()=>reset('h');document.getElementById('model').onclick=()=>reset('m');
-            call('/api/state');
-            </script>
-            """;
+    private static final byte[] RESOURCE_BUFFER = new byte[512];
     private static int modelPlayer = ConnectFourGame.SECOND;
     private static int lastMove = -1;
 
@@ -114,6 +80,8 @@ public final class ConnectFourWebGame {
         server.createContext("/api/state", ConnectFourWebGame::state);
         server.createContext("/api/move", ConnectFourWebGame::move);
         server.createContext("/api/reset", ConnectFourWebGame::reset);
+        server.createContext("/jev/connect-four.css", ConnectFourWebGame::style);
+        server.createContext("/jev/connect-four.js", ConnectFourWebGame::script);
         server.createContext("/", ConnectFourWebGame::page);
         server.start();
         // Repeat the address so a monitor attached after boot still finds the game.
@@ -144,7 +112,36 @@ public final class ConnectFourWebGame {
     }
 
     private static void page(HttpExchange exchange) throws IOException {
-        send(exchange, 200, "text/html; charset=utf-8", PAGE);
+        try (InputStream resource = ConnectFourWebGame.class.getResourceAsStream("/jev/connect-four.html")) {
+            sendResource(exchange, resource, "text/html; charset=utf-8");
+        }
+    }
+
+    private static void style(HttpExchange exchange) throws IOException {
+        try (InputStream resource = ConnectFourWebGame.class.getResourceAsStream("/jev/connect-four.css")) {
+            sendResource(exchange, resource, "text/css; charset=utf-8");
+        }
+    }
+
+    private static void script(HttpExchange exchange) throws IOException {
+        try (InputStream resource = ConnectFourWebGame.class.getResourceAsStream("/jev/connect-four.js")) {
+            sendResource(exchange, resource, "text/javascript; charset=utf-8");
+        }
+    }
+
+    private static void sendResource(HttpExchange exchange, InputStream resource, String contentType) throws IOException {
+        if (resource == null) {
+            send(exchange, 404, "text/plain; charset=utf-8", "resource not found");
+            return;
+        }
+        exchange.getResponseHeaders().set("Content-Type", contentType);
+        exchange.sendResponseHeaders(200, resource.available());
+        try (OutputStream output = exchange.getResponseBody()) {
+            int count;
+            while ((count = resource.read(RESOURCE_BUFFER, 0, RESOURCE_BUFFER.length)) >= 0) {
+                if (count > 0) output.write(RESOURCE_BUFFER, 0, count);
+            }
+        }
     }
 
     private static void state(HttpExchange exchange) throws IOException {

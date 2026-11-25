@@ -9,7 +9,7 @@ struct JunoInputStream {
   int32_t (*readBytes)(int32_t, uint8_t*, int32_t, int32_t);
 };
 
-static constexpr int32_t JUNO_INPUT_STREAM_CAPACITY = 2;
+static constexpr int32_t JUNO_INPUT_STREAM_CAPACITY = 4;
 static JunoInputStream juno_input_streams[JUNO_INPUT_STREAM_CAPACITY];
 static int32_t juno_input_stream_count = 0;
 
@@ -24,6 +24,14 @@ extern "C" void juno_sd_file_close(int32_t handle) __attribute__((weak));
 
 extern "C" void juno_input_stream_register(int32_t handle, int32_t (*available)(int32_t), int32_t (*read)(int32_t),
                                            int32_t (*readBytes)(int32_t, uint8_t*, int32_t, int32_t)) {
+  // Resource-backed streams use stable handles and may be opened again for a later HTTP request.
+  // Replace the existing hooks instead of consuming another table slot for the same handle.
+  for (int32_t index = 0; index < juno_input_stream_count; index++) {
+    if (juno_input_streams[index].handle == handle) {
+      juno_input_streams[index] = {handle, available, read, readBytes};
+      return;
+    }
+  }
   if (juno_input_stream_count == JUNO_INPUT_STREAM_CAPACITY) {
     juno_panic();
     return;

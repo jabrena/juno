@@ -1,6 +1,6 @@
 ---
 title: "JLM1: a language model that runs on the board"
-description: "How Juno trains a small character-level transformer in Java, stores it as JUNO.BIN and runs it on a Nano ESP32 web chat."
+description: "How Juno trains a small character-level transformer in Java, stores it as JUNO.BIN and runs it in web chats on ESP32 and Portenta boards."
 date: 2026-11-24
 layout: post
 link: /blog/2026-11-24-jlm1-on-board-language-model/
@@ -10,14 +10,14 @@ blogVisible: true
 
 JLM1 is a small language model that answers questions about Juno, and it runs on the board itself: no cloud, no
 internet connection, no host computer. It is trained in pure Java on the build machine, stored in one file,
-`JUNO.BIN`, and run on a Nano ESP32 by an engine that Juno compiles from Java. This article shows the web chat example
+`JUNO.BIN`, and run by an engine that Juno compiles from Java. This article shows the web chat example
 and explains what is inside the model.
 
 | Field | Value |
 |---|---|
 | Sources | [`api/ai`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/ai) (examples), [`juno-lm`](https://github.com/jabrena/juno/tree/main/juno-ai/juno-lm) (trainer and format), [`JlmLanguageModel`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/internal/JlmLanguageModel.java) (board engine) |
-| Boards supported | [`Nano ESP32`](../../boards/arduino-nano-esp32) for the examples; the engine needs PSRAM, which the Nano ESP32 and the ESP32-CAM have |
-| Features used | `MCU.getLanguageModel()`, PSRAM, Secret Store, Wi-Fi, JDK `HttpServer`, SD card (optional), serial output |
+| Boards supported | [`Nano ESP32`](../../boards/arduino-nano-esp32), [`AI Thinker ESP32-CAM`](../../boards/ai-thinker-esp32-cam) and [`Portenta H7`](../../boards/arduino-portenta-h7); the engine uses PSRAM on ESP32 and external SDRAM on Portenta |
+| Features used | `MCU.getLanguageModel()`, external model memory, Secret Store, Wi-Fi, JDK `HttpServer`, serial output |
 
 ## Try it: LanguageModelSecretStoreChat
 
@@ -31,7 +31,7 @@ program and its model together:
 ./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSecretStoreChat \
   -Djuno.board=arduino-nano-esp32 -Djuno.port=<port> \
-  -Djuno.lm.model=../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN
+  -Djuno.lm.model=../juno-ai/juno-models/src/main/resources/lm/JUNO.BIN
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.port=<port>
 ```
 
@@ -58,7 +58,10 @@ The program does four things, all in ordinary Java:
    returns `END`, writing each character to the response as soon as it is generated. The page shows the answer
    appearing letter by letter, and nothing is allocated per answer.
 
-Three variants share the same page: `LanguageModelAccessPointChat` opens its own Wi-Fi network instead of joining
+The web example is also supported on the AI Thinker ESP32-CAM and Portenta H7. On all three boards it reads
+`wifi.ssid` and `wifi.password` from the Secret Store; the Portenta path uses its SE050 and does not require an SD card.
+
+Three other variants share the same page: `LanguageModelAccessPointChat` opens its own Wi-Fi network instead of joining
 one, `LanguageModelSdCardSecretStoreChat` loads `JUNO.BIN` from the Nano Connector Carrier's microSD card with
 `begin(card, "/JUNO.BIN")` (it needs no `-Djuno.lm.model`), and `LanguageModelSdCardHttpsChat` serves the same chat over HTTPS with a certificate from
 the card. `LanguageModelSerialChat` needs no network: type a question on the serial port.
@@ -89,7 +92,7 @@ likely character had a probability below 0.5 at any of them, it answers `I do no
 
 ## Inside JUNO.BIN
 
-`JUNO.BIN` is 381,907 bytes in the JLM1 format, which Juno defines in `juno-lm`:
+`JUNO.BIN` is 381,907 bytes in the JLM1 format, which Juno defines in `juno-lm` and tracks with the other released models in `juno-models`:
 
 - a 16-byte header: the magic `JLM1`, then width, layers, heads, hidden, context and vocabulary size as little-endian
   16-bit numbers;

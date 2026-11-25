@@ -1,0 +1,6 @@
+body{font:18px system-ui,sans-serif;max-width:24rem;margin:2rem auto;padding:0 1rem;text-align:center;background:#f6f7f9;color:#1d2330}
+#board{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:1.5rem auto;max-width:18rem}
+.cell{aspect-ratio:1;font-size:2.6rem;font-weight:700;border:0;border-radius:10px;background:#fff;box-shadow:0 1px 3px #0003;cursor:pointer}
+.cell:disabled{cursor:default}.cell.X{color:#d43f3a}.cell.O{color:#2a6fdb}.cell.win{background:#fff4c2}
+#msg{min-height:1.6rem;font-weight:600}#reset{font-size:1rem;padding:.5rem 1.2rem;border-radius:8px;border:1px solid #9aa3b5;background:#fff;cursor:pointer}
+.you{color:#2a6fdb}.model{color:#d43f3a}

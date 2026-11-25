@@ -290,11 +290,11 @@ After uploading the program, you could monitor what happen in the board using th
   -Djuno.board=arduino-uno-r4-wifi
 ```
 
-### A language model on the Arduino Nano ESP32
+### AI web examples: JEV and JLM1
 
 [`LanguageModelSecretStoreChat`](juno-examples/src/main/java/io/github/jabrena/juno/api/ai/LanguageModelSecretStoreChat.java)
 runs JLM1, a small language model that answers questions about Juno, on the board itself. It loads `JUNO.BIN`,
-which the build links into the firmware with `-Djuno.lm.model`, into the Nano ESP32's PSRAM, joins Wi-Fi with the credentials in the board's Secret Store, and serves a
+which the build links into the firmware with `-Djuno.lm.model`, into external model memory, joins Wi-Fi with the credentials in the board's Secret Store, and serves a
 chat page with the JDK's `HttpServer`. The answer streams back one character at a time as the model generates it. Its
 `main`, condensed (the example also checks the credentials, waits for the connection and prints its address):
 
@@ -315,16 +315,17 @@ public static void main(String[] args) throws IOException {
 ```
 
 Store the Wi-Fi credentials once (`juno:secret` asks for each value at a hidden prompt), then flash the example and
-watch for the address it prints:
+watch for the address it prints. The same Secret Store-only Wi-Fi setup works on the Nano ESP32, AI Thinker ESP32-CAM
+and Portenta H7; these web examples do not use an SD card:
 
 ```bash
-./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-nano-esp32 -Djuno.secret.key=wifi.ssid
-./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-nano-esp32 -Djuno.secret.key=wifi.password
+./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-portenta-h7 -Djuno.secret.key=wifi.ssid
+./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-portenta-h7 -Djuno.secret.key=wifi.password
 ./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSecretStoreChat \
-  -Djuno.board=arduino-nano-esp32 \
-  -Djuno.lm.model=../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN
-./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32
+  -Djuno.board=arduino-portenta-h7 \
+  -Djuno.lm.model=../juno-ai/juno-models/src/main/resources/lm/JUNO.BIN
+./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-portenta-h7
 # JLM1: open http://<address>
 ```
 
@@ -339,6 +340,9 @@ The model is a 96 × 4 × 256 character-level transformer (366,528 parameters, 3
 [`juno-lm`](juno-ai/juno-lm) and run by an engine written in Java. The article
 [JLM1: a language model that runs on the board](https://jabrena.github.io/juno/blog/2026-11-24-jlm1-on-board-language-model/)
 explains how it works.
+
+The JEV decision-model examples use the same pattern with `TIC_TAC_TOE.JEV` or `CONNECT_FOUR.JEV`. See the
+[AI API guide](juno-site/src/main/resources/content/api/ai.md) and the [JEV article](https://jabrena.github.io/juno/blog/2026-11-25-jev-decision-models/).
 
 ## Maven plugin
 

@@ -13,7 +13,7 @@
 
     <artifactId>juno-lm</artifactId>
     <name>Juno JLM1 Model Builder</name>
-    <description>Trains, quantizes and exports JLM1 character-level transformer models; its JUNO.BIN is the model LanguageModel.begin() links into a program</description>
+    <description>Trains, quantizes and exports JLM1 character-level transformer models; the released JUNO.BIN lives in juno-models</description>
 
     <properties>
         <maven.javadoc.skip>true</maven.javadoc.skip>
@@ -80,7 +80,7 @@
         <!-- On demand only: trains JUNO.BIN from the bundled facts into target/lm; a default build never trains, and
              CI never trains a model.
              ./mvnw -pl juno-ai/juno-lm -Plm-model process-classes [-Dlm.steps=3000]
-             To release the result, copy target/lm/JUNO.BIN to src/main/resources/lm/: it is the model
+             To release the result, copy target/lm/JUNO.BIN to juno-models/src/main/resources/lm/: it is the model
              LanguageModel.begin() links into a program's firmware. -->
         <profile>
             <id>lm-model</id>

@@ -90,7 +90,7 @@ public final class LinkedResources {
                 .append("  JunoClasspathResource& resource = juno_resources[index];\n")
                 .append("  int32_t count = resource.size - resource.position;\n")
                 .append("  if (count > length) count = length;\n")
-                .append("  if (count == 0) return 0;\n")
+                .append("  if (count == 0) return -1;\n")
                 .append("  memcpy(buffer + offset, resource.bytes + resource.position, static_cast<size_t>(count));\n")
                 .append("  resource.position += count;\n")
                 .append("  return count;\n")

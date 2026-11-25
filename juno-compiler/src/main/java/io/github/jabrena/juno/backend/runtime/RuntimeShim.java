@@ -195,7 +195,7 @@ public final class RuntimeShim {
             shim.append(core.cameraIncludes());
         }
         if (usesAny(ShimFeature.PSRAM, ShimFeature.LANGUAGE_MODEL)) {
-            shim.append("#include <esp_heap_caps.h>\n");
+            shim.append(core.psramIncludes());
         }
         // ArduinoBLE is another optional library (arduino-cli lib install ArduinoBLE), like Mouse above.
         if (uses(ShimFeature.BLUETOOTH_LE)) {

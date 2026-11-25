@@ -4,7 +4,9 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import io.github.jabrena.juno.ai.DecisionModel;
 import io.github.jabrena.juno.ai.ModelStatus;
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -14,6 +16,7 @@ import io.github.jabrena.juno.hardware.serial.Serial;
 import io.github.jabrena.juno.util.Delay;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 
@@ -27,50 +30,14 @@ import java.net.InetSocketAddress;
  *   -Djuno.dm.model=../juno-ai/juno-models/src/main/resources/dm/TIC_TAC_TOE.JEV
  * }</pre>
  */
-@Board(ArduinoNanoEsp32Board.class)
+@Board({ArduinoNanoEsp32Board.class, AiThinkerEsp32CamBoard.class, ArduinoPortentaH7Board.class})
 public final class TicTacToeWebGame {
     private static final int[] STATE = new int[4520];
     private static final int[] LEGAL_ACTIONS = new int[9];
     private static final int[] IP = new int[4];
     private static final DecisionModel MODEL = MCU.getDecisionModel();
     private static final byte[] RESPONSE = new byte[48];
-    private static final String PAGE = """
-            <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" href="data:,">
-            <title>Juno JEV Tic-tac-toe</title>
-            <style>
-            body{font:18px system-ui,sans-serif;max-width:24rem;margin:2rem auto;padding:0 1rem;text-align:center;background:#f6f7f9;color:#1d2330}
-            #board{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:1.5rem auto;max-width:18rem}
-            .cell{aspect-ratio:1;font-size:2.6rem;font-weight:700;border:0;border-radius:10px;background:#fff;box-shadow:0 1px 3px #0003;cursor:pointer}
-            .cell:disabled{cursor:default}.cell.X{color:#d43f3a}.cell.O{color:#2a6fdb}.cell.win{background:#fff4c2}
-            #msg{min-height:1.6rem;font-weight:600}#reset{font-size:1rem;padding:.5rem 1.2rem;border-radius:8px;border:1px solid #9aa3b5;background:#fff;cursor:pointer}
-            </style>
-            <h1>Juno JEV</h1><p>You play <b style="color:#2a6fdb">O</b>. The Nano ESP32 model plays <b style="color:#d43f3a">X</b>.</p>
-            <div id="board"></div><p id="msg">Loading...</p><button id="reset">New game</button>
-            <script>
-            const board=document.getElementById('board'),msg=document.getElementById('msg'),cells=[];
-            const lines=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
-            const text={turn:'Your turn',thinking:'Model is thinking...',x:'The model wins',o:'You win!',draw:'Draw'};
-            let busy=false,state={board:'---------',status:'turn'};
-            for(let i=0;i<9;i++){const c=document.createElement('button');c.className='cell';c.onclick=()=>play(i);board.append(c);cells.push(c)}
-            function draw(){const done=state.status!=='turn';const win=lines.find(l=>l.every(i=>state.board[i]!=='-'&&state.board[i]===state.board[l[0]]))||[];
-            cells.forEach((c,i)=>{const v=state.board[i];c.textContent=v==='-'?'':v;c.className='cell '+(v==='-'?'':v)+(win.includes(i)?' win':'');c.disabled=busy||done||v!=='-'});
-            msg.textContent=busy?text.thinking:text[state.status]}
-            const wait=ms=>new Promise(r=>setTimeout(r,ms));
-            function request(path,body){return fetch(path,body===undefined?{cache:'no-store'}:{method:'POST',body:body})
-            .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})}
-            // The board serves one connection at a time, so a request can fail while it is busy: retry, but reread the
-            // board before resending a move or a reset, so neither is ever applied twice.
-            async function call(path,body,applied){busy=true;draw();let error;
-            for(let attempt=0;attempt<4;attempt++){
-            try{if(attempt>0){await wait(700*attempt);if(applied){const s=await request('/api/state');if(applied(s)){state=s;busy=false;draw();return}}}
-            state=await request(path,body);busy=false;draw();return}catch(e){error=e}}
-            busy=false;draw();msg.textContent='Board busy ('+error.message+'), try again'}
-            function play(i){if(busy||state.board[i]!=='-')return;state.board=state.board.slice(0,i)+'O'+state.board.slice(i+1);
-            call('/api/move',''+i,s=>s.board[i]==='O')}
-            document.getElementById('reset').onclick=()=>call('/api/reset','',s=>s.board.indexOf('O')<0&&s.status==='turn');
-            call('/api/state');
-            </script>
-            """;
+    private static final byte[] RESOURCE_BUFFER = new byte[512];
     private static int xMask;
     private static int oMask;
     private static boolean finished;
@@ -109,6 +76,8 @@ public final class TicTacToeWebGame {
         server.createContext("/api/state", TicTacToeWebGame::state);
         server.createContext("/api/move", TicTacToeWebGame::move);
         server.createContext("/api/reset", TicTacToeWebGame::reset);
+        server.createContext("/jev/tic-tac-toe.css", TicTacToeWebGame::style);
+        server.createContext("/jev/tic-tac-toe.js", TicTacToeWebGame::script);
         server.createContext("/", TicTacToeWebGame::page);
         server.start();
         // Repeat the address so a monitor attached after boot still finds the game.
@@ -122,7 +91,36 @@ public final class TicTacToeWebGame {
     }
 
     private static void page(HttpExchange exchange) throws IOException {
-        send(exchange, 200, "text/html; charset=utf-8", PAGE);
+        try (InputStream resource = TicTacToeWebGame.class.getResourceAsStream("/jev/tic-tac-toe.html")) {
+            sendResource(exchange, resource, "text/html; charset=utf-8");
+        }
+    }
+
+    private static void style(HttpExchange exchange) throws IOException {
+        try (InputStream resource = TicTacToeWebGame.class.getResourceAsStream("/jev/tic-tac-toe.css")) {
+            sendResource(exchange, resource, "text/css; charset=utf-8");
+        }
+    }
+
+    private static void script(HttpExchange exchange) throws IOException {
+        try (InputStream resource = TicTacToeWebGame.class.getResourceAsStream("/jev/tic-tac-toe.js")) {
+            sendResource(exchange, resource, "text/javascript; charset=utf-8");
+        }
+    }
+
+    private static void sendResource(HttpExchange exchange, InputStream resource, String contentType) throws IOException {
+        if (resource == null) {
+            send(exchange, 404, "text/plain; charset=utf-8", "resource not found");
+            return;
+        }
+        exchange.getResponseHeaders().set("Content-Type", contentType);
+        exchange.sendResponseHeaders(200, resource.available());
+        try (OutputStream output = exchange.getResponseBody()) {
+            int count;
+            while ((count = resource.read(RESOURCE_BUFFER, 0, RESOURCE_BUFFER.length)) >= 0) {
+                if (count > 0) output.write(RESOURCE_BUFFER, 0, count);
+            }
+        }
     }
 
     private static void state(HttpExchange exchange) throws IOException {
