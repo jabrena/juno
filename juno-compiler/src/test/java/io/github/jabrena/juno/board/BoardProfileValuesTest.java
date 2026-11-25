@@ -44,15 +44,15 @@ class BoardProfileValuesTest {
         assertThat(board.core().carrierCount()).isEqualTo(carriers);
     }
 
-    @DisplayName("Only the Nano ESP32 and AI Thinker ESP32-CAM record PSRAM")
+    @DisplayName("Boards with external model memory record their capacity")
     @org.junit.jupiter.api.Test
     void shouldRecordPsramOnlyWhereKnown() {
         assertThat(Board.NANO_ESP32.memoryProfile().psramBytes()).isEqualTo(OptionalInt.of(8 * 1024 * 1024));
         assertThat(Board.AI_THINKER_ESP32_CAM.memoryProfile().psramBytes()).isEqualTo(OptionalInt.of(4 * 1024 * 1024));
+        assertThat(Board.PORTENTA_H7.memoryProfile().psramBytes()).isEqualTo(OptionalInt.of(8 * 1024 * 1024));
         assertThat(Board.M5_CARDPUTER.memoryProfile().psramBytes()).isEmpty();
         assertThat(Board.UNO_R3.memoryProfile().psramBytes()).isEmpty();
         assertThat(Board.UNO_R4_WIFI.memoryProfile().psramBytes()).isEmpty();
         assertThat(Board.PICO_2_W.memoryProfile().psramBytes()).isEmpty();
-        assertThat(Board.PORTENTA_H7.memoryProfile().psramBytes()).isEmpty();
     }
 }

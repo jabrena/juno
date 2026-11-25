@@ -2,7 +2,9 @@ package io.github.jabrena.juno.api.ai;
 
 import com.sun.net.httpserver.HttpServer;
 import io.github.jabrena.juno.ai.LanguageModel;
+import io.github.jabrena.juno.annotations.AiThinkerEsp32CamBoard;
 import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
 import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.net.Wifi;
@@ -23,10 +25,10 @@ import java.net.InetSocketAddress;
  * <pre>{@code
  * ./mvnw -f juno-examples/pom.xml compile juno:flash \
  *   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSecretStoreChat -Djuno.board=arduino-nano-esp32 \
- *   -Djuno.lm.model=../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN
+ *   -Djuno.lm.model=../juno-ai/juno-models/src/main/resources/lm/JUNO.BIN
  * }</pre>
  */
-@Board({ArduinoNanoEsp32Board.class})
+@Board({ArduinoNanoEsp32Board.class, AiThinkerEsp32CamBoard.class, ArduinoPortentaH7Board.class})
 public final class LanguageModelSecretStoreChat {
     private static final LanguageModel MODEL = MCU.getLanguageModel();
     private static final int HTTP_PORT = 80;

@@ -38,6 +38,10 @@ public final class RuntimeEntryPoints {
                 .flatMap(block -> block.instructions().stream())
                 .anyMatch(instruction -> instruction instanceof IrInstruction.IntrinsicCall call
                         && call.intrinsic() == Intrinsic.HTTP_SERVER_REQUEST_STREAM));
+        registersStream |= program.methods().stream().anyMatch(method -> method.blocks().stream()
+                .flatMap(block -> block.instructions().stream())
+                .anyMatch(instruction -> instruction instanceof IrInstruction.IntrinsicCall call
+                        && call.intrinsic() == Intrinsic.CLASS_GET_RESOURCE_AS_STREAM));
         if (registersStream) {
             return InputStreamRoute.STREAMS;
         }

@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("JLM1 language model engine")
 class JlmLanguageModelTest {
-    private static final Path BUNDLED = Path.of("../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN");
+    private static final Path BUNDLED = Path.of("../juno-ai/juno-models/src/main/resources/lm/JUNO.BIN");
     private static final int UNLIMITED = Integer.MAX_VALUE;
     private static byte[] model;
 

@@ -83,6 +83,22 @@ final class MbedPortentaCoreRuntime extends RenesasCoreRuntime implements CoreRu
         return true;
     }
 
+    /** The Portenta H7's 8 MiB external SDRAM backs the model-memory ABI used by the JLM1 engine. */
+    @Override
+    public String psramHelpers() {
+        return runtimeSource.load("mbed/sdram.cpp");
+    }
+
+    @Override
+    public String psramIncludes() {
+        return "#include <SDRAM.h>\n";
+    }
+
+    @Override
+    public String languageModelHelpers() {
+        return runtimeSource.load("esp32/language-model.cpp");
+    }
+
     @Override
     public String httpsServerTransport() {
         return runtimeSource.load("esp32/https-server-transport.cpp");

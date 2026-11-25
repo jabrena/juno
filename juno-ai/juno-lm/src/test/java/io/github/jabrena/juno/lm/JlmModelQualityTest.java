@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @DisplayName("Tracked JLM1 model quality")
 class JlmModelQualityTest {
-    private static final Path MODEL = Path.of("src/main/resources/lm/JUNO.BIN");
+    private static final Path MODEL = Path.of("../juno-models/src/main/resources/lm/JUNO.BIN");
     private static final Path FACTS = Path.of("src/main/resources/lm/facts");
     private static final Path HELD_OUT = Path.of("src/main/resources/lm/heldout");
     /** The profile's own gate for the trained phrasings. */

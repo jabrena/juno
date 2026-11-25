@@ -46,7 +46,7 @@ class JunoCompilerTest {
     @DisplayName("Compilation and class model")
     class CompilationAndClassModel {
         /** The model juno-lm trains from the Juno facts, which the language-model examples link. */
-        private static final Path JUNO_BIN = Path.of("../juno-ai/juno-lm/src/main/resources/lm/JUNO.BIN");
+        private static final Path JUNO_BIN = Path.of("../juno-ai/juno-models/src/main/resources/lm/JUNO.BIN");
 
         @TempDir
         Path temporaryDirectory;
@@ -82,6 +82,30 @@ class JunoCompilerTest {
             assertThat(assembly).hasContent(result.assembly());
             assertThat(shim).hasContent(result.runtimeShim());
             assertThat(result.report().board().fqbn()).isEqualTo(Board.UNO_R4_WIFI.fqbn());
+        }
+
+        @Test
+        @DisplayName("Embeds an absolute classpath resource opened through Class.getResourceAsStream")
+        void shouldEmbedClasspathResourceForClassGetResourceAsStream() throws Exception {
+            // Given
+            String source = """
+                    package demo;
+                    import java.io.InputStream;
+                    public final class ResourceProgram {
+                        public static void main(String[] args) throws Exception {
+                            InputStream input = ResourceProgram.class.getResourceAsStream("/hello.txt");
+                            input.read();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.ResourceProgram", source);
+            Files.writeString(temporaryDirectory.resolve("hello.txt"), "hello");
+
+            // When
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.ResourceProgram");
+
+            // Then
+            assertThat(result.runtimeShim()).contains("juno_resource_open", "104, 101, 108, 108, 111", "if (count == 0) return -1;", "JUNO_INPUT_STREAM_CAPACITY = 4");
         }
 
         @Test
@@ -174,6 +198,29 @@ class JunoCompilerTest {
             assertThat(result.assembly()).contains("juno_lm_bundled_model", "juno_lm_multiply_rows",
                     "juno_lm_accumulate_rows", "juno_lm_quantize_row", "juno_lm_read_floats", "juno_lm_exponentials",
                     "juno_lm_attend", "juno_lm_rms_norm", "juno_lm_add", "juno_lm_relu");
+        }
+
+        @Test
+        @DisplayName("Compiles the language model on Portenta with its SDRAM model-memory service")
+        void shouldCompileLanguageModelOnPortenta() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoPortentaH7Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    @Board(ArduinoPortentaH7Board.class)
+                    public final class PortentaLanguageModel {
+                        public static void main(String[] args) {
+                            MCU.getLanguageModel().begin();
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.PortentaLanguageModel", source);
+
+            CompilationResult result = CompilerTestSupport.compileJunoWithLanguageModel(temporaryDirectory,
+                    "demo.PortentaLanguageModel", JUNO_BIN);
+
+            assertThat(result.runtimeShim()).contains("#include <SDRAM.h>", "SDRAM.malloc", "juno_lm_multiply_rows");
         }
 
         @Test
