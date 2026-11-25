@@ -129,9 +129,16 @@ on an 8-bit parallel bus, with a resistive touch panel and a microSD socket (its
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code><a href="../../../../ai/ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">LanguageModel.</span><code><a href="../../../../ai/LanguageModel.html#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)" class="member-name-link">begin</a><wbr>(<a href="../SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a>&nbsp;card,
+<div class="col-second even-row-color"><span class="type-name-label">DecisionModel.</span><code><a href="../../../../ai/DecisionModel.html#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)" class="member-name-link">begin</a><wbr>(<a href="../SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a>&nbsp;card,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
 <div class="col-last even-row-color">
+<div class="block">Loads the JEV1 file at <code>path</code> on <code>card</code>, which must already be mounted with its own
+<a href="../SdCard.html#begin()"><code>SdCard.begin()</code></a>, into PSRAM, replacing any model loaded before.</div>
+</div>
+<div class="col-first odd-row-color"><code><a href="../../../../ai/ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">LanguageModel.</span><code><a href="../../../../ai/LanguageModel.html#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)" class="member-name-link">begin</a><wbr>(<a href="../SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a>&nbsp;card,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">Loads the JLM1 file at <code>path</code> on <code>card</code>, which must already be mounted with its own
 <a href="../SdCard.html#begin()"><code>SdCard.begin()</code></a>, replacing any model loaded before.</div>
 </div>
@@ -263,18 +270,22 @@ shield creates it once and keeps it.</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code><a href="../../../../ai/ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
-<div class="col-second even-row-color"><span class="type-name-label">JlmLanguageModel.</span><code><a href="../../../internal/JlmLanguageModel.html#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)" class="member-name-link">begin</a><wbr>(<a href="../SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a>&nbsp;card,
+<div class="col-second even-row-color"><span class="type-name-label">JevDecisionModel.</span><code><a href="../../../internal/JevDecisionModel.html#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)" class="member-name-link">begin</a><wbr>(<a href="../SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a>&nbsp;card,
  <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
 <div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>static void</code></div>
-<div class="col-second odd-row-color"><span class="type-name-label">NativeOnboardSdCard.</span><code><a href="../../../internal/NativeOnboardSdCard.html#setSdCard(io.github.jabrena.juno.hardware.device.sd.SdCard)" class="member-name-link">setSdCard</a><wbr>(@Nullable <a href="../SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a>&nbsp;replacement)</code></div>
-<div class="col-last odd-row-color">
+<div class="col-first odd-row-color"><code><a href="../../../../ai/ModelStatus.html" title="enum class in io.github.jabrena.juno.ai">ModelStatus</a></code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">JlmLanguageModel.</span><code><a href="../../../internal/JlmLanguageModel.html#begin(io.github.jabrena.juno.hardware.device.sd.SdCard,java.lang.String)" class="member-name-link">begin</a><wbr>(<a href="../SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a>&nbsp;card,
+ <a href="https://docs.oracle.com/en/java/javase/27/docs/api/java.base/java/lang/String.html" title="class in java.lang" class="external-link">String</a>&nbsp;path)</code></div>
+<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-first even-row-color"><code>static void</code></div>
+<div class="col-second even-row-color"><span class="type-name-label">NativeOnboardSdCard.</span><code><a href="../../../internal/NativeOnboardSdCard.html#setSdCard(io.github.jabrena.juno.hardware.device.sd.SdCard)" class="member-name-link">setSdCard</a><wbr>(@Nullable <a href="../SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a>&nbsp;replacement)</code></div>
+<div class="col-last even-row-color">
 <div class="block">Makes <a href="../../../MCU.html#getSdCard()"><code>MCU.getSdCard()</code></a> hand out <code>replacement</code>: for a whole-program
 emulator or a unit test, never on the board.</div>
 </div>
-<div class="col-first even-row-color"><code>static void</code></div>
-<div class="col-second even-row-color"><span class="type-name-label">NativeSdCard.</span><code><a href="../../../internal/NativeSdCard.html#setSdCard(io.github.jabrena.juno.hardware.device.sd.SdCard)" class="member-name-link">setSdCard</a><wbr>(@Nullable <a href="../SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a>&nbsp;card)</code></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><code>static void</code></div>
+<div class="col-second odd-row-color"><span class="type-name-label">NativeSdCard.</span><code><a href="../../../internal/NativeSdCard.html#setSdCard(io.github.jabrena.juno.hardware.device.sd.SdCard)" class="member-name-link">setSdCard</a><wbr>(@Nullable <a href="../SdCard.html" title="interface in io.github.jabrena.juno.hardware.device.sd">SdCard</a>&nbsp;card)</code></div>
+<div class="col-last odd-row-color">
 <div class="block">Makes every shield's <code>getSdCard()</code> hand out <code>card</code> from now on: for a whole-program emulator in a
 test, never on the board.</div>
 </div>
