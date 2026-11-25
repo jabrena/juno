@@ -168,6 +168,60 @@ class JunoCompilerTest {
         }
 
         @Test
+        @DisplayName("Compiles the decision model API on the Nano ESP32")
+        void shouldCompileDecisionModelOnNanoEsp32() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.MCU;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    @Board(ArduinoNanoEsp32Board.class)
+                    public final class NanoDecisionModel {
+                        public static void main(String[] args) {
+                            int[] state = new int[9];
+                            int[] legalActions = new int[9];
+                            Serial.println(MCU.getDecisionModel().evaluate(state, legalActions));
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoDecisionModel", source);
+
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoDecisionModel");
+
+            assertThat(result.runtimeShim()).contains(
+                    "juno_dm_tic_tac_toe_weights[9][4520]",
+                    "juno_dm_tic_tac_toe_scales[9]",
+                    "juno_dm_evaluate",
+                    "juno_dm_tic_tac_toe_feature_count = 4520")
+                    .doesNotContain("deterministic legal-action fallback");
+            assertThat(result.assembly()).contains("juno_dm_evaluate");
+        }
+
+        @Test
+        @DisplayName("Leaves the decision-model bridge out of programs that do not use it")
+        void shouldLeaveDecisionModelOutOfOtherPrograms() throws Exception {
+            String source = """
+                    package demo;
+                    import io.github.jabrena.juno.annotations.ArduinoNanoEsp32Board;
+                    import io.github.jabrena.juno.annotations.Board;
+                    import io.github.jabrena.juno.hardware.serial.Serial;
+                    @Board(ArduinoNanoEsp32Board.class)
+                    public final class NanoWithoutDecisionModel {
+                        public static void main(String[] args) {
+                            Serial.println(42);
+                        }
+                    }
+                    """;
+            CompilerTestSupport.compileJava(temporaryDirectory, "demo.NanoWithoutDecisionModel", source);
+
+            CompilationResult result = CompilerTestSupport.compileJuno(temporaryDirectory, "demo.NanoWithoutDecisionModel");
+
+            assertThat(result.runtimeShim()).doesNotContain("juno_dm_evaluate");
+            assertThat(result.assembly()).doesNotContain("juno_dm_evaluate");
+        }
+
+        @Test
         @DisplayName("Links the bundled model only into a program that calls begin(), not one that loads from an SD card")
         void shouldLinkTheBundledModelOnlyForBegin() throws Exception {
             String source = """

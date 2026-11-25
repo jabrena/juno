@@ -134,6 +134,8 @@ public enum ShimFeature {
     LANGUAGE_MODEL,
     /** {@code Serial.write(int)}: one raw byte, emitted only for a program that writes bytes. */
     SERIAL_WRITE,
+    /** {@code MCU.getDecisionModel()}: the board-side JEV evaluation bridge. */
+    DECISION_MODEL,
     /** {@code LanguageModel.begin()}: the bundled JUNO.BIN as a flash table, copied into PSRAM for the engine. */
     LANGUAGE_MODEL_DEFAULT
 }
