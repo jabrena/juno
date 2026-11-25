@@ -350,9 +350,6 @@ public final class RuntimeShim {
         if (uses(ShimFeature.LANGUAGE_MODEL)) {
             shim.append(core.languageModelHelpers());
         }
-        if (uses(ShimFeature.LANGUAGE_MODEL_DEFAULT)) {
-            shim.append(DefaultLanguageModel.bundled().source());
-        }
         if (uses(ShimFeature.DECISION_MODEL)) {
             shim.append(DECISION_MODEL_ENGINE);
         }

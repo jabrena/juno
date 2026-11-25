@@ -409,7 +409,7 @@ public final class IntrinsicLowering {
                 List.of(arg(0), arg(1), arg(2), arg(3), arg(4), arg(5)), ShimFeature.PSRAM);
         shim(Intrinsic.PSRAM_RELEASE, "juno_psram_release", Result.WORD, List.of(arg(0)), ShimFeature.PSRAM);
         shim(Intrinsic.LANGUAGE_MODEL_BUNDLED, "juno_lm_bundled_model", Result.WORD, List.of(),
-                ShimFeature.LANGUAGE_MODEL, ShimFeature.LANGUAGE_MODEL_DEFAULT);
+                ShimFeature.LANGUAGE_MODEL);
         shim(Intrinsic.LANGUAGE_MODEL_READ_FLOATS, "juno_lm_read_floats", Result.WORD,
                 List.of(arg(0), arg(1), arg(2), arg(3), arg(4)), ShimFeature.LANGUAGE_MODEL);
         shim(Intrinsic.LANGUAGE_MODEL_MULTIPLY_ROWS, "juno_lm_multiply_rows", Result.WORD,

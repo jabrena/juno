@@ -293,8 +293,8 @@ After uploading the program, you could monitor what happen in the board using th
 ### A language model on the Arduino Nano ESP32
 
 [`LanguageModelSecretStoreChat`](juno-examples/src/main/java/io/github/jabrena/juno/api/ai/LanguageModelSecretStoreChat.java)
-runs JLM1, a small language model that answers questions about Juno, on the board itself. It loads the bundled
-`JUNO.BIN` into the Nano ESP32's PSRAM, joins Wi-Fi with the credentials in the board's Secret Store, and serves a
+runs JLM1, a small language model that answers questions about Juno, on the board itself. It loads `JUNO.BIN`,
+which the build links into the firmware with `-Djuno.lm.model`, into the Nano ESP32's PSRAM, joins Wi-Fi with the credentials in the board's Secret Store, and serves a
 chat page with the JDK's `HttpServer`. The answer streams back one character at a time as the model generates it. Its
 `main`, condensed (the example also checks the credentials, waits for the connection and prints its address):
 
@@ -322,7 +322,8 @@ watch for the address it prints:
 ./mvnw -f juno-examples/pom.xml juno:secret -Djuno.board=arduino-nano-esp32 -Djuno.secret.key=wifi.password
 ./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSecretStoreChat \
-  -Djuno.board=arduino-nano-esp32
+  -Djuno.board=arduino-nano-esp32 \
+  -Djuno.lm.model=../juno-lm/src/main/resources/lm/JUNO.BIN
 ./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32
 # JLM1: open http://<address>
 ```

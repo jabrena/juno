@@ -19,6 +19,12 @@ import java.net.InetSocketAddress;
  * {@code wifi.ssid} and {@code wifi.password} are in the board's Secret Store, then serves the {@link LanguageModelWebChat}
  * page on port 80. Open the address it prints every 10 seconds on the serial port. The model still runs on the
  * board; the network only carries the page and the answers.
+ *
+ * <pre>{@code
+ * ./mvnw -f juno-examples/pom.xml compile juno:flash \
+ *   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSecretStoreChat -Djuno.board=arduino-nano-esp32 \
+ *   -Djuno.lm.model=../juno-lm/src/main/resources/lm/JUNO.BIN
+ * }</pre>
  */
 @Board({ArduinoNanoEsp32Board.class})
 public final class LanguageModelSecretStoreChat {

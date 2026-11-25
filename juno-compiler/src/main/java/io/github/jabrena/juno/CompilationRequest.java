@@ -17,13 +17,16 @@ import java.util.Optional;
  *     when not given.
  * @param decisionModel the JEV1 file {@code DecisionModel.begin()} links into the firmware ({@code juno.dm.model});
  *     required only by a program that calls that method.
+ * @param languageModel the JLM1 file {@code LanguageModel.begin()} links into the firmware ({@code juno.lm.model});
+ *     required only by a program that calls that method.
  */
 public record CompilationRequest(List<Path> classPath, String mainClass, boolean gcLoggingEnabled,
                                   Optional<String> requestedBoard, RuntimeConfig runtimeConfig,
-                                  Optional<Path> decisionModel) {
+                                  Optional<Path> decisionModel, Optional<Path> languageModel) {
     public CompilationRequest(List<Path> classPath, String mainClass, boolean gcLoggingEnabled,
                               Optional<String> requestedBoard, RuntimeConfig runtimeConfig) {
-        this(classPath, mainClass, gcLoggingEnabled, requestedBoard, runtimeConfig, Optional.empty());
+        this(classPath, mainClass, gcLoggingEnabled, requestedBoard, runtimeConfig, Optional.empty(),
+                Optional.empty());
     }
 
     public CompilationRequest(List<Path> classPath, String mainClass) {
