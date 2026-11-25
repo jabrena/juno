@@ -170,9 +170,34 @@ moves so the games differ:
 | Against a depth-4 search that plays a random move one time in ten, 200 games | 90 wins, 17 draws, 93 losses |
 
 That is the trade a JEV model makes: its features look one reply ahead, and it plays about as well as a four-move
-search for the cost of 7 × 56 multiply-adds; a better player needs better features rather than a bigger engine. There
-is no Connect Four board example yet: a program would compute the same 56 numbers from its own board arrays, as
-`ConnectFourFeatures` documents them, before calling `evaluate`.
+search for the cost of 7 × 56 multiply-adds; a better player needs better features rather than a bigger engine.
+
+## Try it: ConnectFourWebGame
+
+On the board, `ConnectFourGame` keeps the 42 cells in an `int[]` and computes the same 56 features, from buffers
+allocated once; `ConnectFourGameTest` replays 300 random games and checks every position's features against
+`ConnectFourFeatures`, so the board feeds the model exactly what it was trained on. `ConnectFourWebGame` serves the
+game with the same Secret Store Wi-Fi as the tic-tac-toe example:
+
+```bash
+./mvnw -f juno-examples/pom.xml compile juno:flash \
+  -Djuno.main=io.github.jabrena.juno.api.ai.ConnectFourWebGame \
+  -Djuno.board=arduino-nano-esp32 -Djuno.port=<port> \
+  -Djuno.dm.model=../juno-ai/juno-models/src/main/resources/dm/CONNECT_FOUR.JEV
+./mvnw -f juno-examples/pom.xml juno:monitor -Djuno.board=arduino-nano-esp32 -Djuno.port=<port> -Djuno.baudRate=115200
+```
+
+You play yellow and the model plays red; two buttons start a new game with either side moving first. The routes are
+the tic-tac-toe ones: `GET /api/state` returns the 42 cells column by column from the bottom, the status and the last
+cell played, `POST /api/move` takes a column, and `POST /api/reset` takes `h` or `m` for who starts:
+
+```bash
+curl -X POST --data m http://<address>/api/reset
+# {"board":"------------------M-----------------------","status":"turn","last":18}
+```
+
+On a Nano ESP32 a move, the feature encoding, the model's evaluation and the HTTP round trip over Wi-Fi together take
+about 60 ms.
 
 ## What to expect
 
