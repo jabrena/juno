@@ -15,7 +15,7 @@ and explains what is inside the model.
 
 | Field | Value |
 |---|---|
-| Sources | [`api/ai`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/ai) (examples), [`juno-lm`](https://github.com/jabrena/juno/tree/main/juno-lm) (trainer and format), [`JlmLanguageModel`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/internal/JlmLanguageModel.java) (board engine) |
+| Sources | [`api/ai`](https://github.com/jabrena/juno/tree/main/juno-examples/src/main/java/io/github/jabrena/juno/api/ai) (examples), [`juno-lm`](https://github.com/jabrena/juno/tree/main/juno-ai/juno-lm) (trainer and format), [`JlmLanguageModel`](https://github.com/jabrena/juno/blob/main/juno-api/src/main/java/io/github/jabrena/juno/hardware/internal/JlmLanguageModel.java) (board engine) |
 | Boards supported | [`Nano ESP32`](../../boards/arduino-nano-esp32) for the examples; the engine needs PSRAM, which the Nano ESP32 and the ESP32-CAM have |
 | Features used | `MCU.getLanguageModel()`, PSRAM, Secret Store, Wi-Fi, JDK `HttpServer`, SD card (optional), serial output |
 
