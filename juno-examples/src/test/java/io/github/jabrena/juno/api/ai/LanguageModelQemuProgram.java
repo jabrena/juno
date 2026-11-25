@@ -8,7 +8,7 @@ import io.github.jabrena.juno.hardware.MCU;
 import io.github.jabrena.juno.hardware.serial.Serial;
 
 /**
- * The board side of {@code LanguageModelQemuIT}: begins the bundled model, asks each of {@link #QUESTIONS} and prints
+ * The board side of {@code LanguageModelQemuIT}: begins the linked model, asks each of {@link #QUESTIONS} and prints
  * {@code question -> answer} per line, once, so the emulator transcript can be compared with the Java engine.
  */
 @Board({ArduinoNanoEsp32Board.class})

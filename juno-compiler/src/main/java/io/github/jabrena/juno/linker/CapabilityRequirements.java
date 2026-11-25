@@ -119,7 +119,7 @@ final class CapabilityRequirements {
                 Intrinsic.LANGUAGE_MODEL_MULTIPLY_ROWS, Intrinsic.LANGUAGE_MODEL_ACCUMULATE_ROWS,
                 Intrinsic.LANGUAGE_MODEL_QUANTIZE_ROW, Intrinsic.LANGUAGE_MODEL_EXPONENTIALS,
                 Intrinsic.LANGUAGE_MODEL_ATTEND, Intrinsic.LANGUAGE_MODEL_RMS_NORM, Intrinsic.LANGUAGE_MODEL_ADD,
-                Intrinsic.LANGUAGE_MODEL_RELU);
+                Intrinsic.LANGUAGE_MODEL_RELU, Intrinsic.DECISION_MODEL_BEGIN_PSRAM);
         require(required, Capability.BLUETOOTH_LE, Intrinsic.BLE_CONNECT, Intrinsic.BLE_IS_CONNECTED,
                 Intrinsic.BLE_WRITE, Intrinsic.BLE_READ, Intrinsic.BLE_DISCONNECT);
         return Collections.unmodifiableMap(required);

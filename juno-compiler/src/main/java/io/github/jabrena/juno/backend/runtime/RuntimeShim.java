@@ -24,6 +24,89 @@ import java.util.stream.IntStream;
  */
 @SuppressWarnings("PMD.CyclomaticComplexity")
 public final class RuntimeShim {
+    /**
+     * The JEV1 decision-model evaluator, the same for every model: {@code juno_dm_use} checks a model's header and
+     * length, and evaluation reads the bytes in place, wherever they are (a flash table or a PSRAM buffer). A JEV1 file
+     * is big-endian: "JEV1", version 1, the action and feature counts, then per action a float scale, a float bias and
+     * one signed byte per feature. The status values are {@code ModelStatus} ordinals.
+     */
+    private static final String DECISION_MODEL_ENGINE = """
+
+            static constexpr int32_t JUNO_DM_OK = 0;
+            static constexpr int32_t JUNO_DM_INVALID_HANDLE = 1;
+            static constexpr int32_t JUNO_DM_INVALID_MODEL = 2;
+            static constexpr int32_t JUNO_DM_HEADER_BYTES = 9;
+            static const uint8_t* juno_dm_model = nullptr;
+            static int32_t juno_dm_action_count = 0;
+            static int32_t juno_dm_feature_count = 0;
+            // Frees the model's own memory on unload: set only by a program that loads a model into PSRAM.
+            static void (*juno_dm_release_model)() = nullptr;
+
+            static float juno_dm_float_at(const uint8_t* bytes) {
+              uint32_t bits = (static_cast<uint32_t>(bytes[0]) << 24) | (static_cast<uint32_t>(bytes[1]) << 16)
+                  | (static_cast<uint32_t>(bytes[2]) << 8) | static_cast<uint32_t>(bytes[3]);
+              float value;
+              memcpy(&value, &bits, sizeof(value));
+              return value;
+            }
+
+            extern "C" void juno_dm_unload() {
+              if (juno_dm_release_model != nullptr) juno_dm_release_model();
+              juno_dm_release_model = nullptr;
+              juno_dm_model = nullptr;
+              juno_dm_action_count = 0;
+              juno_dm_feature_count = 0;
+            }
+
+            // Points the evaluator at size JEV1 bytes once their header and length check out.
+            static int32_t juno_dm_use(const uint8_t* model, int32_t size) {
+              juno_dm_unload();
+              if (model == nullptr || size < JUNO_DM_HEADER_BYTES || memcmp(model, "JEV1", 4) != 0 || model[4] != 1) {
+                return JUNO_DM_INVALID_MODEL;
+              }
+              int32_t actions = (static_cast<int32_t>(model[5]) << 8) | model[6];
+              int32_t features = (static_cast<int32_t>(model[7]) << 8) | model[8];
+              if (actions == 0 || features == 0
+                  || static_cast<int64_t>(JUNO_DM_HEADER_BYTES) + static_cast<int64_t>(actions) * (8 + features)
+                      != size) {
+                return JUNO_DM_INVALID_MODEL;
+              }
+              juno_dm_model = model;
+              juno_dm_action_count = actions;
+              juno_dm_feature_count = features;
+              return JUNO_DM_OK;
+            }
+
+            extern "C" int32_t juno_dm_actions() {
+              return juno_dm_action_count;
+            }
+
+            extern "C" int32_t juno_dm_features() {
+              return juno_dm_feature_count;
+            }
+
+            extern "C" int32_t juno_dm_evaluate(const int32_t* state, const int32_t* legalActions) {
+              if (juno_dm_model == nullptr || state[-1] != juno_dm_feature_count) return -1;
+              int32_t legalActionCount = legalActions[-1];
+              int32_t rowSize = 8 + juno_dm_feature_count;
+              int32_t selected = -1;
+              float bestScore = 0.0f;
+              for (int32_t index = 0; index < legalActionCount; index++) {
+                int32_t action = legalActions[index];
+                if (action < 0 || action >= juno_dm_action_count) continue;
+                const uint8_t* row = juno_dm_model + JUNO_DM_HEADER_BYTES + action * rowSize;
+                float scale = juno_dm_float_at(row);
+                const int8_t* weights = reinterpret_cast<const int8_t*>(row + 8);
+                float score = juno_dm_float_at(row + 4);
+                for (int32_t feature = 0; feature < juno_dm_feature_count; feature++) {
+                  if (state[feature] != 0) score += weights[feature] * scale * state[feature];
+                }
+                if (selected < 0 || score > bestScore) { selected = action; bestScore = score; }
+              }
+              return selected;
+            }
+            """;
+
     private final ScopedValueRuntime scopedValueRuntime = new ScopedValueRuntime();
     private final AtomicRuntime atomicRuntime = new AtomicRuntime();
     private final MathRuntime mathRuntime = new MathRuntime();
@@ -155,7 +238,8 @@ public final class RuntimeShim {
         }
         if (usesAny(ShimFeature.HTTP, ShimFeature.HTTPS, ShimFeature.HTTP_SERVER,
                 ShimFeature.RUNTIME_STRINGS, ShimFeature.SMTP, ShimFeature.SMTP_TLS, ShimFeature.POP3,
-                ShimFeature.SD, ShimFeature.FLOAT, ShimFeature.DOUBLE, ShimFeature.SYSTEM_ARRAYCOPY)) {
+                ShimFeature.SD, ShimFeature.FLOAT, ShimFeature.DOUBLE, ShimFeature.SYSTEM_ARRAYCOPY,
+                ShimFeature.DECISION_MODEL)) {
             shim.append("#include <string.h>\n");
         }
         if (usesAny(ShimFeature.FLOAT, ShimFeature.DOUBLE, ShimFeature.RUNTIME_STRINGS,
@@ -266,8 +350,34 @@ public final class RuntimeShim {
         if (uses(ShimFeature.LANGUAGE_MODEL)) {
             shim.append(core.languageModelHelpers());
         }
-        if (uses(ShimFeature.LANGUAGE_MODEL_DEFAULT)) {
-            shim.append(DefaultLanguageModel.bundled().source());
+        if (uses(ShimFeature.DECISION_MODEL)) {
+            shim.append(DECISION_MODEL_ENGINE);
+        }
+        if (uses(ShimFeature.DECISION_MODEL_PSRAM)) {
+            shim.append("""
+
+                    // DecisionModel.begin(SdCard, String): the evaluator reads the JEV1 copy in place, in PSRAM. Once it is
+                    // accepted the engine owns the buffer and frees it on unload; a refused buffer stays the caller's.
+                    static int32_t juno_dm_psram_handle = 0;
+
+                    static void juno_dm_release_psram() {
+                      juno_psram_release(juno_dm_psram_handle);
+                      juno_dm_psram_handle = 0;
+                    }
+
+                    extern "C" int32_t juno_dm_begin_psram(int32_t handle, int32_t size) {
+                      juno_dm_unload();
+                      JunoPsramSlot* slot = juno_psram_find(handle);
+                      if (slot == nullptr) return JUNO_DM_INVALID_HANDLE;
+                      if (size < 0 || static_cast<uint32_t>(size) > slot->capacity) return JUNO_DM_INVALID_MODEL;
+                      int32_t status = juno_dm_use(static_cast<const uint8_t*>(slot->pointer), size);
+                      if (status == JUNO_DM_OK) {
+                        juno_dm_psram_handle = handle;
+                        juno_dm_release_model = juno_dm_release_psram;
+                      }
+                      return status;
+                    }
+                    """);
         }
         if (uses(ShimFeature.SERIAL_WRITE)) {
             shim.append("""
