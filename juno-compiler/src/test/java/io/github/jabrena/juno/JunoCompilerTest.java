@@ -4109,6 +4109,9 @@ class JunoCompilerTest {
                     "return static_cast<int32_t>(reinterpret_cast<intptr_t>(juno_http_server_path_buf));");
             // A long path (e.g. /api/v1/mailbox/<uuid>) must come back whole, not null.
             assertThat(result.runtimeShim()).doesNotContain("juno_http_server_pool_copy");
+            // A connection that never sends a request (a browser's spare socket) is dropped instead of stalling the queue.
+            assertThat(result.runtimeShim()).contains("JUNO_HTTP_SERVER_IDLE_MS = 1000;",
+                    "if (!receivedAny && millis() - started >= JUNO_HTTP_SERVER_IDLE_MS) break;");
             // A server that never reads a header gets neither the header buffer nor a leftover hook.
             assertThat(result.runtimeShim()).doesNotContain("juno_http_server_headers", "${JUNO_HTTP_SERVER_HEADER");
         }

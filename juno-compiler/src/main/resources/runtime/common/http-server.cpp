@@ -3,6 +3,7 @@ ${JUNO_HTTP_SERVER_HEADER_STATE}static char juno_http_server_method_buf[8];
 static char juno_http_server_path_buf[96];
 static int32_t juno_http_server_content_length_value = -1;
 static constexpr int32_t JUNO_HTTP_SERVER_DISCONNECTED_POLLS = 3;
+static constexpr unsigned long JUNO_HTTP_SERVER_IDLE_MS = 1000;
 
 // Cancelled while it waits for a request: drop the client, so the next accept() starts afresh.
 static void juno_http_server_abort(void*) {
@@ -56,9 +57,14 @@ ${JUNO_HTTP_SERVER_HEADER_RESET}  juno_http_server_content_length_value = -1;
   // A client may send its request in several TCP segments, and on the UNO R4 WiFi available(), connected() and read()
   // are each a round trip to the WiFi module that can fail once without the peer having gone. So a gap in the data, a
   // failed read or a single "not connected" only waits for more; the peer counts as gone after several in a row.
-  const unsigned long deadline = millis() + 5000;
+  // Browsers open spare connections that may never send a request, and this server serves one connection at a time:
+  // a connection silent for JUNO_HTTP_SERVER_IDLE_MS is dropped, so it cannot hold up the requests queued behind it.
+  const unsigned long started = millis();
+  const unsigned long deadline = started + 5000;
+  bool receivedAny = false;
   while (millis() < deadline) {
     if (!client.available()) {
+      if (!receivedAny && millis() - started >= JUNO_HTTP_SERVER_IDLE_MS) break;
       if (!client.connected() && ++disconnectedPolls >= JUNO_HTTP_SERVER_DISCONNECTED_POLLS) break;
       juno_io_wait(1);
       continue;
@@ -69,6 +75,7 @@ ${JUNO_HTTP_SERVER_HEADER_RESET}  juno_http_server_content_length_value = -1;
       continue;
     }
     disconnectedPolls = 0;
+    receivedAny = true;
     char c = static_cast<char>(value);
 
     if (!gotRequestLine) {
