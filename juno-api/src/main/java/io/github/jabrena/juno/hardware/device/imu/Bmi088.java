@@ -56,7 +56,7 @@ public final class Bmi088 implements Accelerometer, BufferedGyroscope, SamplePro
     private static final int CALIBRATION_SAMPLES = 64;
     private static final int FULL_TURN_MILLIDEGREES = 360_000;
     private static final float ACCEL_METRES_PER_SECOND_SQUARED_PER_LSB = 0.0008977f;
-    private static final float GYRO_DEGREES_PER_SECOND_PER_LSB = 0.06103515625f;
+    private static final float GYRO_DEGREES_PER_SECOND_PER_LSB = 0.061035156f;
 
     private final I2c i2c;
     private final Clock clock;

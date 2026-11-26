@@ -54,7 +54,6 @@ public final class RcxRemoteControl {
     public static final int SOUND = 0x8000;
 
     private final Clock clock;
-    private final InfraredDriver driver;
     private final int[] frame = new int[FRAME_VALUES];
     private final int[] buttonEvents = new int[EVENT_QUEUE_CAPACITY];
     private int buttonState;
@@ -78,7 +77,7 @@ public final class RcxRemoteControl {
             throw new IllegalArgumentException("RCX remote control needs an infrared receiver signal pin");
         }
         this.clock = clock;
-        driver = new InfraredDriver(receiver.driver(), receiver.signalPin(), -1, BAUD);
+        new InfraredDriver(receiver.driver(), receiver.signalPin(), -1, BAUD);
     }
 
     /**

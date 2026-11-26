@@ -39,6 +39,7 @@ public final class KeyFactory {
         return key instanceof EncodedPrivateKey encoded ? encoded.length : key.getEncoded().length;
     }
 
+    @SuppressWarnings("ArrayRecordComponent")
     private record EncodedPrivateKey(byte[] encoded, int length) implements PrivateKey {
         @Override
         public byte[] getEncoded() {

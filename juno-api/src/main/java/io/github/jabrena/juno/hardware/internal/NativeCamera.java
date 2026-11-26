@@ -28,6 +28,7 @@ public final class NativeCamera implements Camera {
     }
 
     @Override
+    @SuppressWarnings("EnumOrdinal") // The native camera ABI uses the declared FrameSize order.
     public boolean setFrameSize(FrameSize frameSize) {
         return setFrameSize(frameSize.ordinal());
     }

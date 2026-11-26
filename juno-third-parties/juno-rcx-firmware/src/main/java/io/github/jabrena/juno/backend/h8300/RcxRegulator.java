@@ -709,6 +709,7 @@ final class RcxRegulator {
         // Keep the wheels level: a side ahead of the other (still moving) side by a count drops a level, by more brakes.
         // Until the other side has moved at all, a side that has brakes after its first count, so the slower motor's
         // late start does not leave the faster one ahead for the whole move.
+        @SuppressWarnings("ReferenceEquality") // Side is an enum; identity comparison is intentional.
         Side other = side == LEFT ? RIGHT : LEFT;
         String level = code.newLabel();
         String hold = code.newLabel();
@@ -1258,6 +1259,7 @@ final class RcxRegulator {
     }
 
 
+    @SuppressWarnings("ReferenceEquality") // Side is an enum; identity comparison is intentional.
     private static int pendingOf(Side side) {
         return side == LEFT ? PENDING_LEFT : PENDING_RIGHT;
     }

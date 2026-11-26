@@ -1,18 +1,9 @@
 name: Set up JDK and Maven
 description: >-
-  JDK 27, a Maven cache scoped to the calling job, and the Maven wrapper's distribution fetched with retries.
+  JDK 27, the official setup-java Maven cache, and the Maven wrapper's distribution fetched with retries.
   The wrapper downloads Maven itself with one wget/curl call and no retry, so on a cold cache, when about 20 jobs
   start together, Maven Central can refuse it with 429 Too Many Requests before Maven (and its own resolver retries)
   ever runs.
-
-inputs:
-  cache-scope:
-    description: >-
-      Cache key scope. One cache per job: a single shared key keeps only what the first job to finish downloaded, so
-      the others fetch the rest from Maven Central at the same time. Matrix jobs whose entries pull different
-      dependencies add the matrix value.
-    required: false
-    default: ${{ github.job }}
 
 runs:
   using: composite
@@ -21,15 +12,7 @@ runs:
       with:
         distribution: temurin
         java-version: 27
-    - uses: actions/cache@v6
-      with:
-        path: |
-          ~/.m2/repository
-          ~/.m2/wrapper
-        key: maven-${{ runner.os }}-${{ inputs.cache-scope }}-${{ hashFiles('**/pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
-        restore-keys: |
-          maven-${{ runner.os }}-${{ inputs.cache-scope }}-
-          maven-${{ runner.os }}-
+        cache: maven
     - name: Fetch the Maven wrapper distribution
       shell: bash
       run: |

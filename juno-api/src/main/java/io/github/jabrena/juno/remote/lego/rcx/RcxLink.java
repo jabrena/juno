@@ -19,7 +19,6 @@ import io.github.jabrena.juno.util.Delay;
  */
 public final class RcxLink {
     private final Clock clock;
-    private final InfraredDriver driver;
 
     /** A link whose timer is the board's own clock ({@link MCU#getClock()}). */
     public RcxLink(InfraredEmitter emitter, InfraredReceiver receiver) {
@@ -33,7 +32,7 @@ public final class RcxLink {
             throw new IllegalArgumentException("Infrared emitter and receiver must use the same driver");
         }
         receiveEnabled = receiver.signalPin() >= 0;
-        driver = new InfraredDriver(emitter.driver(), receiver.signalPin(), emitter.signalPin(), BAUD);
+        new InfraredDriver(emitter.driver(), receiver.signalPin(), emitter.signalPin(), BAUD);
     }
 
     static final int BAUD = 2400;

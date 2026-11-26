@@ -34,7 +34,6 @@ public final class NineAxisMotionShield implements Accelerometer, Gyroscope, Sam
     private static final int ACC_X = 0x08;
     private static final int ACC_Y = 0x0A;
     private static final int ACC_Z = 0x0C;
-    private static final int GYRO_X = 0x14;
     private static final int GYRO_Z = 0x18;
     private static final int EULER_HEADING = 0x1A;
     private static final int UNIT_SELECTION = 0x3B;

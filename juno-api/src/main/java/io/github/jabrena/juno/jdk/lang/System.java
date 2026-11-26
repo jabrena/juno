@@ -1,6 +1,7 @@
 package io.github.jabrena.juno.jdk.lang;
 
 /** The small board-side subset of {@link java.lang.System} used by board-compatible libraries. */
+@SuppressWarnings("AvoidCommonTypeNames")
 public final class System {
     private System() {
     }

@@ -588,8 +588,10 @@
                             <!-- The plugin ignores maven.deploy.skip and would bundle every reactor module; Central
                                  then rejects the whole deployment for these modules' missing sources and Javadoc. -->
                             <excludeArtifacts>
+                                <excludeArtifact>juno-ai</excludeArtifact>
                                 <excludeArtifact>juno-examples</excludeArtifact>
                                 <excludeArtifact>juno-site</excludeArtifact>
+                                <excludeArtifact>juno-third-parties</excludeArtifact>
                                 <excludeArtifact>coverage-aggregator</excludeArtifact>
                             </excludeArtifacts>
                         </configuration>

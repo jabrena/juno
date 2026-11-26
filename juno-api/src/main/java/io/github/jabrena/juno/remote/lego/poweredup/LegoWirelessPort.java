@@ -21,7 +21,6 @@ final class LegoWirelessPort implements PoweredUpTransport {
     private static final int ADVERTISEMENT_BYTES = 4;
 
     /** Upstream message types. */
-    private static final int EXTERNAL_PORTS = 4;
     private static final int PROPERTIES_TIMEOUT_MILLIS = 300;
     private static final int LINK_TIMEOUT_MILLIS = 500;
 

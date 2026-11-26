@@ -29,10 +29,10 @@ on:
   release:
     types: [published]
 
-# About 20 jobs start together; on a cold or new per-job Maven cache they all fetch from Maven Central at once, which can
-# answer 429 Too Many Requests. Retry a few times with a growing delay (5, 10, 15, 20 s: under a minute per artifact),
-# then fail: with 10 retries 10 s apart one artifact could wait about 9 minutes, and a 429 storm kept a job busy for an
-# hour before it failed anyway. A failed job is cheaper to rerun than to wait for.
+# About 20 jobs can start together; on a cold Maven cache they can fetch from Maven Central at once, which can answer 429
+# Too Many Requests. Retry a few times with a growing delay (5, 10, 15, 20 s: under a minute per artifact), then fail:
+# with 10 retries 10 s apart one artifact could wait about 9 minutes, and a 429 storm kept a job busy for an hour before
+# it failed anyway. A failed job is cheaper to rerun than to wait for.
 env:
   MAVEN_ARGS: >-
     -Daether.transport.http.retryHandler.count=4
@@ -466,8 +466,6 @@ jobs:
         with:
           submodules: true
       - uses: ./.github/actions/setup-maven
-        with:
-          cache-scope: ${{ github.job }}-${{ matrix.carriers }}
       - uses: docker/login-action@v4
         with:
           registry: ghcr.io
@@ -649,8 +647,6 @@ jobs:
         with:
           submodules: true
       - uses: ./.github/actions/setup-maven
-        with:
-          cache-scope: ${{ github.job }}-${{ matrix.language }}
       - uses: docker/login-action@v4
         with:
           registry: ghcr.io

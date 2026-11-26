@@ -9,6 +9,7 @@ import java.io.UncheckedIOException;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.time.Clock;
+import java.time.ZoneId;
 
 /**
  * Discovers the board port and opens an interactive Arduino CLI serial monitor; with {@code juno.syslog}, receives the
@@ -64,7 +65,8 @@ public final class MonitorMojo extends AbstractArduinoMojo {
         }
         try (DatagramSocket socket = new DatagramSocket(port)) {
             getLog().info("Listening for syslog on UDP port " + port + "; press Ctrl+C to stop");
-            new SyslogListener(socket, line -> getLog().info(line), Clock.systemDefaultZone()).listen(syslogDatagrams);
+            new SyslogListener(socket, line -> getLog().info(line), Clock.system(ZoneId.systemDefault()))
+                    .listen(syslogDatagrams);
         } catch (SocketException failed) {
             throw new ArduinoCliException("Cannot listen for syslog on UDP port " + port + ": " + failed.getMessage(),
                     failed);
