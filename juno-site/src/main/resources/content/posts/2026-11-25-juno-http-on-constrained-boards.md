@@ -4,7 +4,7 @@ description: "Understand Juno's HttpClient transport leases, reusable buffers, r
 date: 2026-11-23
 layout: post
 link: /blog/2026-11-25-juno-http-on-constrained-boards/
-tags: [http, networking, memory]
+tags: [http, memory]
 blogVisible: true
 ---
 

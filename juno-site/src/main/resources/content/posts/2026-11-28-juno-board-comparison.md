@@ -4,7 +4,7 @@ description: "A practical comparison of Juno boards for Java programs, from UNO 
 date: 2026-11-23
 layout: post
 link: /blog/2026-11-28-juno-board-comparison/
-tags: [boards, comparison, getting-started]
+tags: [boards]
 blogVisible: true
 ---
 

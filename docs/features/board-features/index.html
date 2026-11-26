@@ -104,6 +104,7 @@
       <a class="" href="/juno/api" >APIs</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/api">Overview</a>
+        <a class="" href="/juno/api/ai">AI</a>
         <a class="" href="/juno/api/observability">Observability</a>
         <a class="" href="/juno/api/storage">Storage</a>
         <a class="" href="/juno/api/internet">Internet</a>
@@ -314,7 +315,6 @@ document.addEventListener('DOMContentLoaded', function () {
 that depend on the board rather than on the language: networking, Bluetooth, USB, displays, storage and shields. For the
 language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <h2 id="api-support">API support</h2>
-<p>✓ supported · — not supported by Juno on this board</p>
 <table>
 <thead>
 <tr>
@@ -464,13 +464,13 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">—</td>
-<td align="center">—</td>
+<td align="center">✓</td>
 <td align="center">—</td>
 <td align="center">✓</td>
 <td align="center">—</td>
 </tr>
 <tr>
-<td>Bluetooth LE (LEGO Powered Up)</td>
+<td>Bluetooth LE</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
@@ -520,24 +520,24 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 <td align="center">✓</td>
 </tr>
 <tr>
-<td>Cryptographic <code>UUID.randomUUID()</code></td>
+<td><code>UUID.randomUUID()</code></td>
 <td align="center">✓</td>
 <td align="center">✓</td>
 <td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
 <td align="center">✓</td>
-<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
 </tr>
 <tr>
-<td><code>SecretStore</code> over an onboard secure element</td>
+<td><code>SecretStore</code></td>
 <td align="center">✓</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
-<td align="center">—</td>
 <td align="center">✓</td>
-<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
 </tr>
 <tr>
 <td>Display, keyboard, speaker, battery</td>
@@ -551,21 +551,23 @@ language itself, see the <a href="../java-subset">Java subset</a> page.</p>
 </tr>
 </tbody>
 </table>
+<p>Legend: ✓ supported · — not available</p>
 <p>The AI Thinker ESP32-CAM supports Wi-Fi station and access-point modes, HTTPS server sessions, both implicit-TLS and
 STARTTLS email, the onboard microSD socket, Bluetooth LE for LEGO Powered Up, the OV2640 camera, HTTP response
 streaming, explicit PSRAM buffers, the task watchdog, hardware-random UUIDs and double-precision <code>Math</code>. It has no
 native USB HID controller, onboard LED matrix or onboard IMU.</p>
+<p>The UNO R3 also supports <code>UUID.randomUUID()</code>, but its AVR implementation is non-cryptographic and suitable only for
+best-effort identities, never for secrets, tokens or authentication values.</p>
 <p>The UNO R4 WiFi serves HTTP but not HTTPS: its ESP32-S3 coprocessor's firmware offers TLS only to clients, and the
 RA4M1 has no room for a software TLS server.</p>
 <p>The compiler checks this table for you: a program that uses an API its target board does not support fails with a
 <code>CompileException</code> naming the board and the missing capability. Some cells are compiled support that has not yet been run
 on every physical board; each board's page notes what is confirmed on hardware.</p>
 <h2 id="secret-storage">Secret storage</h2>
-<p>Juno's <a href="../../api/storage/secure-element"><code>SecretStore</code></a> API reads named Wi-Fi, API and email credentials from whatever store the
-board has: the Portenta H7's own NXP SE050C2, or an ESP32 board's NVS partition, which is weaker than a chip — a
-flash readout exposes it unless flash encryption is on. Secrets stay outside the firmware image and the SD card either
-way, so provisioning does not put them in source code, build output or removable storage. The other boards have no
-secret store: their examples read <code>application.properties</code> from the SD card, in plain text.</p>
+<p>Juno's <a href="../../api/storage/secure-element"><code>SecretStore</code></a> API reads named Wi-Fi, API and email credentials from the
+board's built-in store: the Portenta H7's NXP SE050C2, ESP32 boards' NVS partitions, the Pico 2 W's TrustZone store,
+or the UNO R3's EEPROM. Secrets stay outside the firmware image and the SD card, although the NVS and EEPROM stores
+are not secure elements and can be exposed by flash or EEPROM readout.</p>
 <table>
 <thead>
 <tr>
@@ -582,8 +584,13 @@ secret store: their examples read <code>application.properties</code> from the S
 </tr>
 <tr>
 <td>Built in, in flash</td>
-<td>Nano ESP32, M5Stack Cardputer and AI Thinker ESP32-CAM</td>
-<td>No crypto chip: the factory uses the board's own NVS partition, which keeps the value out of the program but not out of the flash.</td>
+<td>Nano ESP32, M5Stack Cardputer, AI Thinker ESP32-CAM and UNO R4 WiFi</td>
+<td>No crypto chip: <code>MCU.getSecretStore()</code> uses the board's NVS partition, which keeps the value out of the program but not out of flash.</td>
+</tr>
+<tr>
+<td>Built in, protected by TrustZone</td>
+<td>Raspberry Pi Pico 2 W</td>
+<td>The store is fenced off by Juno's secure firmware, but it is not locked or encrypted.</td>
 </tr>
 <tr>
 <td>Built in, in EEPROM</td>
@@ -596,7 +603,6 @@ secret store: their examples read <code>application.properties</code> from the S
 guide</a> covers provisioning, wiring, missing-secret handling and the current hardware-validation
 status.</p>
 <h2 id="physical-expansions">Physical expansions</h2>
-<p>✓ supported · — not available</p>
 <table>
 <thead>
 <tr>
@@ -632,6 +638,16 @@ status.</p>
 <td align="center">Shield</td>
 </tr>
 <tr>
+<td>Portenta Hat Carrier</td>
+<td align="center">Carrier</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+</tr>
+<tr>
 <td>9 Axis Motion Shield</td>
 <td align="center">—</td>
 <td align="center">—</td>
@@ -652,6 +668,16 @@ status.</p>
 <td align="center">Shield</td>
 </tr>
 <tr>
+<td>Data Logger Shield</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">Shield</td>
+<td align="center">Shield</td>
+</tr>
+<tr>
 <td>TFT Touch Shield</td>
 <td align="center">—</td>
 <td align="center">—</td>
@@ -662,41 +688,135 @@ status.</p>
 <td align="center">—</td>
 </tr>
 <tr>
-<td>Infrared link to LEGO RCX</td>
-<td align="center">—</td>
-<td align="center">✓</td>
+<td>USB Host Shield</td>
 <td align="center">—</td>
 <td align="center">—</td>
 <td align="center">—</td>
-<td align="center">✓</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">Shield</td>
+<td align="center">—</td>
+</tr>
+<tr>
+<td>PCA9685 PWM and Servo Shield</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">Shield</td>
 <td align="center">—</td>
 </tr>
 </tbody>
 </table>
-<p>Notes:</p>
-<ul>
-<li><strong>Shield</strong> means the feature comes from an Arduino or ELEGOO shield on the board's headers: the Data Logger, TFT or
-LCD Keypad shields for storage and displays, and the Grove and 9 Axis Motion shields for sensors. See
-<a href="../../third-parties/arduino-shields">Arduino Shields</a>.</li>
-<li><strong>Carrier</strong> means the Nano Connector Carrier, which provides the Nano ESP32's microSD slot and Grove sockets. See the
-<a href="../../boards/arduino-nano-esp32#shields">Nano ESP32</a> page.</li>
-<li><strong>Structured concurrency</strong> is available on every board except the UNO R3. The UNO R4 WiFi and Portenta H7 run one carrier; the Nano ESP32, AI Thinker ESP32-CAM, M5Stack Cardputer and Raspberry Pi Pico 2 W can run two
-carriers concurrently. See <a href="../java-subset#concurrency-behaviour">Concurrency behaviour</a> for scheduling and memory
-limits.</li>
-<li><strong>Email STARTTLS</strong> needs an upgrade of a plain connection, which the boards without a TLS stack of their own cannot do.</li>
-<li><strong>Bluetooth LE on the Nano ESP32 and the M5Stack Cardputer</strong> reaches a Powered Up hub through the core's own BLE library:
-Bluedroid on the Nano, NimBLE on the Cardputer. Both are confirmed on hardware with the colour example.</li>
-<li><strong>Portenta H7 Wi-Fi and Bluetooth LE</strong> use the Arduino Mbed core's <code>WiFi</code> and <code>ArduinoBLE</code> libraries. The Portenta's
-onboard SE050C2 is read through the ordinary <code>SecretStore</code> API; credentials stay in the chip rather than in
-the generated sketch. Hardware verification remains pending for the connected-board run.</li>
-<li><strong>Infrared</strong> drives a LEGO RCX from the board. The RCX needs Juno's firmware for the buttons and display text; see the
-<a href="../../third-parties/lego-ecosystem">LEGO ecosystem</a> page.</li>
-</ul>
+<p>Legend: ✓ supported · — not available</p>
 <h2 id="reading-the-board-services-through-mcu">Reading the board services through <code>MCU</code></h2>
 <p>Every board's own services come from one facade, <code>MCU</code>, and the board is chosen by <code>@Board</code> or the build's <code>juno.board</code>
 option. A getter the target does not provide is rejected at compile time, and the diagnostic names the getter and the
 board. A multi-board program must support each reachable getter on every declared board, even when the build selects one
-of them. Portable getters (<code>getGpio</code>, <code>getI2c</code>, <code>getSpi</code>, <code>getClock</code>, <code>getBoardModel</code>, <code>getBoardMemory</code>) work on every board.</p>
+of them. Get services once at startup and pass the interfaces to application objects so desktop tests can substitute
+mocks.</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Returns</th>
+<th>Availability</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>getGpio()</code></td>
+<td><code>Gpio</code></td>
+<td>Every board</td>
+</tr>
+<tr>
+<td><code>getI2c()</code></td>
+<td><code>I2c</code></td>
+<td>Every board</td>
+</tr>
+<tr>
+<td><code>getSpi()</code></td>
+<td><code>Spi</code></td>
+<td>Every board</td>
+</tr>
+<tr>
+<td><code>getClock()</code></td>
+<td><code>Clock</code></td>
+<td>Every board</td>
+</tr>
+<tr>
+<td><code>getBoardModel()</code></td>
+<td><code>BoardModel</code></td>
+<td>Every board</td>
+</tr>
+<tr>
+<td><code>getBoardMemory()</code></td>
+<td><code>BoardMemory</code></td>
+<td>Every board</td>
+</tr>
+<tr>
+<td><code>getWifi()</code></td>
+<td><code>Wifi</code></td>
+<td>Every board except UNO R3</td>
+</tr>
+<tr>
+<td><code>getBluetoothLe()</code></td>
+<td><code>BluetoothLe</code></td>
+<td>Every board except UNO R3</td>
+</tr>
+<tr>
+<td><code>getMouse()</code></td>
+<td><code>Mouse</code></td>
+<td>Portenta H7, Nano ESP32, M5Stack Cardputer, Raspberry Pi Pico 2 W and UNO R4 WiFi</td>
+</tr>
+<tr>
+<td><code>getCamera()</code></td>
+<td><code>Camera</code></td>
+<td>AI Thinker ESP32-CAM</td>
+</tr>
+<tr>
+<td><code>getSdCard()</code></td>
+<td><code>SdCard</code></td>
+<td>M5Stack Cardputer and AI Thinker ESP32-CAM; shields and carriers expose their own card getters</td>
+</tr>
+<tr>
+<td><code>getDisplay()</code></td>
+<td><code>Display</code></td>
+<td>M5Stack Cardputer and UNO R4 WiFi</td>
+</tr>
+<tr>
+<td><code>getKeyboard()</code></td>
+<td><code>Keyboard</code></td>
+<td>M5Stack Cardputer</td>
+</tr>
+<tr>
+<td><code>getAudio()</code></td>
+<td><code>Audio</code></td>
+<td>M5Stack Cardputer</td>
+</tr>
+<tr>
+<td><code>getBattery()</code></td>
+<td><code>Battery</code></td>
+<td>M5Stack Cardputer</td>
+</tr>
+<tr>
+<td><code>getSecretStore()</code></td>
+<td><code>SecretStore</code></td>
+<td>Every board; the backing store differs by board</td>
+</tr>
+<tr>
+<td><code>getLanguageModel()</code></td>
+<td><code>LanguageModel</code></td>
+<td>When a compatible JLM1 model is linked for the target board</td>
+</tr>
+<tr>
+<td><code>getDecisionModel()</code></td>
+<td><code>DecisionModel</code></td>
+<td>When a compatible JEV1 model is linked for the target board</td>
+</tr>
+</tbody>
+</table>
     </div>
   </section>
 </article>

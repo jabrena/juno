@@ -29,4 +29,8 @@ static `Psram` byte-buffer API; the camera board also keeps its driver-owned fra
 | Logic level | 3.3 V | 3.3 V | 3.3 V | 3.3 V | 3.3 V | 5 V | 5 V |
 | Wi-Fi | Wi-Fi | Wi-Fi | Wi-Fi | Wi-Fi | CYW43439 Wi-Fi | ESP32-S3 Wi-Fi | None |
 | Bluetooth | BLE | BLE | BLE | BLE | CYW43439 BLE | ESP32-S3 BLE | None |
-| Extras | M7/M4 dual core, Ethernet, secure element, RGB LED |  | Display, keyboard, speaker, battery | OV2640 camera, microSD socket | Built-in LED on the radio chip | 12×8 LED matrix |  |
+| Display | — | — | 240 × 135 color display | — | — | 12×8 LED matrix display | — |
+| Keyboard | — | — | Built-in keyboard | — | — | — | — |
+| Speaker | — | — | Built-in speaker | — | — | — | — |
+| MicroSD reader | — | — | Built-in microSD reader | — | — | — | — |
+| Camera | — | — | — | OV2640 camera | — | — | — |

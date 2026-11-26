@@ -4,7 +4,7 @@ description: "Keep Wi-Fi and API credentials out of Juno firmware with SecretSto
 date: 2026-11-23
 layout: post
 link: /blog/2026-11-30-juno-secretstore-secrets/
-tags: [security, storage, secrets]
+tags: [security]
 blogVisible: true
 ---
 

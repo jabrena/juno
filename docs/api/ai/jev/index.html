@@ -104,6 +104,7 @@
       <a class="" href="/juno/api" >APIs</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/api">Overview</a>
+        <a class="" href="/juno/api/ai">AI</a>
         <a class="" href="/juno/api/observability">Observability</a>
         <a class="" href="/juno/api/storage">Storage</a>
         <a class="" href="/juno/api/internet">Internet</a>
@@ -303,6 +304,53 @@ document.addEventListener('DOMContentLoaded', function () {
 <p><code>DecisionModel</code> evaluates a fixed set of legal actions against a caller-owned state and returns the highest-scoring
 action. Load a model once with <code>MCU.getDecisionModel().begin()</code>, then call <code>evaluate(state, legalActions)</code> whenever the
 application needs a decision.</p>
+<h2 id="what-is-a-jev-model">What is a JEV model?</h2>
+<p>JEV means <strong>Juno EValuation</strong>. It is a compact, quantized decision model for problems where the program supplies a
+fixed-length feature vector and a list of currently legal actions. Each action has one row of weights and a bias; the
+model computes a score for every legal action and returns the highest-scoring one. An illegal action is never scored.</p>
+<pre><code class="language-text">score(action) = bias[action] + Σ weight[action][feature] × state[feature]
+</code></pre>
+<p>JEV is not a general neural-network runtime: it has no layers, activation functions or sampling. The quality of the
+decision comes from the features and weights produced on the build machine. The board evaluator reads caller-owned
+<code>int[]</code> buffers and allocates nothing during <code>evaluate</code>.</p>
+<h2 id="jev1-files">JEV1 files</h2>
+<p>The build-time <code>juno-dm</code> module trains or constructs a model and writes one deterministic <code>JEV1</code> file. Its header stores
+the version, action count and feature count, followed by one float scale, one float bias and one signed-byte weight per
+feature for each action. The weight is <code>byte × scale</code>, so the file size is predictable:</p>
+<pre><code class="language-text">9 + actions × (8 + features) bytes
+</code></pre>
+<p>The compiler validates the header and file length, embeds a linked model in flash, and rejects a missing or malformed
+model before the board is flashed. The tracked models currently include <code>TIC_TAC_TOE.JEV</code> and <code>CONNECT_FOUR.JEV</code> in
+<code>juno-ai/juno-models/src/main/resources/dm/</code>.</p>
+<h2 id="current-board-support">Current board support</h2>
+<table>
+<thead>
+<tr>
+<th>Board</th>
+<th>Model storage</th>
+<th>Current status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../../../boards/arduino-nano-esp32">Nano ESP32</a></td>
+<td>Flash for linked models; optional SD-card loading</td>
+<td>Web and serial examples supported; hardware-tested paths exist.</td>
+</tr>
+<tr>
+<td><a href="../../../boards/ai-thinker-esp32-cam">AI Thinker ESP32-CAM</a></td>
+<td>Flash for linked models; optional SD-card loading</td>
+<td>The web example is supported.</td>
+</tr>
+<tr>
+<td><a href="../../../boards/arduino-portenta-h7">Portenta H7</a></td>
+<td>Flash for linked models</td>
+<td>The web example is supported; no SD card is required.</td>
+</tr>
+</tbody>
+</table>
+<p>JEV models do not require PSRAM or SDRAM when linked from flash. The optional <code>begin(card, path)</code> overload requires a
+board or carrier with an SD card.</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.ai.TicTacToeWebGame \
   -Djuno.board=arduino-portenta-h7 \
@@ -311,7 +359,6 @@ application needs a decision.</p>
 <p>JEV web examples use <code>wifi.ssid</code> and <code>wifi.password</code> from <code>MCU.getSecretStore()</code> and do not require an SD card. The
 HTML, CSS and JavaScript are separate classpath resources. The examples run on the Nano ESP32, AI Thinker ESP32-CAM
 and Portenta H7.</p>
-<p>See the detailed <a href="../../blog/2026-11-25-jev-decision-models/">JEV decision-model article</a>.</p>
     </div>
   </section>
 </article>

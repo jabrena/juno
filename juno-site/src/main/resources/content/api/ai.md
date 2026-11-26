@@ -9,5 +9,5 @@ board-side APIs keep inference predictable and suitable for a constrained applic
 
 | API | What it provides | Complete example |
 |---|---|---|
-| [JEV](ai/jev) | Scores caller-owned state features for a caller-owned list of legal actions and returns the best action. | [`ConnectFourWebGame`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/ai/ConnectFourWebGame.java) |
-| [JLM](ai/lm) | Runs the JLM1 character-level transformer and streams generated characters from the board. | [`LanguageModelSecretStoreChat`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/ai/LanguageModelSecretStoreChat.java) |
+| [JEV](jev) | Scores caller-owned state features for a caller-owned list of legal actions and returns the best action. | [`ConnectFourWebGame`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/ai/ConnectFourWebGame.java) |
+| [JLM](lm) | Runs the JLM1 character-level transformer and streams generated characters from the board. | [`LanguageModelSecretStoreChat`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/ai/LanguageModelSecretStoreChat.java) |

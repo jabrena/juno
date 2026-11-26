@@ -104,6 +104,7 @@
       <a class="" href="/juno/api" >APIs</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/api">Overview</a>
+        <a class="" href="/juno/api/ai">AI</a>
         <a class="" href="/juno/api/observability">Observability</a>
         <a class="" href="/juno/api/storage">Storage</a>
         <a class="" href="/juno/api/internet">Internet</a>
@@ -432,9 +433,15 @@ startup and stay small.</p>
 <td></td>
 </tr>
 <tr>
-<td>Non-cryptographic UUIDs (<code>PortNoise</code>)</td>
+<td><code>SecretStore</code></td>
 <td align="center">✓</td>
-<td>The R3 has no hardware entropy, so <code>UUID.randomUUID()</code> is rejected; <code>PortNoise</code> gives best-effort node identities, never secrets.</td>
+<td>Uses the ATmega328P's 1 KB EEPROM through <code>AvrEeprom</code>; values are stored as plain text and can be read by a flashed program or programmer.</td>
+<td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/security/SecretStoreCheck.java"><code>SecretStoreCheck</code></a></td>
+</tr>
+<tr>
+<td><code>UUID.randomUUID()</code></td>
+<td align="center">✓</td>
+<td>Uses the AVR pseudorandom generator, seeded with timer jitter and unused A5 noise. It is suitable for best-effort node identities, never secrets, tokens or authentication values.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/language/WeakUuid.java"><code>WeakUuid</code></a></td>
 </tr>
 <tr>

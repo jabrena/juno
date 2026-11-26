@@ -4,7 +4,7 @@ description: "How Juno trains a small character-level transformer in Java, store
 date: 2026-11-24
 layout: post
 link: /blog/2026-11-24-jlm1-on-board-language-model/
-tags: [ai, language-model, nano-esp32, http]
+tags: [ai]
 blogVisible: true
 ---
 
