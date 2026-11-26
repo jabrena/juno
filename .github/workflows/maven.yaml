@@ -319,7 +319,9 @@ jobs:
           log="$RUNNER_TEMP/javadoc-gate.log"
           # doclint reports undocumented members as warnings, so javadoc's exit status is ignored and the log is counted.
           javadoc -Xdoclint:all -Xmaxwarns 100000 -Xmaxerrs 100000 -quiet \
-            -d "$RUNNER_TEMP/javadoc-gate" -cp "$(cat "$RUNNER_TEMP/juno-api.classpath")" $sources > "$log" 2>&1 || true
+            -d "$RUNNER_TEMP/javadoc-gate" \
+            --module-path "$(cat "$RUNNER_TEMP/juno-api.classpath")" \
+            -cp "$(cat "$RUNNER_TEMP/juno-api.classpath")" $sources > "$log" 2>&1 || true
           errors="$(grep -c ': error: ' "$log" || true)"
           undocumented="$(grep -c ': warning: no comment' "$log" || true)"
           echo "doclint errors: $errors; undocumented (no comment): $undocumented; baseline: $NO_COMMENT_BASELINE"
