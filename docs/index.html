@@ -56,7 +56,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-P5LY5ZJW.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-K4K7IZCN.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-QDXOBOHZ.css" />
 
 </head>
 <body>
@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <section class="juno-hero" style="--juno-hero-image: url('/juno/images/juno.png')">
   <div class="juno-hero-inner">
     <h1>Java, compiled straight to the board</h1>
-    <p class="juno-hero-tagline">Juno is an ahead-of-time compiler for running a practical subset of Java for microcontrollers.</p>
+    <p class="juno-hero-tagline">Juno is an ahead-of-time compiler for running a practical subset of Java for Microcontrollers.</p>
     <div class="juno-hero-actions">
       <a href="getting-started" class="juno-btn juno-btn-primary">Get started <i class="fa-solid fa-arrow-right"></i></a>
       <a href="#try-juno" class="juno-btn juno-btn-secondary">Try Juno</a>
@@ -306,24 +306,15 @@ document.addEventListener('DOMContentLoaded', function () {
   </div>
 </section>
 
-<section class="juno-band">
-  <div class="juno-container juno-split">
-    <div>
-      <h2><i class="fa-solid fa-microchip"></i> Embedded</h2>
+<section class="juno-band juno-commercial-band">
+  <div class="juno-container">
+    <div class="juno-commercial">
+      <h2>Create the next generation of embedded products</h2>
       <p>
-        The strongest Juno targets by board-level compute resources are Portenta H7, Nano ESP32, M5Stack Cardputer
-        and AI Thinker ESP32-CAM. Across the supported boards, GPIO, timing, Serial, Wi-Fi, HTTP, JSON, SD cards,
-        USB HID and displays are plain Java <code>native</code> methods lowered to shim calls
-        at link time.
-      </p>
-    </div>
-    <div>
-      <h2><i class="fa-solid fa-layer-group"></i> Ahead of time</h2>
-      <p>
-        <code>javac</code> &rarr; <code>.class</code> &rarr; Juno's closed-world linker &rarr; AVR,
-        Thumb-2 or Xtensa assembly plus an <code>extern "C"</code> runtime shim, assembled and linked
-        by the board's own Arduino toolchain. Everything runs from one fixed arena, so nothing is
-        interpreted and nothing is loaded at runtime.
+        Build smarter industrial devices with the Java skills your engineering teams already know. Juno brings Java and
+        AI together on microcontrollers, so you can develop responsive edge products that sense, decide and act close
+        to the physical world. Move from connected prototypes to efficient, production-ready embedded systems with a
+        familiar language, predictable resource usage and AI capabilities designed for the edge.
       </p>
     </div>
   </div>
@@ -333,18 +324,17 @@ document.addEventListener('DOMContentLoaded', function () {
   <div class="juno-container">
     <h2 class="juno-section-title">Try Juno</h2>
     <p class="juno-section-lead">Write plain Java, then let the Maven plugin compile, verify and flash it.</p>
-    <div class="juno-try">
-      <div class="juno-code-window">
-        <div class="juno-code-bar"><span></span><span></span><span></span><em>Blink.java</em></div>
-<pre><code>import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
-import io.github.jabrena.juno.util.Delay;
+    <div class="juno-example-carousel" data-juno-example-carousel>
+      <div class="juno-example-slides">
+        <article class="juno-example-slide is-active" data-juno-example-slide>
+          <div class="juno-try">
+            <div class="juno-code-window">
+              <div class="juno-code-bar"><span></span><span></span><span></span><em>Blink.java</em></div>
+<pre><code>import module io.github.jabrena.juno.api;
 
 public class Blink {
-
     public static void main(String[] args) {
         DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
-
         while (true) {
             led.high();
             Delay.millis(500);
@@ -353,32 +343,288 @@ public class Blink {
         }
     }
 }</code></pre>
-      </div>
-      <ol class="juno-steps">
-        <li>
-          <h3>Generate</h3>
-          <p>Lower the bytecode to assembly and a runtime shim.</p>
-          <pre><code>./mvnw -f juno-examples/pom.xml compile juno:compile \
+            </div>
+            <ol class="juno-steps">
+              <li><h3>Generate</h3><p>Lower Java bytecode to assembly and a runtime shim.</p><pre><code>./mvnw -f juno-examples/pom.xml compile juno:compile \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r4-wifi</code><button class="roq-copy-btn juno-copy-btn" type="button" aria-label="Copy command" title="Copy to clipboard"><i class="fa-regular fa-copy"></i></button></pre>
-        </li>
-        <li>
-          <h3>Verify</h3>
-          <p>Compile it with the real Arduino toolchain, without touching hardware.</p>
-          <pre><code>./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.board=arduino-uno-r4-wifi</code></pre></li>
+              <li><h3>Verify</h3><p>Compile it with the real Arduino toolchain, without touching hardware.</p><pre><code>./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r4-wifi</code><button class="roq-copy-btn juno-copy-btn" type="button" aria-label="Copy command" title="Copy to clipboard"><i class="fa-regular fa-copy"></i></button></pre>
-        </li>
-        <li>
-          <h3>Flash</h3>
-          <p>Upload to the board and watch the serial output.</p>
-          <pre><code>./mvnw -f juno-examples/pom.xml compile juno:flash \
+  -Djuno.board=arduino-uno-r4-wifi</code></pre></li>
+              <li><h3>Flash</h3><p>Upload to the board and watch the serial output.</p><pre><code>./mvnw -f juno-examples/pom.xml compile juno:flash \
   -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
   -Djuno.board=arduino-uno-r4-wifi
 ./mvnw -f juno-examples/pom.xml juno:monitor \
-  -Djuno.board=arduino-uno-r4-wifi</code><button class="roq-copy-btn juno-copy-btn" type="button" aria-label="Copy command" title="Copy to clipboard"><i class="fa-regular fa-copy"></i></button></pre>
-        </li>
-      </ol>
+  -Djuno.board=arduino-uno-r4-wifi</code></pre></li>
+            </ol>
+          </div>
+        </article>
+        <article class="juno-example-slide" data-juno-example-slide>
+          <div class="juno-try">
+            <div class="juno-code-window">
+              <div class="juno-code-bar"><span></span><span></span><span></span><em>TemperatureEmailAlert.java</em></div>
+<pre><code>import module io.github.jabrena.juno.api;
+
+@Board(ArduinoUnoR4WiFiBoard.class)
+public final class TemperatureEmailAlert {
+    private static final int SIGNAL_PIN = 4;
+    private static final int ALERT_TEMPERATURE = 300;
+    private static final int[] READING = new int[GroveDht22.READING_LENGTH];
+    private static final int[] FRAME = new int[GroveDht22.FRAME_LENGTH];
+
+    public static void main(String[] args) {
+        Serial.begin(BaudRate.BAUD_115200);
+        Wifi wifi = MCU.getWifi();
+        SecretStore secrets = MCU.getSecretStore();
+        wifi.begin(secrets.getString("wifi.ssid"), secrets.getString("wifi.password"));
+        while (wifi.status() != Wifi.STATUS_CONNECTED) {
+            Delay.millis(1000);
+        }
+
+        GroveDht22 sensor = new GroveDht22();
+        while (true) {
+            if (sensor.read(SIGNAL_PIN, READING, READING.length, FRAME, FRAME.length)
+                    && READING[GroveDht22.TEMPERATURE_TENTHS_CELSIUS] > ALERT_TEMPERATURE) {
+                Smtp.sendTls(secrets.getString("smtp.host"), 465,
+                        secrets.getString("smtp.username"), secrets.getString("smtp.password"),
+                        secrets.getString("smtp.from"), secrets.getString("smtp.to"),
+                        "Temperature alert", "The temperature is above 30 C");
+                Serial.println("Temperature alert sent");
+            }
+            Delay.millis(120000);
+        }
+    }
+}</code></pre>
+            </div>
+            <ol class="juno-steps">
+              <li><h3>Generate</h3><p>Compile the sensor and email workflow into board firmware.</p><pre><code>./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.net.email.TemperatureEmailAlert \
+  -Djuno.board=arduino-uno-r4-wifi</code></pre></li>
+              <li><h3>Verify</h3><p>Check the generated firmware and Arduino toolchain output.</p><pre><code>./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.net.email.TemperatureEmailAlert \
+  -Djuno.board=arduino-uno-r4-wifi</code></pre></li>
+              <li><h3>Deploy</h3><p>Flash the device and monitor its connectivity and alert status.</p><pre><code>./mvnw -f juno-examples/pom.xml compile juno:flash \
+  -Djuno.main=io.github.jabrena.juno.api.hardware.net.email.TemperatureEmailAlert \
+  -Djuno.board=arduino-uno-r4-wifi
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-uno-r4-wifi</code></pre></li>
+            </ol>
+          </div>
+        </article>
+        <article class="juno-example-slide" data-juno-example-slide>
+          <div class="juno-try">
+            <div class="juno-code-window">
+              <div class="juno-code-bar"><span></span><span></span><span></span><em>ConnectFourWebGame.java</em></div>
+<pre><code>package io.github.jabrena.juno.api.ai;
+
+import module io.github.jabrena.juno.api;
+import module java.base;
+import module jdk.httpserver;
+
+@Board({ArduinoNanoEsp32Board.class, AiThinkerEsp32CamBoard.class, ArduinoPortentaH7Board.class})
+public final class ConnectFourWebGame {
+    private static final ConnectFourGame GAME = new ConnectFourGame();
+    private static final DecisionModel MODEL = MCU.getDecisionModel();
+    private static final int[] IP = new int[4];
+    private static final byte[] RESPONSE = new byte[96];
+    private static final byte[] RESOURCE_BUFFER = new byte[512];
+    private static int modelPlayer = ConnectFourGame.SECOND;
+    private static int lastMove = -1;
+
+    public static void main(String[] args) throws IOException {
+        Serial.begin(BaudRate.BAUD_115200);
+        Delay.millis(2000);
+        Serial.println("JEV Connect Four starting");
+        ModelStatus status = MODEL.begin();
+        if (status != ModelStatus.OK) {
+            Serial.print("JEV Connect Four could not load its model: ");
+            Serial.println(status.ordinal());
+            return;
+        }
+        selfTest();
+        Wifi wifi = MCU.getWifi();
+        SecretStore secrets = MCU.getSecretStore();
+        String ssid = secrets.getString("wifi.ssid");
+        String password = secrets.getString("wifi.password");
+        if (ssid == null || password == null) {
+            Serial.println("JEV Connect Four needs wifi credentials");
+            return;
+        }
+        wifi.begin(ssid, password);
+        while (wifi.status() != Wifi.STATUS_CONNECTED) {
+            Delay.millis(1000);
+        }
+        HttpServer server = HttpServer.create(new InetSocketAddress(80), 2);
+        server.createContext("/api/state", ConnectFourWebGame::state);
+        server.createContext("/api/move", ConnectFourWebGame::move);
+        server.createContext("/api/reset", ConnectFourWebGame::reset);
+        server.createContext("/jev/connect-four.css", ConnectFourWebGame::style);
+        server.createContext("/jev/connect-four.js", ConnectFourWebGame::script);
+        server.createContext("/", ConnectFourWebGame::page);
+        server.start();
+        while (true) {
+            wifi.localIP(IP);
+            Serial.print("Connect Four: http://");
+            Serial.print(IP[0]); Serial.print("."); Serial.print(IP[1]);
+            Serial.print("."); Serial.print(IP[2]); Serial.print(".");
+            Serial.print(IP[3]); Serial.println("/");
+            Delay.millis(10000);
+        }
+    }
+
+    private static void selfTest() {
+        GAME.reset();
+        GAME.play(1); GAME.play(0); GAME.play(2); GAME.play(0); GAME.play(6); GAME.play(0);
+        Serial.print("self-test block: column ");
+        Serial.println(computerMove());
+        GAME.reset();
+        GAME.play(3); GAME.play(0); GAME.play(3); GAME.play(1); GAME.play(3); GAME.play(6);
+        Serial.print("self-test win: column ");
+        Serial.println(computerMove());
+        GAME.reset();
+        modelPlayer = ConnectFourGame.SECOND;
+        lastMove = -1;
+    }
+
+    private static void page(HttpExchange exchange) throws IOException {
+        try (InputStream resource = ConnectFourWebGame.class.getResourceAsStream("/jev/connect-four.html")) {
+            sendResource(exchange, resource, "text/html; charset=utf-8");
+        }
+    }
+
+    private static void style(HttpExchange exchange) throws IOException {
+        try (InputStream resource = ConnectFourWebGame.class.getResourceAsStream("/jev/connect-four.css")) {
+            sendResource(exchange, resource, "text/css; charset=utf-8");
+        }
+    }
+
+    private static void script(HttpExchange exchange) throws IOException {
+        try (InputStream resource = ConnectFourWebGame.class.getResourceAsStream("/jev/connect-four.js")) {
+            sendResource(exchange, resource, "text/javascript; charset=utf-8");
+        }
+    }
+
+    private static void sendResource(HttpExchange exchange, InputStream resource, String contentType)
+            throws IOException {
+        if (resource == null) {
+            send(exchange, 404, "text/plain; charset=utf-8", "resource not found");
+            return;
+        }
+        exchange.getResponseHeaders().set("Content-Type", contentType);
+        exchange.sendResponseHeaders(200, resource.available());
+        try (OutputStream output = exchange.getResponseBody()) {
+            int count;
+            while ((count = resource.read(RESOURCE_BUFFER, 0, RESOURCE_BUFFER.length)) &gt;= 0) {
+                if (count > 0) output.write(RESOURCE_BUFFER, 0, count);
+            }
+        }
+    }
+
+    private static void state(HttpExchange exchange) throws IOException {
+        int length = append(0, "{\"board\":\"");
+        for (int column = 0; column &lt; ConnectFourGame.COLUMNS; column++) {
+            for (int row = 0; row &lt; ConnectFourGame.ROWS; row++) {
+                int cell = GAME.cell(column, row);
+                RESPONSE[length++] = (byte) (cell == ConnectFourGame.EMPTY ? '-' : cell == modelPlayer ? 'M' : 'H');
+            }
+        }
+        length = append(length, "\",\"status\":\"");
+        int winner = GAME.winner();
+        length = append(length, winner == modelPlayer ? "lost" : winner != ConnectFourGame.EMPTY ? "won"
+                : GAME.isOver() ? "draw" : "turn");
+        length = append(length, "\",\"last\":");
+        if (lastMove &lt; 0) {
+            RESPONSE[length++] = '-'; RESPONSE[length++] = '1';
+        } else {
+            if (lastMove >= 10) RESPONSE[length++] = (byte) ('0' + lastMove / 10);
+            RESPONSE[length++] = (byte) ('0' + lastMove % 10);
+        }
+        RESPONSE[length++] = '}';
+        exchange.getResponseHeaders().set("Content-Type", "application/json");
+        exchange.sendResponseHeaders(200, length);
+        try (OutputStream output = exchange.getResponseBody()) {
+            output.write(RESPONSE, 0, length);
+        }
+    }
+
+    private static int append(int length, String text) {
+        for (int index = 0; index &lt; text.length(); index++) RESPONSE[length++] = (byte) text.charAt(index);
+        return length;
+    }
+
+    private static void move(HttpExchange exchange) throws IOException {
+        int column = exchange.getRequestBody().read() - '0';
+        if (!"POST".equals(exchange.getRequestMethod()) || GAME.turn() == modelPlayer || !GAME.canPlay(column)) {
+            send(exchange, 400, "application/json", "{\"error\":\"invalid move\"}");
+            return;
+        }
+        lastMove = landingCell(column);
+        GAME.play(column);
+        if (!GAME.isOver()) computerMove();
+        state(exchange);
+    }
+
+    private static void reset(HttpExchange exchange) throws IOException {
+        if (!"POST".equals(exchange.getRequestMethod())) {
+            send(exchange, 405, "application/json", "{\"error\":\"POST required\"}");
+            return;
+        }
+        boolean modelStarts = exchange.getRequestBody().read() == 'm';
+        GAME.reset();
+        lastMove = -1;
+        modelPlayer = modelStarts ? ConnectFourGame.FIRST : ConnectFourGame.SECOND;
+        if (modelStarts) computerMove();
+        state(exchange);
+    }
+
+    private static int computerMove() {
+        int column = MODEL.evaluate(GAME.encode(), GAME.legalActions());
+        if (column >= 0) {
+            lastMove = landingCell(column);
+            GAME.play(column);
+        }
+        return column;
+    }
+
+    private static int landingCell(int column) {
+        int row = 0;
+        while (GAME.cell(column, row) != ConnectFourGame.EMPTY) row++;
+        return column * ConnectFourGame.ROWS + row;
+    }
+
+    private static void send(HttpExchange exchange, int status, String contentType, String body) throws IOException {
+        exchange.getResponseHeaders().set("Content-Type", contentType);
+        exchange.sendResponseHeaders(status, body.length());
+        try (OutputStream output = exchange.getResponseBody()) {
+            for (int index = 0; index < body.length(); index++) output.write(body.charAt(index));
+        }
+    }
+}</code></pre>
+            </div>
+            <ol class="juno-steps">
+              <li><h3>Generate</h3><p>Link the Connect Four JEV1 model into the Java program.</p><pre><code>./mvnw -f juno-examples/pom.xml compile juno:compile \
+  -Djuno.main=io.github.jabrena.juno.api.ai.ConnectFourWebGame \
+  -Djuno.board=arduino-nano-esp32 \
+  -Djuno.dm.model=../juno-ai/juno-models/src/main/resources/dm/CONNECT_FOUR.JEV</code></pre></li>
+              <li><h3>Verify</h3><p>Compile the web game and its embedded decision model.</p><pre><code>./mvnw -f juno-examples/pom.xml compile juno:verify \
+  -Djuno.main=io.github.jabrena.juno.api.ai.ConnectFourWebGame \
+  -Djuno.board=arduino-nano-esp32 \
+  -Djuno.dm.model=../juno-ai/juno-models/src/main/resources/dm/CONNECT_FOUR.JEV</code></pre></li>
+              <li><h3>Deploy</h3><p>Open the board-hosted game and play against the model.</p><pre><code>./mvnw -f juno-examples/pom.xml compile juno:flash \
+  -Djuno.main=io.github.jabrena.juno.api.ai.ConnectFourWebGame \
+  -Djuno.board=arduino-nano-esp32 \
+  -Djuno.dm.model=../juno-ai/juno-models/src/main/resources/dm/CONNECT_FOUR.JEV
+./mvnw -f juno-examples/pom.xml juno:monitor \
+  -Djuno.board=arduino-nano-esp32</code></pre></li>
+            </ol>
+          </div>
+        </article>
+      </div>
+      <div class="juno-example-controls" role="tablist" aria-label="Juno examples">
+        <button class="juno-example-dot is-active" type="button" role="tab" aria-selected="true" aria-label="Show Blink example" data-juno-example-dot="0"></button>
+        <button class="juno-example-dot" type="button" role="tab" aria-selected="false" aria-label="Show temperature email example" data-juno-example-dot="1"></button>
+        <button class="juno-example-dot" type="button" role="tab" aria-selected="false" aria-label="Show Connect Four JEV example" data-juno-example-dot="2"></button>
+      </div>
     </div>
     <div class="juno-hero-actions juno-try-actions">
       <a href="getting-started" class="juno-btn juno-btn-primary">Continue with Getting Started <i class="fa-solid fa-arrow-right"></i></a>
@@ -418,7 +664,7 @@ public class Blink {
 <section class="juno-band juno-band-alt juno-band-carousel">
   <div class="juno-container">
     <h2 class="juno-section-title">Shields, sensors and actuators</h2>
-    <p class="juno-section-lead">Plug in what you need: Arduino shields, Grove sensors and LEGO bricks, all driven from Java.</p>
+    <p class="juno-section-lead">Plug in what you need: Arduino shields and Grove sensors, all driven from Java.</p>
     <div class="juno-eco-carousel">
       <div class="juno-eco-track">
         <div class="juno-eco-set">
@@ -485,39 +731,57 @@ public class Blink {
     <div class="juno-cards">
       <a class="juno-card" href="features/memory-model">
         <i class="fa-solid fa-memory"></i>
-        <h3>Make every byte count</h3>
+        <h3>Memory and resource efficiency</h3>
         <p>See where your Java data lives, how the fixed arena and collector behave, and how much room each board really gives you.</p>
-        <span>Master the memory model <i class="fa-solid fa-arrow-right"></i></span>
+        <span>Review the memory model <i class="fa-solid fa-arrow-right"></i></span>
       </a>
       <a class="juno-card" href="features">
         <i class="fa-solid fa-list-check"></i>
-        <h3>Know your Java superpowers</h3>
+        <h3>Java language and library support</h3>
         <p>Discover the language features and libraries that are ready to leave the desktop and run on a microcontroller.</p>
-        <span>Explore the feature inventory <i class="fa-solid fa-arrow-right"></i></span>
+        <span>Review supported features <i class="fa-solid fa-arrow-right"></i></span>
       </a>
       <a class="juno-card" href="boards">
         <i class="fa-solid fa-boxes-stacked"></i>
-        <h3>Choose your launchpad</h3>
-        <p>From compact ESP32 to classic UNO boards, one Java program can target an entire family of hardware.</p>
-        <span>Find your board <i class="fa-solid fa-arrow-right"></i></span>
+        <h3>Board selection</h3>
+        <p>Compare processor cores, memory, PSRAM, connectivity and supported capabilities to select the right platform for each workload.</p>
+        <span>Compare supported boards <i class="fa-solid fa-arrow-right"></i></span>
       </a>
       <a class="juno-card" href="features/memory-model#concurrency-by-board">
         <i class="fa-solid fa-microchip"></i>
-        <h3>Let your board multitask</h3>
+        <h3>Concurrency across boards</h3>
         <p>Learn how threads, structured concurrency and shared state behave across Juno’s different boards.</p>
-        <span>See concurrency by board <i class="fa-solid fa-arrow-right"></i></span>
+        <span>Review concurrency support <i class="fa-solid fa-arrow-right"></i></span>
       </a>
       <a class="juno-card" href="api">
         <i class="fa-solid fa-code"></i>
-        <h3>Give Java a physical world</h3>
-        <p>Drive LEDs, motors, sensors, storage and networks through APIs designed to feel like Java, not register juggling.</p>
-        <span>Browse the hardware APIs <i class="fa-solid fa-arrow-right"></i></span>
+        <h3>Hardware integration APIs</h3>
+        <p>Control physical devices through typed Java interfaces that hide board-specific details and keep application code focused on behavior.</p>
+        <span>Explore the hardware APIs <i class="fa-solid fa-arrow-right"></i></span>
       </a>
       <a class="juno-card" href="third-parties">
         <i class="fa-solid fa-puzzle-piece"></i>
-        <h3>Build beyond the board</h3>
-        <p>Connect Arduino shields, Grove modules, LEGO bricks and other hardware—and turn a small board into a real project.</p>
-        <span>Explore the hardware ecosystem <i class="fa-solid fa-arrow-right"></i></span>
+        <h3>Hardware ecosystem</h3>
+        <p>Review supported Arduino shields, Grove modules, sensors, actuators, displays, storage devices and connectivity hardware.</p>
+        <span>Review supported integrations <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a class="juno-card" href="features/board-features">
+        <i class="fa-solid fa-microchip"></i>
+        <h3>Embedded systems</h3>
+        <p>Apply Java to industrial monitoring, robotics, automation and connected edge devices where reliable local decisions matter.</p>
+        <span>Review embedded capabilities <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a class="juno-card" href="features/java-subset">
+        <i class="fa-solid fa-layer-group"></i>
+        <h3>Ahead-of-time compilation</h3>
+        <p>Turn checked Java bytecode into board-specific firmware with no JVM on the device and predictable memory use at runtime.</p>
+        <span>Review the Java subset <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a class="juno-card" href="blog/2026-11-25-jev-decision-models">
+        <i class="fa-solid fa-brain"></i>
+        <h3>AI at the edge</h3>
+        <p>Run compact language and decision models in Java on supported boards for responsive, private and efficient embedded intelligence.</p>
+        <span>Explore embedded AI <i class="fa-solid fa-arrow-right"></i></span>
       </a>
     </div>
   </div>
@@ -542,6 +806,51 @@ document.addEventListener('DOMContentLoaded', function () {
       var items = Array.prototype.slice.call(set.children);
       order.forEach(function (index) { set.appendChild(items[index]); });
     });
+  });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('[data-juno-example-carousel]').forEach(function (carousel) {
+    var slides = Array.prototype.slice.call(carousel.querySelectorAll('[data-juno-example-slide]'));
+    var dots = Array.prototype.slice.call(carousel.querySelectorAll('[data-juno-example-dot]'));
+    var current = 0;
+    var timer;
+    var startX;
+
+    function show(index) {
+      current = (index + slides.length) % slides.length;
+      slides.forEach(function (slide, i) { slide.classList.toggle('is-active', i === current); });
+      dots.forEach(function (dot, i) {
+        dot.classList.toggle('is-active', i === current);
+        dot.setAttribute('aria-selected', i === current ? 'true' : 'false');
+      });
+    }
+
+    function start() {
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        timer = window.setInterval(function () { show(current + 1); }, 5000);
+      }
+    }
+
+    function stop() {
+      window.clearInterval(timer);
+    }
+
+    dots.forEach(function (dot) {
+      dot.addEventListener('click', function () { show(Number(dot.dataset.junoExampleDot)); stop(); start(); });
+    });
+    carousel.addEventListener('mouseenter', stop);
+    carousel.addEventListener('mouseleave', start);
+    carousel.addEventListener('focusin', stop);
+    carousel.addEventListener('focusout', start);
+    carousel.addEventListener('touchstart', function (event) { startX = event.changedTouches[0].screenX; }, { passive: true });
+    carousel.addEventListener('touchend', function (event) {
+      var distance = event.changedTouches[0].screenX - startX;
+      if (Math.abs(distance) > 40) { show(current + (distance < 0 ? 1 : -1)); }
+    }, { passive: true });
+    start();
   });
 });
 </script>

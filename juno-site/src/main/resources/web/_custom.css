@@ -701,24 +701,25 @@
     color: var(--color-accent-300);
 }
 
-.juno-split {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 3rem;
+.juno-commercial {
+    max-width: none;
+    margin: 0;
+    text-align: left;
 }
 
-.juno-split h2 {
+.juno-commercial-band {
+    padding-top: 2.72rem;
+    padding-bottom: 2.75rem;
+}
+
+.juno-commercial h2 {
     margin: 0 0 1rem;
-    font-size: 1.6rem;
+    font-size: 2rem;
 }
 
-.juno-split h2 i {
-    margin-right: 0.4rem;
-    color: var(--lego-red);
-}
-
-.juno-split > div:nth-child(2) h2 i {
-    color: var(--color-accent-600);
+.juno-commercial p {
+    margin: 0;
+    font-size: 1.1rem;
 }
 
 .juno-section-title {
@@ -740,6 +741,40 @@
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
     gap: 2rem;
     align-items: start;
+}
+
+.juno-example-slide {
+    display: none;
+}
+
+.juno-example-slide.is-active {
+    display: block;
+}
+
+.juno-example-controls {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 1.75rem;
+}
+
+.juno-example-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    padding: 0;
+    border: 2px solid var(--color-accent-600);
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+}
+
+.juno-example-dot.is-active {
+    background: var(--color-accent-600);
+}
+
+.juno-example-dot:focus-visible {
+    outline: 3px solid var(--color-pop-500);
+    outline-offset: 3px;
 }
 
 .juno-try-actions {
@@ -791,6 +826,8 @@
 }
 
 .juno-code-window pre {
+    max-height: 34rem;
+    overflow: auto;
     margin: 0;
     padding: 1.25rem;
 }
@@ -1150,6 +1187,30 @@
     color: var(--lego-green);
 }
 
+.juno-card:nth-child(4) > i {
+    color: var(--color-pop-700);
+}
+
+.juno-card:nth-child(5) > i {
+    color: var(--color-accent-500);
+}
+
+.juno-card:nth-child(6) > i {
+    color: var(--lego-black);
+}
+
+.juno-card:nth-child(7) > i {
+    color: var(--color-pop-600);
+}
+
+.juno-card:nth-child(8) > i {
+    color: var(--color-accent-700);
+}
+
+.juno-card:nth-child(9) > i {
+    color: var(--lego-green);
+}
+
 .juno-card h3 {
     margin: 0 0 0.5rem;
     font-size: 1.15rem;
@@ -1175,7 +1236,6 @@
 }
 
 @media (max-width: 900px) {
-    .juno-split,
     .juno-try,
     .juno-cards {
         grid-template-columns: minmax(0, 1fr);
