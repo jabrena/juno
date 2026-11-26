@@ -337,12 +337,9 @@ curl -X POST --data 'What is Juno?' http://<address>/api/chat
 ```
 
 The model is a 96 × 4 × 256 character-level transformer (366,528 parameters, 382 KB), trained in pure Java by
-[`juno-lm`](juno-ai/juno-lm) and run by an engine written in Java. The article
-[JLM1: a language model that runs on the board](https://jabrena.github.io/juno/blog/2026-11-24-jlm1-on-board-language-model/)
-explains how it works.
+[`juno-lm`](juno-ai/juno-lm) and run by an engine written in Java.
 
-The JEV decision-model examples use the same pattern with `TIC_TAC_TOE.JEV` or `CONNECT_FOUR.JEV`. See the
-[AI API guide](juno-site/src/main/resources/content/api/ai.md) and the [JEV article](https://jabrena.github.io/juno/blog/2026-11-25-jev-decision-models/).
+The JEV decision-model examples use the same pattern with `TIC_TAC_TOE.JEV` or `CONNECT_FOUR.JEV`.
 
 ## Maven plugin
 
@@ -428,15 +425,24 @@ This is a multi-module Maven build:
 - [`juno-maven-plugin/`](juno-maven-plugin) — Maven goals for generating a sketch (`juno:compile`),
   compiling it with Arduino CLI (`juno:verify`), uploading it (`juno:flash`), and opening the
   serial monitor (`juno:monitor`).
+- [`juno-ai/`](juno-ai) — the build-machine AI parent, with independent modules for training and
+  running Juno's model formats:
+  - [`juno-lm/`](juno-ai/juno-lm) builds and runs JLM1 character-level language models.
+  - [`juno-dm/`](juno-ai/juno-dm) trains, quantizes and runs JEV1 decision models.
+  - [`juno-models/`](juno-ai/juno-models) contains the tracked datasets and model files used by
+    the examples.
 - [`juno-examples/`](juno-examples) — example Java programs written against `juno-api`, built
   like any other Maven module so they're checked for compile errors on every build.
 - [`juno-site/`](juno-site) — the [Roq](https://iamroq.dev)/Quarkus static site generator behind
   the [documentation site](https://jabrena.github.io/juno/). `docs/` is entirely generated from
   Markdown under `juno-site/src/main/resources/content/` — see
   [Documentation site](#documentation-site) below to regenerate it.
-- [`juno-third-parties/`](juno-third-parties) — integrations maintained outside the core compiler,
-  currently including the independent H8/300 firmware generator for the LEGO RCX, its S-record,
-  and the generated Java representation consumed by `juno-examples`.
+- [`juno-third-parties/`](juno-third-parties) — integrations maintained outside the core compiler:
+  [`juno-rcx-firmware/`](juno-third-parties/juno-rcx-firmware) generates the independent H8/300
+  firmware for the LEGO RCX, and [`juno-pico-secure/`](juno-third-parties/juno-pico-secure) builds
+  the Raspberry Pi Pico 2 W TrustZone secure firmware.
+- [`coverage-aggregator/`](coverage-aggregator) — collects JaCoCo coverage reports from the modules
+  during the coverage profile.
 
 ## Architecture
 

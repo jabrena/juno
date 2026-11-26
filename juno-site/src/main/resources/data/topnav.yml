@@ -47,6 +47,8 @@ items:
     children:
       - title: "Overview"
         path: "/api"
+      - title: "AI"
+        path: "/api/ai"
       - title: "Observability"
         path: "/api/observability"
       - title: "Storage"
