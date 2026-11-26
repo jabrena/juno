@@ -86,6 +86,9 @@ status.
 
 Legend: ✓ supported · — not available
 
+The Grove infrared emitter and receiver provide an Infrared link to LEGO RCX systems through the supported Grove
+expansion hardware.
+
 ## Reading the board services through `MCU`
 
 Every board's own services come from one facade, `MCU`, and the board is chosen by `@Board` or the build's `juno.board`
