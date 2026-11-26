@@ -5,7 +5,7 @@ layout: page
 ---
 
 The Arduino Portenta H7 is a dual-core STM32H747 board. Juno targets its Cortex-M7 core through Arduino's Mbed
-Portenta core, and the Cortex-M4 runs Java threads too, as a second carrier (see [Two carriers](#two-carriers)). The
+Portenta core, and the Cortex-M4 runs Java threads too, as a second carrier. The
 M7 runs at up to 480 MHz and has a
 double-precision floating-point unit, while the board provides 2 MB of internal flash, 1 MB of internal RAM, external
 flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.
@@ -55,31 +55,6 @@ The Juno runtime emits a small C-linkage wrapper for the Mbed core's `pinMode` o
 Thumb-2 assembly independent of C++ overload mangling while leaving the regular Arduino `digitalWrite`, `analogRead`
 and `delay` calls on the core's native symbols. Optional networking, BLE, HID, watchdog, UUID and double-math helpers
 are selected by reachability, so a GPIO-only sketch does not pull them into the image.
-
-## Two carriers
-
-`main` runs on the Cortex-M7, and the threads it starts run on both cores, so two of them compute at the same time.
-Build with `-Djuno.carriers=1` to keep every thread on the M7.
-
-The two cores run separate Mbed OS kernels, so Juno builds a second image next to the program: a small sketch for the
-M4 that holds no Java code and runs the program's own code from the M7's flash for the threads placed on it.
-`juno:verify` compiles both images and `juno:flash` uploads the M4 image first. The cores share the runtime lock
-through the H7's hardware semaphores.
-
-A thread on the M4 can call anything a thread on the M7 can: `Serial`, the board clock, `Math`, Wi-Fi, HTTP and SD.
-The M4 runs none of the board's libraries, so each such call is handed to a worker thread on the M7, which makes the
-call and hands back its result; the scheduler, locks, atomics and strings run on the M4 itself. The M4 also has no
-double-precision floating-point unit, so its `double` arithmetic uses the compiler's software routines.
-
-The M7 caches RAM write-through and the M4 has no data cache, so the M4 always reads what the M7 wrote. The M7 drops
-its cached copies wherever it may next read what the M4 wrote: when it takes the runtime lock from the M4, before a
-`volatile` load, when a thread wakes or polls, and before it collects. The RAM only the cores' coordination uses, and
-the M4's own stacks, are not cached at all.
-
-- **A native call from the M4 costs a round trip to the M7**, so code that calls the board in a tight loop runs
-  faster on the M7.
-- **The M4 runs at half the M7's clock** and reads the program's code across the bus matrix (through its ART
-  accelerator), so its threads are somewhat slower than the M7's.
 
 ## Wi-Fi with SecretStore
 
@@ -199,24 +174,3 @@ while (true) {
 
 The display is write-only: it cannot be read back, and its backlight stays on whenever the board has power. Create one
 instance at startup and reuse it.
-
-[`BouncingTrianglesTFT`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/tft/BouncingTrianglesTFT.java)
-is the first demo for a new screen: three triangles bounce off the edges of the display. Build it with:
-
-```bash
-./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.display.tft.BouncingTrianglesTFT \
-  -Djuno.board=arduino-portenta-h7
-```
-
-##### Read and write the carrier's microSD card
-
-`getSdCard()` returns the card in the carrier's slot. Call its `begin()` to mount the card, then read files with
-`java.io.RandomAccessFile`. The [HTTP server](../../api/internet/httpserver) reads its certificate and key from the card's root, so
-neither file is built into the program.
-
-##### Run the Mailbox server
-
-The [`Mailbox`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox/server/Mailbox.java)
-example combines the carrier and the MHS-3.5 display: an HTTPS API with an API key, a screen with a touch interface, and
-messages kept on the carrier's SD card.

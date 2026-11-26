@@ -30,6 +30,22 @@ There is no general Java heap. Java allocations come from the arena, whose size 
 no Java allocation can make it larger. Native allocations owned by the board core or RTOS—such as network buffers,
 camera buffers and dual-carrier task stacks—are separate from the arena.
 
+### External memory: PSRAM and SDRAM
+
+Some boards carry memory outside the microcontroller's internal SRAM. External memory is not a second Java heap: ordinary
+objects, arrays, strings and thread stacks stay in internal SRAM or the fixed arena. Juno uses external memory only
+through an explicit API or a subsystem that owns the buffers.
+
+| Board | External memory | Juno use |
+|---|---|---|
+| Nano ESP32 | 8 MB PSRAM | Caller-owned byte buffers through the `Psram` API, plus large native/model buffers. |
+| AI Thinker ESP32-CAM | 4 MB PSRAM | Camera-driver frame buffers and caller-owned byte buffers through `Psram`. |
+| Portenta H7 | 8 MB SDRAM | External model memory for the JLM1 language-model engine; no general caller-owned SDRAM API. |
+
+PSRAM is pseudo-static RAM on the ESP32 boards; SDRAM is synchronous DRAM on the Portenta H7. Both are slower than
+internal SRAM and are outside garbage-collector management. See [PSRAM and runtime-owned buffers](#psram-and-runtime-owned-buffers)
+for the `Psram` handle API and its ownership rules.
+
 ## Startup
 
 When the board starts, the runtime sets up the stack and the static data, and then runs the static initializers
@@ -150,7 +166,7 @@ the board's flash. The board pages describe each board's flash, and the linker r
 Each board has a memory profile in the compiler. It gives the RAM the build may use, the arena and stack sizes it starts
 with, and the largest sizes it accepts. The build checks every explicit `juno.Xmx` and `juno.Xss` against these maximums.
 
-| Board | Usable RAM | Arena: default / max | Stack per carrier: default / max | Carriers | What decides whether a larger arena fits | PSRAM |
+| Board | Usable RAM | Arena: default / max | Stack per carrier: default / max | Carriers | What decides whether a larger arena fits | External memory |
 |---|---|---|---|---|---|---|
 | UNO R3 | 2 KB | 1024 / 1024 bytes | 512 / 512 bytes | 1 | The linker | None |
 | UNO R4 WiFi | 32 KB | 8192 / 25736 bytes | 2048 / 8192 bytes | 1 | The linker | None |
@@ -158,6 +174,7 @@ with, and the largest sizes it accepts. The build checks every explicit `juno.Xm
 | AI Thinker ESP32-CAM | 320 KB | 65536 / 305216 bytes | 8192 / 32768 bytes | 2 | The run-time heap | 4 MB; camera driver buffers plus explicit `Psram` buffers |
 | M5Stack Cardputer | 320 KB | 65536 / 273408 bytes | 8192 / 32768 bytes | 2 | The run-time heap | Not recorded; explicit API unavailable |
 | Raspberry Pi Pico 2 W | 512 KB | 65536 / 436176 bytes | 4096 / 16384 bytes | 2 | The run-time heap | None |
+| Portenta H7 | 1 MB | 65536 / 917504 bytes | 8192 / 32768 bytes | 2 | The run-time heap | 8 MB SDRAM for JLM1 model memory |
 
 - **Usable RAM** is the limit the Arduino toolchain reports for a sketch's static data and arena. It is smaller than the
   chip's total RAM: the core, its radio and networking libraries, and the runtime keep the rest. The Portenta H7, for example,
@@ -170,8 +187,8 @@ with, and the largest sizes it accepts. The build checks every explicit `juno.Xm
   board, not the largest a real program can use. On the boards whose limit is not the linker, the real limit is lower,
   and it depends on the program's own memory use. The measured limits will replace these values. Until then, treat the
   maximums as a guard against sizes that cannot work, not as a safe budget.
-- **PSRAM is never used for the arena, objects or stacks.** It is external RAM, slower than the internal SRAM. The
-  runtime reports its capacity, but the build does not size anything from it.
+- **External memory is never used for the arena, objects or stacks.** It is slower than internal SRAM. The runtime
+  reports PSRAM capacity, but the build does not size anything from external memory.
 
 ## Build-time checks
 
@@ -187,7 +204,7 @@ When the startup estimate is larger than the arena, the compiler also suggests a
 maximum. If the program cannot fit even at that maximum, the suggestion says so.
 
 Every build prints a "Runtime configuration" block before these findings: the board, the arena and whether it is the
-board default or a `juno.Xmx` override, the carrier stack, the carrier count, and the PSRAM the board carries.
+board default or a `juno.Xmx` override, the carrier stack, the carrier count, and the external memory the board carries.
 
 These are estimates, so treat them as warnings rather than proof. The [Maven Plugin](../juno-maven-plugin#runtime-risk-inspection)
 page explains how they are reported.
@@ -244,8 +261,8 @@ gives the limit each board applies.
 - On the AVR four-slot boards, starting a thread beyond the slots stops the program. No flag raises the slot count.
 - On the default two-carrier boards each slot's stack comes from the run-time heap only once a thread uses that slot, so
   a program that starts many threads can exhaust the heap at run time even when it links.
-- With one carrier, the slot table can grow and parked continuations use the arena, so the arena—not a fixed four-slot
-  limit—bounds additional threads on the ESP32 and Pico 2 W ports.
+- On a single-carrier port, parked continuations use the arena, so the arena—not a fixed four-slot limit—bounds
+  additional threads.
 - Structured concurrency (`StructuredTaskScope`, `ScopedValue`) and `ReentrantLock` need the structured concurrency
   capability, which every board except the UNO R3 has.
 

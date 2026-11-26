@@ -247,6 +247,42 @@ if (sd.begin()) {
 [`UnoR4HttpServerSD`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/UnoR4HttpServerSD.java) joins the network the same way and serves HTTP on port 80;
 the built-in LED shares D13 with the shield's SPI clock, so it uses the LED matrix as its LED.
 
+### Arduino USB Host Shield
+
+<img src="../../images/shields/shield-usb-host.png" alt="Arduino USB Host Shield" width="280">
+
+The Arduino USB Host Shield adds a MAX3421E USB host controller and a USB-A socket. `UsbHostShield` drives one
+full- or low-speed device over SPI, using D10 for chip select and polling D9 for the interrupt state. The shield can
+drive a CP210x USB serial bridge, an RPLIDAR A2 or a TI-84 Plus CE calculator.
+
+```java
+UsbHostShield usb = new UsbHostShield();
+if (usb.begin() && usb.attach()) {
+    Serial.println(usb.productId());
+}
+```
+
+[`UsbHostRplidarA2Scan`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lidar/UsbHostRplidarA2Scan.java)
+connects an RPLIDAR A2 through a CP210x bridge and prints one scan summary every ten revolutions. See the
+[Arduino USB Host Shield](../../third-parties/arduino-shields/arduino-usb-host-shield) page for control, bulk-transfer
+and TI-84 APIs.
+
+### PCA9685 PWM and Servo Shield
+
+<img src="../../images/shields/shield-pwm-servo.png" alt="PCA9685 PWM and Servo Shield" width="280">
+
+The PCA9685 shield provides 16 channels of 12-bit servo PWM over I2C. `PwmServoShield` uses address `0x40` by
+default; its green terminal block supplies the servos with 5–6 V, independently of the UNO's 5 V rail.
+
+```java
+PwmServoShield shield = new PwmServoShield(MCU.getI2c(), PwmServoShield.ADDRESS_DEFAULT);
+shield.write(0, 90);
+```
+
+[`PwmServoShieldDemo`](https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/servo/PwmServoShieldDemo.java)
+sweeps servos on several channels. See the [PCA9685 PWM and Servo Shield](../../third-parties/arduino-shields/pca9685-pwm-and-servo-shield)
+page for the complete API.
+
 ## Build and run
 
 Run `juno:install-deps` once to install the Renesas UNO core and the optional libraries the examples need (`Mouse`,
