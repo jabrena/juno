@@ -200,7 +200,7 @@
                                     <goal>javadoc</goal>
                                 </goals>
                                 <configuration>
-                                    <sourcepath>${project.basedir}/../juno-api/src/main/java</sourcepath>
+                                    <sourcepath>${project.basedir}/../juno-api/src/main/java/io/github/jabrena/juno</sourcepath>
                                     <outputDirectory>${project.basedir}/../docs/javadocs/${project.version}</outputDirectory>
                                     <doclint>none</doclint>
                                     <!-- The sources above annotate nullness with JSpecify, which is provided-scope in their modules. -->
