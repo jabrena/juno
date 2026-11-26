@@ -4,7 +4,7 @@ description: "Follow a Juno program from javac through class-file analysis, gene
 date: 2026-11-23
 layout: post
 link: /blog/2026-11-24-juno-java-to-firmware/
-tags: [compiler, internals, toolchain]
+tags: [toolchain]
 blogVisible: true
 ---
 

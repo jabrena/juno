@@ -4,7 +4,7 @@ description: "An educational tour of how a Juno program uses flash and RAM: the 
 date: 2026-11-23
 layout: post
 link: /blog/2026-11-23-juno-memory-model-design/
-tags: [memory, education, concurrency]
+tags: [memory, concurrency]
 blogVisible: true
 ---
 

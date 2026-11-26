@@ -4,7 +4,7 @@ description: "How Juno runs virtual threads on small boards, what StructuredTask
 date: 2026-11-23
 layout: post
 link: /blog/2026-11-23-juno-concurrency-virtual-threads/
-tags: [concurrency, virtual-threads, http]
+tags: [concurrency, http]
 blogVisible: true
 ---
 

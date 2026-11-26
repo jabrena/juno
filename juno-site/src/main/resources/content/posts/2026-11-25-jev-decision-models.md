@@ -4,7 +4,7 @@ description: "How Juno stores a decision model as a JEV1 file, picks the best le
 date: 2026-11-25
 layout: post
 link: /blog/2026-11-25-jev-decision-models/
-tags: [ai, decision-model, nano-esp32, http]
+tags: [ai]
 blogVisible: true
 ---
 
