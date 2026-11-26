@@ -99,7 +99,7 @@
         <coverage.level>80</coverage.level>
         <maven-plugin-dependency.version>3.11.0</maven-plugin-dependency.version>
         <!-- Release versioning: ./mvnw versions:set -DnewVersion=<version> updates the parent and every module. -->
-        <maven-plugin-versions.version>2.25.2</maven-plugin-versions.version>
+        <maven-plugin-versions.version>2.25.3</maven-plugin-versions.version>
         <maven-plugin-pitest.version>1.30.2</maven-plugin-pitest.version>
         <!-- PIT parallelism per module; a mutant's test run is slow, so the default single thread takes hours. -->
         <pitest.threads>4</pitest.threads>
