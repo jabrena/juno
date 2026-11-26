@@ -357,6 +357,7 @@ public final class HttpRequest {
         }
 
         /** Gives the builder a header buffer of its own: a first one, or a copy of the one a built request shares. */
+        @SuppressWarnings("ReferenceEquality") // NO_HEADERS is the immutable empty-buffer sentinel.
         private void ownHeaders() {
             if (headerBytes == NO_HEADERS || headersShared) {
                 byte[] own = new byte[HEADERS_CAPACITY];

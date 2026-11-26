@@ -27,14 +27,11 @@ public final class PFLink {
     private static final int ESCAPE = 0x4;
     private static final int TOGGLE = 0x8;
 
-    private final InfraredEmitter emitter;
-    private final InfraredDriver driver;
     private int toggleBit;
 
     /** A link that transmits through {@code emitter}, for example an {@code HX53InfraredEmitter} or a {@code GroveInfraredEmitter}. */
     public PFLink(InfraredEmitter emitter) {
-        this.emitter = emitter;
-        driver = new InfraredDriver(emitter.driver(), -1, emitter.signalPin(), 0);
+        new InfraredDriver(emitter.driver(), -1, emitter.signalPin(), 0);
     }
 
     /** Transmits one single-output message: {@code output} of the receiver on {@code channel} set to {@code pwm}. */

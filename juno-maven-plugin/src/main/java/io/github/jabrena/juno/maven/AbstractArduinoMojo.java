@@ -80,7 +80,6 @@ abstract class AbstractArduinoMojo extends AbstractMojo {
         return resolvedPort;
     }
 
-    /** A Maven parameter's trimmed value, or empty when it is unset or blank. */
     /** The configured {@code juno.dfuSerial}, or {@code null} when the upload need not pick a DFU device. */
     final @Nullable String dfuSerial() {
         return configured(dfuSerial).orElse(null);

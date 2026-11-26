@@ -124,8 +124,8 @@ final class RequestHeaders {
     }
 
     private static boolean isTokenCharacter(char character) {
-        if (character >= 'a' && character <= 'z' || character >= 'A' && character <= 'Z'
-                || character >= '0' && character <= '9') {
+            if ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z')
+                    || (character >= '0' && character <= '9')) {
             return true;
         }
         for (int i = 0; i < TOKEN_SYMBOLS.length(); i++) {

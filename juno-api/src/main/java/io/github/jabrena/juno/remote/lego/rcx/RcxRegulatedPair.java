@@ -34,7 +34,6 @@ public final class RcxRegulatedPair implements RegulatedPair {
     static final int LEFT = 0;
     static final int RIGHT = 1;
 
-    private static final int MAX_BYTE = 0xFF;
     private static final int MAX_MOTION_ID = 0xFF;
     private static final int WAIT_MARGIN_MILLIS = 1000;
     private static final int POLL_MILLIS = 20;
@@ -68,7 +67,7 @@ public final class RcxRegulatedPair implements RegulatedPair {
      * of motor shaft.
      */
     public RcxRegulatedPair(RcxLink link, int session, int configurationFlags, int sensorStepsPerMotorRevolution) {
-        RcxRegulatedConfiguration configuration = new RcxRegulatedConfiguration(link, session, configurationFlags);
+        new RcxRegulatedConfiguration(link, session, configurationFlags);
         this.protocol = new RcxRegulatedProtocol(link);
         this.scale = new RcxRegulatedScale(sensorStepsPerMotorRevolution);
         this.profile = new RcxRegulatedProfile(scale);
@@ -102,7 +101,7 @@ public final class RcxRegulatedPair implements RegulatedPair {
         if (isMoving()) {
             throw new IllegalStateException("the maximum power cannot change while the pair is moving");
         }
-        configurationFlags = configurationFlags & ~MAX_POWER_BITS | power;
+        configurationFlags = (configurationFlags & ~MAX_POWER_BITS) | power;
     }
 
     /** The configured maximum motor power, 1 to 7, as the next {@link #arm()} sends it. */

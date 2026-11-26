@@ -229,11 +229,13 @@ public final class TftTouchShield implements Display, TouchScreen {
     }
 
     /** Current width in pixels, for the current rotation. */
+    @Override
     public int width() {
         return width;
     }
 
     /** Current height in pixels, for the current rotation. */
+    @Override
     public int height() {
         return height;
     }
@@ -247,41 +249,49 @@ public final class TftTouchShield implements Display, TouchScreen {
     }
 
     /** Fills the whole screen with {@code color}. */
+    @Override
     public void fillScreen(int color) {
         graphics.fillScreen(color);
     }
 
     /** Sets the pixel at ({@code x}, {@code y}) to {@code color}; off-screen pixels are ignored. */
+    @Override
     public void drawPixel(int x, int y, int color) {
         graphics.drawPixel(x, y, color);
     }
 
     /** Fills a {@code w}x{@code h} rectangle whose top-left corner is ({@code x}, {@code y}), clipped to the screen. */
+    @Override
     public void fillRect(int x, int y, int w, int h, int color) {
         graphics.fillRect(x, y, w, h, color);
     }
 
     /** Draws a horizontal line of {@code w} pixels starting at ({@code x}, {@code y}). */
+    @Override
     public void drawHorizontalLine(int x, int y, int w, int color) {
         graphics.drawHorizontalLine(x, y, w, color);
     }
 
     /** Draws a vertical line of {@code h} pixels starting at ({@code x}, {@code y}). */
+    @Override
     public void drawVerticalLine(int x, int y, int h, int color) {
         graphics.drawVerticalLine(x, y, h, color);
     }
 
     /** Draws the 1-pixel outline of a {@code w}x{@code h} rectangle whose top-left corner is ({@code x}, {@code y}). */
+    @Override
     public void drawRect(int x, int y, int w, int h, int color) {
         graphics.drawRect(x, y, w, h, color);
     }
 
     /** Fills a circle of radius {@code r} centered on ({@code cx}, {@code cy}), clipped to the screen. */
+    @Override
     public void fillCircle(int cx, int cy, int r, int color) {
         graphics.fillCircle(cx, cy, r, color);
     }
 
     /** Draws the 1-pixel outline of a circle of radius {@code r} centered on ({@code cx}, {@code cy}). */
+    @Override
     public void drawCircle(int cx, int cy, int r, int color) {
         graphics.drawCircle(cx, cy, r, color);
     }
@@ -302,12 +312,14 @@ public final class TftTouchShield implements Display, TouchScreen {
     }
 
     /** Moves the text cursor so the next character's top-left corner is at ({@code x}, {@code y}) pixels. */
+    @Override
     public void setCursor(int x, int y) {
         cursorX = x;
         cursorY = y;
     }
 
     /** Scales text by an integer factor (1 = 6x8-pixel cells, 2 = 12x16, ...); values below 1 are treated as 1. */
+    @Override
     public void setTextSize(int size) {
         textSize = Math.max(size, 1);
     }
@@ -316,6 +328,7 @@ public final class TftTouchShield implements Display, TouchScreen {
      * Sets the text foreground and background colors. Characters always paint their whole cell, so
      * printing over older text replaces it — pad shorter strings with spaces to erase leftovers.
      */
+    @Override
     public void setTextColor(int foreground, int background) {
         textColor = foreground;
         textBackground = background;
@@ -326,6 +339,7 @@ public final class TftTouchShield implements Display, TouchScreen {
      * cursor. {@code '\n'} moves to the start of the next text line, and text wraps at the right
      * edge. Characters outside printable ASCII (32-126) are drawn as spaces.
      */
+    @Override
     public void print(String text) {
         int length = text.length();
         for (int i = 0; i < length; i++) {
@@ -334,6 +348,7 @@ public final class TftTouchShield implements Display, TouchScreen {
     }
 
     /** Prints one character at the cursor with the current text size and colors, advancing the cursor. */
+    @Override
     public void print(char character) {
         writeChar(character);
     }
@@ -356,6 +371,7 @@ public final class TftTouchShield implements Display, TouchScreen {
     }
 
     /** Prints {@code text} and then moves the cursor to the start of the next text line. */
+    @Override
     public void println(String text) {
         print(text);
         newLine();
@@ -368,6 +384,7 @@ public final class TftTouchShield implements Display, TouchScreen {
      * {@link #touchX()}/{@link #touchY()} hold the pressed position in screen coordinates for the
      * current rotation. Always leaves the display bus ready for drawing again.
      */
+    @Override
     public boolean readTouch() {
         touchPressure = touch.readTouchPressure();
         boolean pressed = touchPressure >= MIN_PRESSURE && touchPressure <= MAX_PRESSURE;
@@ -410,11 +427,13 @@ public final class TftTouchShield implements Display, TouchScreen {
     }
 
     /** X coordinate of the last successful {@link #readTouch()}, for the current rotation. */
+    @Override
     public int touchX() {
         return touchX;
     }
 
     /** Y coordinate of the last successful {@link #readTouch()}, for the current rotation. */
+    @Override
     public int touchY() {
         return touchY;
     }

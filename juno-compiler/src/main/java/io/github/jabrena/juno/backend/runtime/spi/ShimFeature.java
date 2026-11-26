@@ -1,5 +1,7 @@
 package io.github.jabrena.juno.backend.runtime.spi;
 
+import io.github.jabrena.juno.backend.runtime.RuntimeShim;
+
 /**
  * An optional part of the generated runtime shim, recorded while lowering the program's IR and
  * consulted by {@link RuntimeShim} so each include and helper block is emitted only when some

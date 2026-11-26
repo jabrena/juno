@@ -35,7 +35,7 @@ final class LegoVirtualPorts {
     /** The virtual port pairing {@code a} and {@code b} in either order, or -1 when there is none. */
     int find(int a, int b) {
         for (int i = 0; i < SLOTS; i++) {
-            if (ids[i] != FREE && (first[i] == a && second[i] == b || first[i] == b && second[i] == a)) {
+            if (ids[i] != FREE && ((first[i] == a && second[i] == b) || (first[i] == b && second[i] == a))) {
                 return ids[i];
             }
         }

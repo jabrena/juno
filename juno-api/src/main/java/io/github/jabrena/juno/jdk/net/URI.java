@@ -224,7 +224,7 @@ public final class URI {
      */
     @Override
     public boolean equals(@Nullable Object other) {
-        return this == other || other instanceof URI that && UriEquality.equal(this, that);
+        return this == other || (other instanceof URI that && UriEquality.equal(this, that));
     }
 
     /** A hash code consistent with {@link #equals(Object)}. */

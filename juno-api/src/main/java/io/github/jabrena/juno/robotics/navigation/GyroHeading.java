@@ -40,15 +40,15 @@ public final class GyroHeading implements DirectionFinder {
     private final @Nullable BufferedGyroscope buffered;
     private final Clock clock;
     /** The integrated rotation, clockwise as the gyroscope counts it, in thousandths of a degree. */
-    private volatile int clockwiseMillidegrees;
-    private volatile int zeroMillidegrees;
-    private volatile int samples;
-    private volatile boolean running;
-    private volatile boolean calibrating;
+    private int clockwiseMillidegrees;
+    private int zeroMillidegrees;
+    private int samples;
+    private boolean running;
+    private boolean calibrating;
     /** The rotation the calibration measured, in thousandths of a degree, and the milliseconds it covers. */
-    private volatile int calibrationRotation;
-    private volatile int calibrationSpan;
-    private volatile float biasDegreesPerSecond;
+    private int calibrationRotation;
+    private int calibrationSpan;
+    private float biasDegreesPerSecond;
     private int lastMillis;
 
     /** Creates the direction over {@code gyroscope}, read once a visit; nothing is read until {@link #start()}. */
@@ -72,7 +72,7 @@ public final class GyroHeading implements DirectionFinder {
      *
      * @throws IllegalStateException if it already runs
      */
-    public void start() {
+    public synchronized void start() {
         if (running) {
             throw new IllegalStateException("the heading is already being followed");
         }
@@ -89,24 +89,24 @@ public final class GyroHeading implements DirectionFinder {
     }
 
     /** Stops the thread after its current read; the direction keeps its last value. */
-    public void stop() {
+    public synchronized void stop() {
         running = false;
     }
 
     /** Whether the thread follows the gyroscope. */
-    public boolean isRunning() {
+    public synchronized boolean isRunning() {
         return running;
     }
 
     /** The direction since {@link #resetCartesianZero()}, counter-clockwise positive, not wrapped at a full turn. */
     @Override
-    public float getDegreesCartesian() {
+    public synchronized float getDegreesCartesian() {
         return (zeroMillidegrees - clockwiseMillidegrees) / MILLIDEGREES_PER_DEGREE;
     }
 
     /** Makes the current direction zero. */
     @Override
-    public void resetCartesianZero() {
+    public synchronized void resetCartesianZero() {
         zeroMillidegrees = clockwiseMillidegrees;
     }
 
@@ -116,7 +116,7 @@ public final class GyroHeading implements DirectionFinder {
      * @throws IllegalStateException if the thread does not run
      */
     @Override
-    public void startCalibration() {
+    public synchronized void startCalibration() {
         if (!running) {
             throw new IllegalStateException("start the heading before calibrating it");
         }
@@ -124,7 +124,7 @@ public final class GyroHeading implements DirectionFinder {
     }
 
     /** Starts averaging from nothing; the reads that feed it come from the thread, or from a test. */
-    void beginCalibration() {
+    synchronized void beginCalibration() {
         calibrationRotation = 0;
         calibrationSpan = 0;
         calibrating = true;
@@ -132,7 +132,7 @@ public final class GyroHeading implements DirectionFinder {
 
     /** Ends the calibration and subtracts the averaged bias from later reads; without a sample, the bias stays. */
     @Override
-    public void stopCalibration() {
+    public synchronized void stopCalibration() {
         calibrating = false;
         int span = calibrationSpan;
         if (span > 0) {
@@ -149,23 +149,26 @@ public final class GyroHeading implements DirectionFinder {
      */
     public int calibrate(int millis) throws InterruptedException {
         startCalibration();
-        Thread.sleep(millis);
-        stopCalibration();
+        try {
+            Thread.sleep(millis);
+        } finally {
+            stopCalibration();
+        }
         return (int) (biasDegreesPerSecond * MILLIDEGREES_PER_DEGREE);
     }
 
     /** How many times the thread has read the gyroscope since {@link #start()}: a check that it gets its turns. */
-    public int samples() {
+    public synchronized int samples() {
         return samples;
     }
 
     private void follow() {
-        while (running) {
+        while (isRunning()) {
             sample();
             try {
                 Thread.sleep(SAMPLE_MILLIS);
             } catch (InterruptedException interrupted) {
-                running = false;
+                stop();
             }
         }
     }
@@ -174,7 +177,7 @@ public final class GyroHeading implements DirectionFinder {
      * One visit: every buffered sample since the previous visit, or, without a working buffer, the rate times the time
      * since the previous read; added to the calibration while it runs, otherwise integrated less the bias.
      */
-    void sample() {
+    synchronized void sample() {
         int now = clock.millis();
         int elapsed = now - lastMillis;
         BufferedGyroscope fifo = buffered;

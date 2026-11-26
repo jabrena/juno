@@ -61,6 +61,7 @@ public final class SecretMojo extends AbstractJunoMojo {
         /** A visible prompt's answer; an empty string when none was given. */
         String readLine(String prompt);
 
+        @SuppressWarnings("SystemConsoleNull") // Maven tests and non-interactive runs intentionally use the fallback.
         static Terminal system() {
             Console console = System.console();
             if (console == null) {
