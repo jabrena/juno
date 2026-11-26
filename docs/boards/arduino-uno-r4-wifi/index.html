@@ -33,7 +33,6 @@
   <meta property="og:url" content="https://jabrena.github.io/juno/boards/arduino-uno-r4-wifi/" />
   <meta name="twitter:url" content="https://jabrena.github.io/juno/boards/arduino-uno-r4-wifi/">
 
-
   <!-- SEO TYPE -->
   <meta property="og:type" content="website" />
 
@@ -42,7 +41,7 @@
   <!-- SEO LOCALE -->
   <meta property="og:locale" content="es_ES" />
   <!-- SEO GENERATOR -->
-  <meta name="generator" content="Quarkus Roq v2.2.1" />
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
 
 <!-- Favicon -->
 
@@ -104,6 +103,7 @@
       <a class="" href="/juno/api" >APIs</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/api">Overview</a>
+        <a class="" href="/juno/api/ai">AI</a>
         <a class="" href="/juno/api/observability">Observability</a>
         <a class="" href="/juno/api/storage">Storage</a>
         <a class="" href="/juno/api/internet">Internet</a>
@@ -659,6 +659,30 @@ if (sd.begin()) {
 <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/sd/SdFileOperations.java"><code>SdFileOperations</code></a> exercises every <code>SdCard</code> file operation.
 <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/net/http/UnoR4HttpServerSD.java"><code>UnoR4HttpServerSD</code></a> joins the network the same way and serves HTTP on port 80;
 the built-in LED shares D13 with the shield's SPI clock, so it uses the LED matrix as its LED.</p>
+<h3 id="arduino-usb-host-shield">Arduino USB Host Shield</h3>
+<img src="../../images/shields/shield-usb-host.png" alt="Arduino USB Host Shield" width="280">
+<p>The Arduino USB Host Shield adds a MAX3421E USB host controller and a USB-A socket. <code>UsbHostShield</code> drives one
+full- or low-speed device over SPI, using D10 for chip select and polling D9 for the interrupt state. The shield can
+drive a CP210x USB serial bridge, an RPLIDAR A2 or a TI-84 Plus CE calculator.</p>
+<pre><code class="language-java">UsbHostShield usb = new UsbHostShield();
+if (usb.begin() &amp;&amp; usb.attach()) {
+    Serial.println(usb.productId());
+}
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/lidar/UsbHostRplidarA2Scan.java"><code>UsbHostRplidarA2Scan</code></a>
+connects an RPLIDAR A2 through a CP210x bridge and prints one scan summary every ten revolutions. See the
+<a href="../../third-parties/arduino-shields/arduino-usb-host-shield">Arduino USB Host Shield</a> page for control, bulk-transfer
+and TI-84 APIs.</p>
+<h3 id="pca9685-pwm-and-servo-shield">PCA9685 PWM and Servo Shield</h3>
+<img src="../../images/shields/shield-pwm-servo.png" alt="PCA9685 PWM and Servo Shield" width="280">
+<p>The PCA9685 shield provides 16 channels of 12-bit servo PWM over I2C. <code>PwmServoShield</code> uses address <code>0x40</code> by
+default; its green terminal block supplies the servos with 5–6 V, independently of the UNO's 5 V rail.</p>
+<pre><code class="language-java">PwmServoShield shield = new PwmServoShield(MCU.getI2c(), PwmServoShield.ADDRESS_DEFAULT);
+shield.write(0, 90);
+</code></pre>
+<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/device/servo/PwmServoShieldDemo.java"><code>PwmServoShieldDemo</code></a>
+sweeps servos on several channels. See the <a href="../../third-parties/arduino-shields/pca9685-pwm-and-servo-shield">PCA9685 PWM and Servo Shield</a>
+page for the complete API.</p>
 <h2 id="build-and-run">Build and run</h2>
 <p>Run <code>juno:install-deps</code> once to install the Renesas UNO core and the optional libraries the examples need (<code>Mouse</code>,
 <code>ArduinoBLE</code>, <code>ESP_SSLClient</code>, <code>Servo</code>, <code>SdFat</code>). Then compile and upload an example, for instance the virtual-threads

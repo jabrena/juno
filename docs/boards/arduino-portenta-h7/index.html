@@ -33,7 +33,6 @@
   <meta property="og:url" content="https://jabrena.github.io/juno/boards/arduino-portenta-h7/" />
   <meta name="twitter:url" content="https://jabrena.github.io/juno/boards/arduino-portenta-h7/">
 
-
   <!-- SEO TYPE -->
   <meta property="og:type" content="website" />
 
@@ -42,7 +41,7 @@
   <!-- SEO LOCALE -->
   <meta property="og:locale" content="es_ES" />
   <!-- SEO GENERATOR -->
-  <meta name="generator" content="Quarkus Roq v2.2.1" />
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
 
 <!-- Favicon -->
 
@@ -104,6 +103,7 @@
       <a class="" href="/juno/api" >APIs</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/api">Overview</a>
+        <a class="" href="/juno/api/ai">AI</a>
         <a class="" href="/juno/api/observability">Observability</a>
         <a class="" href="/juno/api/storage">Storage</a>
         <a class="" href="/juno/api/internet">Internet</a>
@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </header>
     <div class="content-prose">
 <p>The Arduino Portenta H7 is a dual-core STM32H747 board. Juno targets its Cortex-M7 core through Arduino's Mbed
-Portenta core, and the Cortex-M4 runs Java threads too, as a second carrier (see <a href="#two-carriers">Two carriers</a>). The
+Portenta core, and the Cortex-M4 runs Java threads too, as a second carrier. The
 M7 runs at up to 480 MHz and has a
 double-precision floating-point unit, while the board provides 2 MB of internal flash, 1 MB of internal RAM, external
 flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
@@ -494,27 +494,6 @@ flash and SDRAM, Wi-Fi, Bluetooth, Ethernet and a built-in RGB LED.</p>
 Thumb-2 assembly independent of C++ overload mangling while leaving the regular Arduino <code>digitalWrite</code>, <code>analogRead</code>
 and <code>delay</code> calls on the core's native symbols. Optional networking, BLE, HID, watchdog, UUID and double-math helpers
 are selected by reachability, so a GPIO-only sketch does not pull them into the image.</p>
-<h2 id="two-carriers">Two carriers</h2>
-<p><code>main</code> runs on the Cortex-M7, and the threads it starts run on both cores, so two of them compute at the same time.
-Build with <code>-Djuno.carriers=1</code> to keep every thread on the M7.</p>
-<p>The two cores run separate Mbed OS kernels, so Juno builds a second image next to the program: a small sketch for the
-M4 that holds no Java code and runs the program's own code from the M7's flash for the threads placed on it.
-<code>juno:verify</code> compiles both images and <code>juno:flash</code> uploads the M4 image first. The cores share the runtime lock
-through the H7's hardware semaphores.</p>
-<p>A thread on the M4 can call anything a thread on the M7 can: <code>Serial</code>, the board clock, <code>Math</code>, Wi-Fi, HTTP and SD.
-The M4 runs none of the board's libraries, so each such call is handed to a worker thread on the M7, which makes the
-call and hands back its result; the scheduler, locks, atomics and strings run on the M4 itself. The M4 also has no
-double-precision floating-point unit, so its <code>double</code> arithmetic uses the compiler's software routines.</p>
-<p>The M7 caches RAM write-through and the M4 has no data cache, so the M4 always reads what the M7 wrote. The M7 drops
-its cached copies wherever it may next read what the M4 wrote: when it takes the runtime lock from the M4, before a
-<code>volatile</code> load, when a thread wakes or polls, and before it collects. The RAM only the cores' coordination uses, and
-the M4's own stacks, are not cached at all.</p>
-<ul>
-<li><strong>A native call from the M4 costs a round trip to the M7</strong>, so code that calls the board in a tight loop runs
-faster on the M7.</li>
-<li><strong>The M4 runs at half the M7's clock</strong> and reads the program's code across the bus matrix (through its ART
-accelerator), so its threads are somewhat slower than the M7's.</li>
-</ul>
 <h2 id="wi-fi-with-secretstore">Wi-Fi with SecretStore</h2>
 <p>Provision the SE050C2 with <code>wifi.ssid</code> and <code>wifi.password</code> (see <a href="../../api/storage/secure-element">Secrets in a Secure
 Element</a>), then compile the example for Portenta:</p>
@@ -631,20 +610,6 @@ while (true) {
 </code></pre>
 <p>The display is write-only: it cannot be read back, and its backlight stays on whenever the board has power. Create one
 instance at startup and reuse it.</p>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/display/tft/BouncingTrianglesTFT.java"><code>BouncingTrianglesTFT</code></a>
-is the first demo for a new screen: three triangles bounce off the edges of the display. Build it with:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.display.tft.BouncingTrianglesTFT \
-  -Djuno.board=arduino-portenta-h7
-</code></pre>
-<h5 id="read-and-write-the-carriers-microsd-card">Read and write the carrier's microSD card</h5>
-<p><code>getSdCard()</code> returns the card in the carrier's slot. Call its <code>begin()</code> to mount the card, then read files with
-<code>java.io.RandomAccessFile</code>. The <a href="../../api/internet/httpserver">HTTP server</a> reads its certificate and key from the card's root, so
-neither file is built into the program.</p>
-<h5 id="run-the-mailbox-server">Run the Mailbox server</h5>
-<p>The <a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/usecases/mailbox/server/Mailbox.java"><code>Mailbox</code></a>
-example combines the carrier and the MHS-3.5 display: an HTTPS API with an API key, a screen with a touch interface, and
-messages kept on the carrier's SD card.</p>
     </div>
   </section>
 </article>

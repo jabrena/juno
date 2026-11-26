@@ -33,7 +33,6 @@
   <meta property="og:url" content="https://jabrena.github.io/juno/api/ai/" />
   <meta name="twitter:url" content="https://jabrena.github.io/juno/api/ai/">
 
-
   <!-- SEO TYPE -->
   <meta property="og:type" content="website" />
 
@@ -42,7 +41,7 @@
   <!-- SEO LOCALE -->
   <meta property="og:locale" content="es_ES" />
   <!-- SEO GENERATOR -->
-  <meta name="generator" content="Quarkus Roq v2.2.1" />
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
 
 <!-- Favicon -->
 
@@ -101,9 +100,10 @@
         <a class="" href="/juno/boards/arduino-uno-r4-wifi">UNO R4 WiFi</a>
         <a class="" href="/juno/boards/arduino-uno-r3">UNO R3</a>
       </div>
-      <a class="" href="/juno/api" >APIs</a>
+      <a class=" active" href="/juno/api" >APIs</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/api">Overview</a>
+        <a class="active" href="/juno/api/ai">AI</a>
         <a class="" href="/juno/api/observability">Observability</a>
         <a class="" href="/juno/api/storage">Storage</a>
         <a class="" href="/juno/api/internet">Internet</a>
@@ -290,6 +290,17 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.juno-search').forEach(attach);
 })();
 </script>
+<nav class="juno-subnav" aria-label="APIs">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/api">Overview</a>
+    <a class="active" href="/juno/api/ai">AI</a>
+    <a class="" href="/juno/api/observability">Observability</a>
+    <a class="" href="/juno/api/storage">Storage</a>
+    <a class="" href="/juno/api/internet">Internet</a>
+    <a class="" href="/juno/api/utils">Utils</a>
+    <a class="" href="/juno/api/hardware">Hardware</a>
+  </div>
+</nav>
 <!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
 <main class="juno-docs">
 
@@ -312,12 +323,12 @@ board-side APIs keep inference predictable and suitable for a constrained applic
 </thead>
 <tbody>
 <tr>
-<td><a href="ai/jev">JEV</a></td>
+<td><a href="jev">JEV</a></td>
 <td>Scores caller-owned state features for a caller-owned list of legal actions and returns the best action.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/ai/ConnectFourWebGame.java"><code>ConnectFourWebGame</code></a></td>
 </tr>
 <tr>
-<td><a href="ai/lm">JLM</a></td>
+<td><a href="lm">JLM</a></td>
 <td>Runs the JLM1 character-level transformer and streams generated characters from the board.</td>
 <td><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/ai/LanguageModelSecretStoreChat.java"><code>LanguageModelSecretStoreChat</code></a></td>
 </tr>

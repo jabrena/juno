@@ -33,7 +33,6 @@
   <meta property="og:url" content="https://jabrena.github.io/juno/api/ai/lm/" />
   <meta name="twitter:url" content="https://jabrena.github.io/juno/api/ai/lm/">
 
-
   <!-- SEO TYPE -->
   <meta property="og:type" content="website" />
 
@@ -42,7 +41,7 @@
   <!-- SEO LOCALE -->
   <meta property="og:locale" content="es_ES" />
   <!-- SEO GENERATOR -->
-  <meta name="generator" content="Quarkus Roq v2.2.1" />
+  <meta name="generator" content="Quarkus Roq v2.2.0" />
 
 <!-- Favicon -->
 
@@ -104,6 +103,7 @@
       <a class="" href="/juno/api" >APIs</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/api">Overview</a>
+        <a class="" href="/juno/api/ai">AI</a>
         <a class="" href="/juno/api/observability">Observability</a>
         <a class="" href="/juno/api/storage">Storage</a>
         <a class="" href="/juno/api/internet">Internet</a>
@@ -302,6 +302,57 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="content-prose">
 <p><code>LanguageModel</code> runs the JLM1 character-level transformer on the board. <code>begin()</code> loads <code>JUNO.BIN</code> into external model
 memory, and <code>ask</code>/<code>nextChar</code> provide the streaming inference API.</p>
+<h2 id="what-is-a-jlm-model">What is a JLM model?</h2>
+<p>JLM means <strong>Juno Language Model</strong>. JLM1 is a decoder-only, character-level transformer: it reads a question one
+character at a time and generates one answer character at a time until it emits <code>END</code> or reaches the context limit.
+The model is trained and quantized on the build machine in pure Java; the board performs the inference locally without
+a cloud service or a JVM.</p>
+<p><code>JUNO.BIN</code> contains the model dimensions, alphabet and signed-byte weight tables. Each matrix row stores a float scale
+and quantized weights, so the board uses the same representation that is stored in the file and does not convert a
+large float model during startup. The tracked model is a 96-wide, four-layer transformer with a 128-character context
+and a 97-token vocabulary. The current <code>JUNO.BIN</code> is about 382 KB.</p>
+<h2 id="api-and-memory">API and memory</h2>
+<p>Call <code>MCU.getLanguageModel()</code> once and then:</p>
+<pre><code class="language-java">LanguageModel model = MCU.getLanguageModel();
+model.begin();
+model.ask(&quot;What is Juno?&quot;, 0);
+int character;
+while ((character = model.nextChar()) != LanguageModel.END) {
+    Serial.print((char) character);
+}
+</code></pre>
+<p><code>begin()</code> loads the file named by <code>-Djuno.lm.model</code>; omitting that property is a build-time error when the program uses
+the model. <code>ask</code> starts a generation and <code>nextChar</code> streams it without allocating per character. The model weights and
+attention cache live in external memory, while the Java arena holds only the fixed application buffers.</p>
+<h2 id="current-board-support">Current board support</h2>
+<table>
+<thead>
+<tr>
+<th>Board</th>
+<th>External model memory</th>
+<th>Current status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../../../boards/arduino-nano-esp32">Nano ESP32</a></td>
+<td>8 MB PSRAM</td>
+<td>Web and serial chat examples supported; the model and attention cache use PSRAM.</td>
+</tr>
+<tr>
+<td><a href="../../../boards/ai-thinker-esp32-cam">AI Thinker ESP32-CAM</a></td>
+<td>4 MB PSRAM</td>
+<td>The web example is supported; the camera and model share the board's external-memory budget.</td>
+</tr>
+<tr>
+<td><a href="../../../boards/arduino-portenta-h7">Portenta H7</a></td>
+<td>8 MB SDRAM</td>
+<td>The web example is supported; JLM model memory uses SDRAM.</td>
+</tr>
+</tbody>
+</table>
+<p>The current web example reads <code>wifi.ssid</code> and <code>wifi.password</code> from <code>MCU.getSecretStore()</code> and does not require an SD
+card. <code>LanguageModelSdCardSecretStoreChat</code> is the separate SD-card variant for the Nano Connector Carrier.</p>
 <pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
   -Djuno.main=io.github.jabrena.juno.api.ai.LanguageModelSecretStoreChat \
   -Djuno.board=arduino-portenta-h7 \
@@ -310,7 +361,6 @@ memory, and <code>ask</code>/<code>nextChar</code> provide the streaming inferen
 <p>The Nano ESP32 and ESP32-CAM use PSRAM; the Portenta H7 uses external SDRAM. The web example reads Wi-Fi credentials
 from the Secret Store and does not require an SD card. <code>JUNO.BIN</code> is maintained in
 <code>juno-ai/juno-models/src/main/resources/lm/</code>.</p>
-<p>See the detailed <a href="../../blog/2026-11-24-jlm1-on-board-language-model/">JLM1 article</a>.</p>
     </div>
   </section>
 </article>
