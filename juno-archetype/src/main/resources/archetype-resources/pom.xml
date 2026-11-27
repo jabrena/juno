@@ -20,7 +20,7 @@
         <dependency>
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-api</artifactId>
-            <version>\${juno.version}</version>
+            <version>${junoVersion}</version>
         </dependency>
     </dependencies>
 
@@ -31,16 +31,16 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.16.0</version>
                 <configuration>
-                    <release>\${maven.compiler.release}</release>
+                    <release>27</release>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>io.github.jabrena</groupId>
                 <artifactId>juno-maven-plugin</artifactId>
-                <version>\${juno.version}</version>
+                <version>${junoVersion}</version>
                 <configuration>
-                    <board>\${juno.board}</board>
-                    <mainClass>\${juno.main}</mainClass>
+                    <board>arduino-uno-r4-wifi</board>
+                    <mainClass>${package}.App</mainClass>
                 </configuration>
             </plugin>
         </plugins>
