@@ -17,7 +17,6 @@
 
     <properties>
         <maven-archetype.version>3.4.1</maven-archetype.version>
-        <maven.deploy.skip>true</maven.deploy.skip>
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <skipPitest>true</skipPitest>
     </properties>
