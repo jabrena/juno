@@ -35,4 +35,4 @@ files:
     - path: juno-ai/juno-dm/target/juno-dm-{{projectVersion}}.jar
     - path: juno-ai/juno-models/target/juno-models-{{projectVersion}}.jar
     - path: juno-archetype/target/juno-archetype-{{projectVersion}}.jar
-    - path: juno-bom/target/juno-bom-{{projectVersion}}.pom
+    - path: juno-bom/pom.xml
