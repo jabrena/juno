@@ -14,7 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <juno.version>${junoVersion}</juno.version>
         <juno.board>arduino-uno-r4-wifi</juno.board>
-        <juno.main>${package}.App</juno.main>
+        <juno.main>${package}.Blink</juno.main>
     </properties>
 
     <dependencyManagement>

@@ -20,7 +20,7 @@
         <fileSet filtered="true" packaged="true" encoding="UTF-8">
             <directory>src/main/java</directory>
             <includes>
-                <include>App.java</include>
+                <include>Blink.java</include>
             </includes>
         </fileSet>
     </fileSets>
