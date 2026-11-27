@@ -5,7 +5,9 @@
         <requiredProperty key="groupId" />
         <requiredProperty key="artifactId" />
         <requiredProperty key="version" />
-        <requiredProperty key="package" />
+        <requiredProperty key="package">
+            <defaultValue>io.github.jabrena.juno.examples</defaultValue>
+        </requiredProperty>
         <requiredProperty key="junoVersion">
             <defaultValue>0.2.0-SNAPSHOT</defaultValue>
         </requiredProperty>
