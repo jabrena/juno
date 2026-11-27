@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<archetype-descriptor name="juno-archetype"
+                      xmlns="http://maven.apache.org/plugins/maven-archetype-plugin/archetype-descriptor/1.2.0">
+    <requiredProperties>
+        <requiredProperty key="groupId" />
+        <requiredProperty key="artifactId" />
+        <requiredProperty key="version" />
+        <requiredProperty key="package" />
+    </requiredProperties>
+    <fileSets>
+        <fileSet filtered="true" packaged="false" encoding="UTF-8">
+            <directory>.mvn</directory>
+            <includes>
+                <include>jvm.config</include>
+            </includes>
+        </fileSet>
+        <fileSet filtered="true" packaged="false" encoding="UTF-8">
+            <directory>src/main/java</directory>
+            <includes>
+                <include>**/*.java</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</archetype-descriptor>
