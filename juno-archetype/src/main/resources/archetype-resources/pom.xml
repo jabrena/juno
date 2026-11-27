@@ -9,18 +9,30 @@
     <version>${version}</version>
 
     <properties>
-        <maven.compiler.release>27</maven.compiler.release>
+        <java.version>27</java.version>
+        <maven-compiler-plugin.version>3.16.0</maven-compiler-plugin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <juno.version>${junoVersion}</juno.version>
         <juno.board>arduino-uno-r4-wifi</juno.board>
         <juno.main>${package}.App</juno.main>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.github.jabrena</groupId>
+                <artifactId>juno-bom</artifactId>
+                <version>${juno.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>io.github.jabrena</groupId>
             <artifactId>juno-api</artifactId>
-            <version>${junoVersion}</version>
         </dependency>
     </dependencies>
 
@@ -29,18 +41,18 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.16.0</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <release>27</release>
+                    <release>${java.version}</release>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>io.github.jabrena</groupId>
                 <artifactId>juno-maven-plugin</artifactId>
-                <version>${junoVersion}</version>
+                <version>${juno.version}</version>
                 <configuration>
-                    <board>arduino-uno-r4-wifi</board>
-                    <mainClass>${package}.App</mainClass>
+                    <board>${juno.board}</board>
+                    <mainClass>${juno.main}</mainClass>
                 </configuration>
             </plugin>
         </plugins>
