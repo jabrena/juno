@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.github.jabrena</groupId>
         <artifactId>juno-parent</artifactId>
-        <version>0.2.0-SNAPSHOT</version>
+        <version>0.2.0</version>
     </parent>
 
     <artifactId>juno-third-parties</artifactId>
