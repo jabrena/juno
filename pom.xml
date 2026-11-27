@@ -31,6 +31,7 @@
     <modules>
         <module>juno-api</module>
         <module>juno-bom</module>
+        <module>juno-archetype</module>
         <module>juno-ai</module>
         <module>juno-compiler</module>
         <module>juno-maven-plugin</module>
