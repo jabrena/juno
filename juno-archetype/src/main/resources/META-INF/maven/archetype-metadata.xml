@@ -6,6 +6,9 @@
         <requiredProperty key="artifactId" />
         <requiredProperty key="version" />
         <requiredProperty key="package" />
+        <requiredProperty key="junoVersion">
+            <defaultValue>0.2.0-SNAPSHOT</defaultValue>
+        </requiredProperty>
     </requiredProperties>
     <fileSets>
         <fileSet filtered="true" packaged="false" encoding="UTF-8">

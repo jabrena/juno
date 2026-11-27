@@ -11,7 +11,7 @@
     <properties>
         <maven.compiler.release>27</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <juno.version>0.2.0-SNAPSHOT</juno.version>
+        <juno.version>${junoVersion}</juno.version>
         <juno.board>arduino-uno-r4-wifi</juno.board>
         <juno.main>${package}.App</juno.main>
     </properties>
