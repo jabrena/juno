@@ -34,11 +34,6 @@
             </dependency>
             <dependency>
                 <groupId>io.github.jabrena</groupId>
-                <artifactId>juno-rcx-firmware</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.github.jabrena</groupId>
                 <artifactId>juno-lm</artifactId>
                 <version>${project.version}</version>
             </dependency>
