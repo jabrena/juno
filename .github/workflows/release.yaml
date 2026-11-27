@@ -53,9 +53,13 @@ jobs:
           fi
           ./mvnw -B -ntp versions:set -DnewVersion="$RELEASE_VERSION"
           git add -A -- '*.xml'
-          git -c user.name='github-actions[bot]' \
-              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
-              commit -m "chore(release): prepare $RELEASE_VERSION"
+          if ! git diff --cached --quiet; then
+            git -c user.name='github-actions[bot]' \
+                -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+                commit -m "chore(release): prepare $RELEASE_VERSION"
+          else
+            echo "Release version is already $RELEASE_VERSION; no commit needed."
+          fi
 
       - name: Build and deploy to Maven Central
         env:
