@@ -1,0 +1,38 @@
+project:
+  name: juno
+  version: 0.2.0
+  description: Juno Java compiler and hardware API for Arduino and microcontroller boards
+  authors:
+    - Juan Antonio Breña Moral
+  license: Apache-2.0
+  links:
+    homepage: https://jabrena.github.io/juno/
+    documentation: https://jabrena.github.io/juno/getting-started/
+    bugTracker: https://github.com/jabrena/juno/issues
+
+release:
+  github:
+    owner: jabrena
+    name: juno
+    tagName: '{{projectVersion}}'
+    releaseName: 'Juno {{projectVersion}}'
+    draft: false
+    prerelease:
+      pattern: '.*-.*'
+    changelog:
+      enabled: true
+      formatted: true
+
+files:
+  active: RELEASE
+  artifacts:
+    - path: juno-api/target/juno-api-{{projectVersion}}.jar
+    - path: juno-compiler/target/juno-compiler-{{projectVersion}}.jar
+    - path: juno-maven-plugin/target/juno-maven-plugin-{{projectVersion}}.jar
+    - path: juno-third-parties/juno-pico-secure/target/juno-pico-secure-{{projectVersion}}.jar
+    - path: juno-third-parties/juno-rcx-firmware/target/juno-rcx-firmware-{{projectVersion}}.jar
+    - path: juno-ai/juno-lm/target/juno-lm-{{projectVersion}}.jar
+    - path: juno-ai/juno-dm/target/juno-dm-{{projectVersion}}.jar
+    - path: juno-ai/juno-models/target/juno-models-{{projectVersion}}.jar
+    - path: juno-archetype/target/juno-archetype-{{projectVersion}}.jar
+    - path: juno-bom/target/juno-bom-{{projectVersion}}.pom
