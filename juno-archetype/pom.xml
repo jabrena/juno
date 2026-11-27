@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.github.jabrena</groupId>
+        <artifactId>juno-parent</artifactId>
+        <version>0.2.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>juno-archetype</artifactId>
+    <packaging>maven-archetype</packaging>
+    <name>Juno Maven Archetype</name>
+    <description>Maven project template for creating Juno board programs</description>
+
+    <properties>
+        <maven-archetype.version>3.4.1</maven-archetype.version>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+        <skipPitest>true</skipPitest>
+    </properties>
+
+    <build>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.archetype</groupId>
+                <artifactId>archetype-packaging</artifactId>
+                <version>${maven-archetype.version}</version>
+            </extension>
+        </extensions>
+    </build>
+</project>
