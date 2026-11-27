@@ -15,7 +15,7 @@ release:
     owner: jabrena
     name: juno
     tagName: '{{projectVersion}}'
-    releaseName: 'Juno {{projectVersion}}'
+    releaseName: 'v{{projectVersion}}'
     draft: false
     prerelease:
       pattern: '.*-.*'
