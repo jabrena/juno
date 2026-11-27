@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-11-27
+
+### Added
+
+- Added a Maven BOM to manage the versions of Juno modules and dependencies.
+- Added a Maven archetype for generating starter Juno projects, including a Blink entry point.
+- Added release automation and JReleaser configuration for publishing Maven artifacts to Maven Central.
+
 ## [0.1.0] - 2026-11-26
 
 ### Added
@@ -41,4 +49,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed RCX firmware download, infrared communication, motor control, tone handling, and remote-control behavior.
 - Fixed HTTP server connections that never send a request, failed SMTP connection cleanup, StringBuilder result lifetime and size limits, and UNO R3 numeric-value limits.
 
+[Unreleased]: https://github.com/jabrena/juno/compare/5d5b91db1...HEAD
+[0.2.0]: https://github.com/jabrena/juno/compare/0.1.0...5d5b91db1
 [0.1.0]: https://github.com/jabrena/juno/compare/0123da8fc...be8359ba1
