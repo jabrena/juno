@@ -309,26 +309,13 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="content-prose">
 <p>This page creates a standalone Juno project called <code>my-first-juno-project</code>. It consumes the published Juno artifacts
 from Maven Central: it does not clone the Juno repository or add it as a Git submodule.</p>
-<h2 id="1-check-the-prerequisites">1. Check the prerequisites</h2>
-<p>Install these tools before creating the project. Juno requires JDK 27, Maven, Arduino CLI and Git. The repository's
-<a href="../#1-prerequisites">Getting Started prerequisites</a> show an SDKMAN-based installation for Java and Maven, plus
-Arduino CLI installation options.</p>
-<p>Verify that each tool is available in the shell you will use for the commands below:</p>
-<pre><code class="language-bash">java --version       # must report Java 27
-mvn --version        # must report Maven and Java 27
-arduino-cli version
-git --version
-</code></pre>
-<p>If a command is not found, install the corresponding tool first: <a href="../#1-prerequisites">JDK 27 and Maven</a>,
-<a href="https://docs.arduino.cc/arduino-cli/installation/">Arduino CLI</a> and <a href="https://git-scm.com/downloads">Git</a>.
-Uploading to a physical board is optional; <code>juno:verify</code> only compiles and checks the generated sketch.</p>
-<h2 id="2-create-your-project-directory">2. Create your project directory</h2>
+<h2 id="1-create-your-project-directory">1. Create your project directory</h2>
 <pre><code class="language-bash">mkdir my-first-juno-project
 cd my-first-juno-project
 </code></pre>
 <p>The project is created from the published Maven archetype. It uses the Juno BOM to keep the API and compiler-side
 artifacts on one version. No Juno repository checkout or submodule is needed.</p>
-<h2 id="3-generate-the-maven-project">3. Generate the Maven project</h2>
+<h2 id="2-generate-the-maven-project">2. Generate the Maven project</h2>
 <p>Run this command from the parent directory of the project directory. Maven creates <code>my-first-juno-project/</code>:</p>
 <pre><code class="language-bash">mvn archetype:generate \
   -DarchetypeGroupId=io.github.jabrena \
@@ -362,7 +349,7 @@ bootstrap the wrapper; after that, use the generated wrapper for the remaining c
 └── src/main/java/com/example/juno/
     └── Blink.java
 </code></pre>
-<h2 id="4-understand-the-generated-pomxml">4. Understand the generated <code>pom.xml</code></h2>
+<h2 id="3-understand-the-generated-pomxml">3. Understand the generated <code>pom.xml</code></h2>
 <p>The important generated sections are:</p>
 <pre><code class="language-xml">&lt;groupId&gt;com.example&lt;/groupId&gt;
 &lt;artifactId&gt;my-first-juno-project&lt;/artifactId&gt;
@@ -462,10 +449,10 @@ the Juno Maven plugin generates, verifies and uploads the Arduino sketch.</p>
 </tr>
 </tbody>
 </table>
-<h2 id="5-understand-mvnjvmconfig">5. Understand <code>.mvn/jvm.config</code></h2>
+<h2 id="4-understand-mvnjvmconfig">4. Understand <code>.mvn/jvm.config</code></h2>
 <p>The archetype includes <code>.mvn/jvm.config</code> with the JDK compiler module exports and opens required by Juno's compiler.
 Maven reads it automatically, so no separate runtime setup is needed.</p>
-<h2 id="6-understand-the-generated-blink-example">6. Understand the generated <code>Blink</code> example</h2>
+<h2 id="5-understand-the-generated-blink-example">5. Understand the generated <code>Blink</code> example</h2>
 <pre><code class="language-java">package com.example.juno;
 
 import io.github.jabrena.juno.hardware.MCU;
@@ -488,18 +475,33 @@ public final class Blink {
 output, and <code>led.high()</code> / <code>led.low()</code> switch it on and off. The two 500 millisecond delays create one-second blink
 cycles. The board abstraction keeps this program portable across supported boards. It intentionally produces no serial
 output.</p>
-<h2 id="7-install-board-dependencies">7. Install board dependencies</h2>
+<h2 id="6-install-board-dependencies">6. Install board dependencies</h2>
 <p>Install the Arduino cores and libraries needed by Juno examples once per machine:</p>
 <pre><code class="language-bash">./mvnw juno:install-deps
 </code></pre>
-<h2 id="8-generate-and-verify-the-sketch">8. Generate and verify the sketch</h2>
+<h2 id="7-generate-and-verify-the-sketch">7. Generate and verify the sketch</h2>
 <pre><code class="language-bash">./mvnw compile juno:compile
 ./mvnw compile juno:verify
 </code></pre>
 <p><code>juno:verify</code> compiles/checks the generated sketch with Arduino CLI; it does not upload anything. Generated sketch and
-assembly files are normally below <code>target/juno/&lt;board&gt;/</code>; the Java source and POM remain the portable source of truth.</p>
-<h2 id="9-optionally-flash-the-board">9. Optionally flash the board</h2>
-<p>Uploading is optional. Connect the board over USB, list matching boards and flash it:</p>
+assembly files are normally below <code>target/juno/&lt;Main&gt;Asm/</code>; the Java source and POM remain the portable source of truth.</p>
+<h2 id="8-understand-the-generated-output">8. Understand the generated output</h2>
+<p>Maven keeps build products under <code>target/</code>. After compiling the default <code>Blink</code> entry point, the important files look
+like this:</p>
+<pre><code class="language-text">target/
+├── classes/                    # Java bytecode compiled from src/main/java
+└── juno/
+    └── BlinkAsm/               # Arduino CLI sketch generated by Juno
+        ├── BlinkAsm.ino        # Arduino sketch wrapper
+        ├── Blink.S             # generated target assembly
+        └── BlinkShim.cpp       # C++ bridge to the Arduino runtime
+</code></pre>
+<p><code>juno:compile</code> creates the sketch directory and its source files. <code>juno:verify</code> then gives that directory to Arduino
+CLI, which compiles it for the selected board. These files are disposable build output: edit the Java source and POM,
+then run the Maven goals again to regenerate them. The generated assembly and shim are useful when diagnosing a
+compiler or board-toolchain problem.</p>
+<h2 id="9-flash-the-board">9. Flash the board</h2>
+<p>Connect the board over USB, list matching boards and flash the generated program:</p>
 <pre><code class="language-bash">./mvnw juno:boards
 ./mvnw compile juno:flash -Djuno.port=&lt;PORT&gt;
 </code></pre>
