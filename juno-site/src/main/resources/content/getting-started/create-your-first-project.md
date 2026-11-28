@@ -7,10 +7,26 @@ layout: page
 This page creates a standalone Juno project called `my-first-juno-project`. It consumes the published Juno artifacts
 from Maven Central: it does not clone the Juno repository or add it as a Git submodule.
 
-You need the tools from [Getting Started](../#1-prerequisites): JDK 27, Maven, Arduino CLI and Git. Uploading to a
-physical board is optional; `juno:verify` only compiles and checks the generated sketch.
+## 1. Check the prerequisites
 
-## 1. Create your project directory
+Install these tools before creating the project. Juno requires JDK 27, Maven, Arduino CLI and Git. The repository's
+[Getting Started prerequisites](../#1-prerequisites) show an SDKMAN-based installation for Java and Maven, plus
+Arduino CLI installation options.
+
+Verify that each tool is available in the shell you will use for the commands below:
+
+```bash
+java --version       # must report Java 27
+mvn --version        # must report Maven and Java 27
+arduino-cli version
+git --version
+```
+
+If a command is not found, install the corresponding tool first: [JDK 27 and Maven](../#1-prerequisites),
+[Arduino CLI](https://docs.arduino.cc/arduino-cli/installation/) and [Git](https://git-scm.com/downloads).
+Uploading to a physical board is optional; `juno:verify` only compiles and checks the generated sketch.
+
+## 2. Create your project directory
 
 ```bash
 mkdir my-first-juno-project
@@ -20,7 +36,7 @@ cd my-first-juno-project
 The project is created from the published Maven archetype. It uses the Juno BOM to keep the API and compiler-side
 artifacts on one version. No Juno repository checkout or submodule is needed.
 
-## 2. Generate the Maven project
+## 3. Generate the Maven project
 
 Run this command from the parent directory of the project directory. Maven creates `my-first-juno-project/`:
 
@@ -51,7 +67,7 @@ my-first-juno-project/
     └── Blink.java
 ```
 
-## 3. Understand the generated `pom.xml`
+## 4. Understand the generated `pom.xml`
 
 The important generated sections are:
 
@@ -125,12 +141,12 @@ POM values are defaults. Command-line `-D` properties override them for one run:
 | plugin `arduinoCli` | `-Djuno.arduinoCli=<path>` | Use Arduino CLI outside `PATH`. |
 | plugin `outputDirectory` | `-Djuno.outputDirectory=<path>` | Change generated output location. |
 
-## 4. Understand `.mvn/jvm.config`
+## 5. Understand `.mvn/jvm.config`
 
 The archetype includes `.mvn/jvm.config` with the JDK compiler module exports and opens required by Juno's compiler.
 Maven reads it automatically, so no separate runtime setup is needed.
 
-## 5. Understand the generated `Blink` example
+## 6. Understand the generated `Blink` example
 
 ```java
 package com.example.juno;
@@ -157,7 +173,7 @@ output, and `led.high()` / `led.low()` switch it on and off. The two 500 millise
 cycles. The board abstraction keeps this program portable across supported boards. It intentionally produces no serial
 output.
 
-## 6. Install board dependencies
+## 7. Install board dependencies
 
 Install the Arduino cores and libraries needed by Juno examples once per machine:
 
@@ -167,7 +183,7 @@ Install the Arduino cores and libraries needed by Juno examples once per machine
 
 Add a Maven wrapper with `mvn -N wrapper:wrapper`, or use Maven installed on your `PATH`.
 
-## 7. Generate and verify the sketch
+## 8. Generate and verify the sketch
 
 ```bash
 ./mvnw compile juno:compile
@@ -177,7 +193,7 @@ Add a Maven wrapper with `mvn -N wrapper:wrapper`, or use Maven installed on you
 `juno:verify` compiles/checks the generated sketch with Arduino CLI; it does not upload anything. Generated sketch and
 assembly files are normally below `target/juno/<board>/`; the Java source and POM remain the portable source of truth.
 
-## 8. Optionally flash the board
+## 9. Optionally flash the board
 
 Uploading is optional. Connect the board over USB, list matching boards and flash it:
 
@@ -190,4 +206,16 @@ Use `-Djuno.board=<board-id>` when the program supports more than one board. The
 reported by `juno:boards`; do not use a network address for uploading.
 
 For every goal and option, see the [Maven Plugin](../../features/juno-maven-plugin) page.
+
+## 10. What to expect after flashing the UNO R4 WiFi
+
+<img src="../../images/boards/arduino-uno-r4-wifi.png" alt="Arduino UNO R4 WiFi" width="280">
+
+The default project targets the Arduino UNO R4 WiFi. After `juno:flash` finishes, the board resets and the built-in
+LED should blink repeatedly: on for 500 milliseconds, then off for 500 milliseconds. This confirms that the generated
+Java program is running on the board.
+
+The `Blink` example intentionally produces no serial output, so a quiet serial monitor is expected. If the LED does
+not blink, check that the selected `juno.board` is `arduino-uno-r4-wifi`, the USB serial `-Djuno.port` is correct, and
+the flash command completed without errors.
 |}

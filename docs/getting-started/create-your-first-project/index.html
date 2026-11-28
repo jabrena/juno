@@ -309,15 +309,26 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="content-prose">
 <p>This page creates a standalone Juno project called <code>my-first-juno-project</code>. It consumes the published Juno artifacts
 from Maven Central: it does not clone the Juno repository or add it as a Git submodule.</p>
-<p>You need the tools from <a href="../#1-prerequisites">Getting Started</a>: JDK 27, Maven, Arduino CLI and Git. Uploading to a
-physical board is optional; <code>juno:verify</code> only compiles and checks the generated sketch.</p>
-<h2 id="1-create-your-project-directory">1. Create your project directory</h2>
+<h2 id="1-check-the-prerequisites">1. Check the prerequisites</h2>
+<p>Install these tools before creating the project. Juno requires JDK 27, Maven, Arduino CLI and Git. The repository's
+<a href="../#1-prerequisites">Getting Started prerequisites</a> show an SDKMAN-based installation for Java and Maven, plus
+Arduino CLI installation options.</p>
+<p>Verify that each tool is available in the shell you will use for the commands below:</p>
+<pre><code class="language-bash">java --version       # must report Java 27
+mvn --version        # must report Maven and Java 27
+arduino-cli version
+git --version
+</code></pre>
+<p>If a command is not found, install the corresponding tool first: <a href="../#1-prerequisites">JDK 27 and Maven</a>,
+<a href="https://docs.arduino.cc/arduino-cli/installation/">Arduino CLI</a> and <a href="https://git-scm.com/downloads">Git</a>.
+Uploading to a physical board is optional; <code>juno:verify</code> only compiles and checks the generated sketch.</p>
+<h2 id="2-create-your-project-directory">2. Create your project directory</h2>
 <pre><code class="language-bash">mkdir my-first-juno-project
 cd my-first-juno-project
 </code></pre>
 <p>The project is created from the published Maven archetype. It uses the Juno BOM to keep the API and compiler-side
 artifacts on one version. No Juno repository checkout or submodule is needed.</p>
-<h2 id="2-generate-the-maven-project">2. Generate the Maven project</h2>
+<h2 id="3-generate-the-maven-project">3. Generate the Maven project</h2>
 <p>Run this command from the parent directory of the project directory. Maven creates <code>my-first-juno-project/</code>:</p>
 <pre><code class="language-bash">mvn archetype:generate \
   -DarchetypeGroupId=io.github.jabrena \
@@ -340,7 +351,7 @@ version identifies the project template; <code>junoVersion</code> selects the pu
 └── src/main/java/com/example/juno/
     └── Blink.java
 </code></pre>
-<h2 id="3-understand-the-generated-pomxml">3. Understand the generated <code>pom.xml</code></h2>
+<h2 id="4-understand-the-generated-pomxml">4. Understand the generated <code>pom.xml</code></h2>
 <p>The important generated sections are:</p>
 <pre><code class="language-xml">&lt;groupId&gt;com.example&lt;/groupId&gt;
 &lt;artifactId&gt;my-first-juno-project&lt;/artifactId&gt;
@@ -440,10 +451,10 @@ the Juno Maven plugin generates, verifies and uploads the Arduino sketch.</p>
 </tr>
 </tbody>
 </table>
-<h2 id="4-understand-mvnjvmconfig">4. Understand <code>.mvn/jvm.config</code></h2>
+<h2 id="5-understand-mvnjvmconfig">5. Understand <code>.mvn/jvm.config</code></h2>
 <p>The archetype includes <code>.mvn/jvm.config</code> with the JDK compiler module exports and opens required by Juno's compiler.
 Maven reads it automatically, so no separate runtime setup is needed.</p>
-<h2 id="5-understand-the-generated-blink-example">5. Understand the generated <code>Blink</code> example</h2>
+<h2 id="6-understand-the-generated-blink-example">6. Understand the generated <code>Blink</code> example</h2>
 <pre><code class="language-java">package com.example.juno;
 
 import io.github.jabrena.juno.hardware.MCU;
@@ -466,18 +477,18 @@ public final class Blink {
 output, and <code>led.high()</code> / <code>led.low()</code> switch it on and off. The two 500 millisecond delays create one-second blink
 cycles. The board abstraction keeps this program portable across supported boards. It intentionally produces no serial
 output.</p>
-<h2 id="6-install-board-dependencies">6. Install board dependencies</h2>
+<h2 id="7-install-board-dependencies">7. Install board dependencies</h2>
 <p>Install the Arduino cores and libraries needed by Juno examples once per machine:</p>
 <pre><code class="language-bash">./mvnw juno:install-deps
 </code></pre>
 <p>Add a Maven wrapper with <code>mvn -N wrapper:wrapper</code>, or use Maven installed on your <code>PATH</code>.</p>
-<h2 id="7-generate-and-verify-the-sketch">7. Generate and verify the sketch</h2>
+<h2 id="8-generate-and-verify-the-sketch">8. Generate and verify the sketch</h2>
 <pre><code class="language-bash">./mvnw compile juno:compile
 ./mvnw compile juno:verify
 </code></pre>
 <p><code>juno:verify</code> compiles/checks the generated sketch with Arduino CLI; it does not upload anything. Generated sketch and
 assembly files are normally below <code>target/juno/&lt;board&gt;/</code>; the Java source and POM remain the portable source of truth.</p>
-<h2 id="8-optionally-flash-the-board">8. Optionally flash the board</h2>
+<h2 id="9-optionally-flash-the-board">9. Optionally flash the board</h2>
 <p>Uploading is optional. Connect the board over USB, list matching boards and flash it:</p>
 <pre><code class="language-bash">./mvnw juno:boards
 ./mvnw compile juno:flash -Djuno.port=&lt;PORT&gt;
@@ -485,6 +496,14 @@ assembly files are normally below <code>target/juno/&lt;board&gt;/</code>; the J
 <p>Use <code>-Djuno.board=&lt;board-id&gt;</code> when the program supports more than one board. The port is the USB serial device
 reported by <code>juno:boards</code>; do not use a network address for uploading.</p>
 <p>For every goal and option, see the <a href="../../features/juno-maven-plugin">Maven Plugin</a> page.</p>
+<h2 id="10-what-to-expect-after-flashing-the-uno-r4-wifi">10. What to expect after flashing the UNO R4 WiFi</h2>
+<img src="../../images/boards/arduino-uno-r4-wifi.png" alt="Arduino UNO R4 WiFi" width="280">
+<p>The default project targets the Arduino UNO R4 WiFi. After <code>juno:flash</code> finishes, the board resets and the built-in
+LED should blink repeatedly: on for 500 milliseconds, then off for 500 milliseconds. This confirms that the generated
+Java program is running on the board.</p>
+<p>The <code>Blink</code> example intentionally produces no serial output, so a quiet serial monitor is expected. If the LED does
+not blink, check that the selected <code>juno.board</code> is <code>arduino-uno-r4-wifi</code>, the USB serial <code>-Djuno.port</code> is correct, and
+the flash command completed without errors.</p>
     </div>
   </section>
 </article>
