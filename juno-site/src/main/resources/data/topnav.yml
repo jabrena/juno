@@ -23,6 +23,8 @@ items:
         path: "/features/jls-17-conformance"
       - title: "Maven Plugin"
         path: "/features/juno-maven-plugin"
+      - title: "Javadocs"
+        path: "/features/javadocs"
   - title: "Boards"
     path: "/boards"
     children:
@@ -195,5 +197,3 @@ items:
     children:
       - title: "Overview"
         path: "/blog"
-  - title: "Javadocs"
-    path: "/javadocs"

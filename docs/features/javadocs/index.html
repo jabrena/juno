@@ -29,9 +29,9 @@
   <meta name="twitter:description" content="Javadocs for the artifacts published by Juno under the io.github.jabrena Maven namespace.">
 
   <!-- SEO URL -->
-  <link rel="canonical" href="https://jabrena.github.io/juno/javadocs/" />
-  <meta property="og:url" content="https://jabrena.github.io/juno/javadocs/" />
-  <meta name="twitter:url" content="https://jabrena.github.io/juno/javadocs/">
+  <link rel="canonical" href="https://jabrena.github.io/juno/features/javadocs/" />
+  <meta property="og:url" content="https://jabrena.github.io/juno/features/javadocs/" />
+  <meta name="twitter:url" content="https://jabrena.github.io/juno/features/javadocs/">
 
 
   <!-- SEO TYPE -->
@@ -46,7 +46,7 @@
 
 <!-- Favicon -->
 
-<base href="/juno/javadocs/">
+<base href="/juno/features/javadocs/">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -56,7 +56,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-P5LY5ZJW.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-QDXOBOHZ.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-H4XRNYTM.css" />
 
 </head>
 <body>
@@ -81,7 +81,7 @@
         <a class="" href="/juno/getting-started">Getting Started</a>
         <a class="" href="/juno/getting-started/create-your-first-project">Create your first project</a>
       </div>
-      <a class="" href="/juno/features" >Features</a>
+      <a class=" active" href="/juno/features" >Features</a>
       <div class="juno-topnav-children">
         <a class="" href="/juno/features">Overview</a>
         <a class="" href="/juno/features/java-subset">Java subset</a>
@@ -89,6 +89,7 @@
         <a class="" href="/juno/features/memory-model">Memory Model</a>
         <a class="" href="/juno/features/jls-17-conformance">JLS 17 Conformance</a>
         <a class="" href="/juno/features/juno-maven-plugin">Maven Plugin</a>
+        <a class="active" href="/juno/features/javadocs">Javadocs</a>
       </div>
       <a class="" href="/juno/boards" >Boards</a>
       <div class="juno-topnav-children">
@@ -122,7 +123,6 @@
       <div class="juno-topnav-children">
         <a class="" href="/juno/blog">Overview</a>
       </div>
-      <a class="active" href="/juno/javadocs" >Javadocs</a>
     </nav>
     <div class="juno-topbar-actions">
 <form class="juno-search juno-search-desktop" role="search" autocomplete="off">
@@ -291,6 +291,17 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.juno-search').forEach(attach);
 })();
 </script>
+<nav class="juno-subnav" aria-label="Features">
+  <div class="juno-subnav-inner">
+    <a class="" href="/juno/features">Overview</a>
+    <a class="" href="/juno/features/java-subset">Java subset</a>
+    <a class="" href="/juno/features/board-features">Board features</a>
+    <a class="" href="/juno/features/memory-model">Memory Model</a>
+    <a class="" href="/juno/features/jls-17-conformance">JLS 17 Conformance</a>
+    <a class="" href="/juno/features/juno-maven-plugin">Maven Plugin</a>
+    <a class="active" href="/juno/features/javadocs">Javadocs</a>
+  </div>
+</nav>
 <!-- Overrides the roq-default main layout: docs pages are navigated from the top bar only, no sidebar. -->
 <main class="juno-docs">
 
@@ -301,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function () {
   <h1>Javadocs</h1>
 </header>
     <div class="content-prose">
-<p>The following artifacts are published under the <a href="https://central.sonatype.com/namespace/io.github.jabrena"><code>io.github.jabrena</code> Maven Central namespace</a>. Select an artifact to open
+<p>The following artifacts are published under the Maven Central namespace <a href="https://central.sonatype.com/namespace/io.github.jabrena"><code>io.github.jabrena</code></a>. Select an artifact to open
 its latest API documentation on <a href="https://javadoc.io/doc/io.github.jabrena">javadoc.io</a>.</p>
 <table>
 <thead>
@@ -315,27 +326,27 @@ its latest API documentation on <a href="https://javadoc.io/doc/io.github.jabren
 <tr>
 <td><code>juno-api</code></td>
 <td>The Java programming model (hardware API and annotations) that Juno programs are written against</td>
-<td><a href="https://javadoc.io/doc/io.github.jabrena/juno-api/latest/io.github.jabrena.juno.api/module-summary.html">Javadocs</a></td>
+<td><a href="https://javadoc.io/doc/io.github.jabrena/juno-api"><img src="https://javadoc.io/badge2/io.github.jabrena/juno-api/javadoc.svg" alt="javadoc" /></a></td>
 </tr>
 <tr>
 <td><code>juno-compiler</code></td>
 <td>Ahead-of-time compiler that turns Java bytecode into Thumb-2 or AVR assembly plus a C++ runtime shim for Arduino boards</td>
-<td><a href="https://javadoc.io/doc/io.github.jabrena/juno-compiler/latest/">Javadocs</a></td>
+<td><a href="https://javadoc.io/doc/io.github.jabrena/juno-compiler"><img src="https://javadoc.io/badge2/io.github.jabrena/juno-compiler/javadoc.svg" alt="javadoc" /></a></td>
 </tr>
 <tr>
 <td><code>juno-maven-plugin</code></td>
 <td>Maven integration for compiling, verifying, uploading, and monitoring Juno programs</td>
-<td><a href="https://javadoc.io/doc/io.github.jabrena/juno-maven-plugin/latest/">Javadocs</a></td>
+<td><a href="https://javadoc.io/doc/io.github.jabrena/juno-maven-plugin"><img src="https://javadoc.io/badge2/io.github.jabrena/juno-maven-plugin/javadoc.svg" alt="javadoc" /></a></td>
 </tr>
 <tr>
 <td><code>juno-lm</code></td>
 <td>Trains, quantizes and exports JLM1 character-level transformer models; the released JUNO.BIN lives in juno-models</td>
-<td><a href="https://javadoc.io/doc/io.github.jabrena/juno-lm/latest/">Javadocs</a></td>
+<td><a href="https://javadoc.io/doc/io.github.jabrena/juno-lm"><img src="https://javadoc.io/badge2/io.github.jabrena/juno-lm/javadoc.svg" alt="javadoc" /></a></td>
 </tr>
 <tr>
 <td><code>juno-dm</code></td>
-<td>Trains, quantizes and runs Juno decision models</td>
-<td><a href="https://javadoc.io/doc/io.github.jabrena/juno-dm/latest/">Javadocs</a></td>
+<td>Trains, quantizes and runs Juno JEV decision models</td>
+<td><a href="https://javadoc.io/doc/io.github.jabrena/juno-dm"><img src="https://javadoc.io/badge2/io.github.jabrena/juno-dm/javadoc.svg" alt="javadoc" /></a></td>
 </tr>
 </tbody>
 </table>
