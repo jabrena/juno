@@ -343,10 +343,21 @@ artifacts on one version. No Juno repository checkout or submodule is needed.</p
 </code></pre>
 <p>If you are already inside <code>my-first-juno-project</code>, run the same command with <code>-DoutputDirectory=.</code>. The archetype
 version identifies the project template; <code>junoVersion</code> selects the published Juno release.</p>
+<p>Enter the generated project and create its Maven Wrapper:</p>
+<pre><code class="language-bash">cd my-first-juno-project
+mvn wrapper:wrapper
+</code></pre>
+<p>The wrapper records the Maven distribution used by the project and lets every contributor build with <code>./mvnw</code> (or
+<code>mvnw.cmd</code> on Windows), without depending on a particular Maven installation on <code>PATH</code>. Maven is needed once to
+bootstrap the wrapper; after that, use the generated wrapper for the remaining commands in this guide.</p>
 <p>The generated project has this shape:</p>
 <pre><code class="language-text">my-first-juno-project/
 ├── .mvn/
-│   └── jvm.config
+│   ├── jvm.config
+│   └── wrapper/
+│       └── maven-wrapper.properties
+├── mvnw
+├── mvnw.cmd
 ├── pom.xml
 └── src/main/java/com/example/juno/
     └── Blink.java
@@ -481,7 +492,6 @@ output.</p>
 <p>Install the Arduino cores and libraries needed by Juno examples once per machine:</p>
 <pre><code class="language-bash">./mvnw juno:install-deps
 </code></pre>
-<p>Add a Maven wrapper with <code>mvn -N wrapper:wrapper</code>, or use Maven installed on your <code>PATH</code>.</p>
 <h2 id="8-generate-and-verify-the-sketch">8. Generate and verify the sketch</h2>
 <pre><code class="language-bash">./mvnw compile juno:compile
 ./mvnw compile juno:verify
@@ -504,6 +514,11 @@ Java program is running on the board.</p>
 <p>The <code>Blink</code> example intentionally produces no serial output, so a quiet serial monitor is expected. If the LED does
 not blink, check that the selected <code>juno.board</code> is <code>arduino-uno-r4-wifi</code>, the USB serial <code>-Djuno.port</code> is correct, and
 the flash command completed without errors.</p>
+<h2 id="11-continue-learning">11. Continue learning</h2>
+<p>Read the <a href="https://jabrena.github.io/juno/">Juno documentation site</a> to explore supported boards, features and APIs.
+Use the <a href="../../features/javadocs">Javadocs</a> to look up the public Java API, and review the
+<a href="https://github.com/jabrena/juno/tree/main/juno-examples">examples in <code>juno-examples</code></a> for complete programs that
+use hardware features beyond <code>Blink</code>.</p>
     </div>
   </section>
 </article>
@@ -516,7 +531,7 @@ the flash command completed without errors.</p>
   <div class="juno-footer-inner">
     <div class="juno-footer-links">
       <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
-      <a href="/juno/javadocs" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="/juno/features/javadocs" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
       <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
     </div>
     <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>

@@ -56,12 +56,27 @@ mvn archetype:generate \
 If you are already inside `my-first-juno-project`, run the same command with `-DoutputDirectory=.`. The archetype
 version identifies the project template; `junoVersion` selects the published Juno release.
 
+Enter the generated project and create its Maven Wrapper:
+
+```bash
+cd my-first-juno-project
+mvn wrapper:wrapper
+```
+
+The wrapper records the Maven distribution used by the project and lets every contributor build with `./mvnw` (or
+`mvnw.cmd` on Windows), without depending on a particular Maven installation on `PATH`. Maven is needed once to
+bootstrap the wrapper; after that, use the generated wrapper for the remaining commands in this guide.
+
 The generated project has this shape:
 
 ```text
 my-first-juno-project/
 ├── .mvn/
-│   └── jvm.config
+│   ├── jvm.config
+│   └── wrapper/
+│       └── maven-wrapper.properties
+├── mvnw
+├── mvnw.cmd
 ├── pom.xml
 └── src/main/java/com/example/juno/
     └── Blink.java
@@ -181,8 +196,6 @@ Install the Arduino cores and libraries needed by Juno examples once per machine
 ./mvnw juno:install-deps
 ```
 
-Add a Maven wrapper with `mvn -N wrapper:wrapper`, or use Maven installed on your `PATH`.
-
 ## 8. Generate and verify the sketch
 
 ```bash
@@ -218,4 +231,11 @@ Java program is running on the board.
 The `Blink` example intentionally produces no serial output, so a quiet serial monitor is expected. If the LED does
 not blink, check that the selected `juno.board` is `arduino-uno-r4-wifi`, the USB serial `-Djuno.port` is correct, and
 the flash command completed without errors.
+
+## 11. Continue learning
+
+Read the [Juno documentation site](https://jabrena.github.io/juno/) to explore supported boards, features and APIs.
+Use the [Javadocs](../../features/javadocs) to look up the public Java API, and review the
+[examples in `juno-examples`](https://github.com/jabrena/juno/tree/main/juno-examples) for complete programs that
+use hardware features beyond `Blink`.
 |}
