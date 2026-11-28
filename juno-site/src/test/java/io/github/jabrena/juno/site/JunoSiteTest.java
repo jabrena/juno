@@ -49,7 +49,10 @@ class JunoSiteTest {
     @Test
     void gettingStartedPageRenders() {
         RestAssured.given().when().get("/getting-started/").then().statusCode(200)
-                .body(containsString("Explore the project"));
+                .body(containsString("Install the prerequisites"))
+                .body(containsString("href=\"create-your-first-project\""))
+                .body(not(containsString("juno:flash")))
+                .body(not(containsString("Explore the project")));
     }
 
     @Test
