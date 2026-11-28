@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="Getting Started">
   <meta property="og:site_name" content="Juno: Java for Microcontrollers">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="From the prerequisites and a fresh clone to Blink running on an Arduino UNO R4 WiFi.">
-  <meta property="og:description" content="From the prerequisites and a fresh clone to Blink running on an Arduino UNO R4 WiFi." />
-  <meta name="twitter:description" content="From the prerequisites and a fresh clone to Blink running on an Arduino UNO R4 WiFi.">
+  <meta name="description" content="Install the tools you need before creating your first Juno project.">
+  <meta property="og:description" content="Install the tools you need before creating your first Juno project." />
+  <meta name="twitter:description" content="Install the tools you need before creating your first Juno project.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/getting-started/" />
@@ -307,108 +307,36 @@ document.addEventListener('DOMContentLoaded', function () {
   <h1>Getting Started</h1>
 </header>
     <div class="content-prose">
-<h2 id="explore-the-project">Explore the project</h2>
-<p>A quick tour from cloning the repository to a blinking LED on an Arduino UNO R4 WiFi.</p>
-<h3 id="1-prerequisites">1. Prerequisites</h3>
-<p>Juno builds with Java 27 and Maven. The easiest way to get both is <a href="https://sdkman.io">SDKMAN!</a>, which installs the
-exact versions the repository pins in its <code>.sdkmanrc</code>:</p>
+<h2 id="install-the-prerequisites">Install the prerequisites</h2>
+<p>Before creating a Juno project, install the tools below and make sure they are available in your shell. Juno programs
+are written in Java, built with Maven and compiled for Arduino boards through Arduino CLI.</p>
+<h3 id="jdk-27-and-maven">JDK 27 and Maven</h3>
+<p>The easiest way to install the versions used by Juno is <a href="https://sdkman.io">SDKMAN!</a>. The repository pins these
+versions in its <code>.sdkmanrc</code>:</p>
 <pre><code class="language-bash">curl -s &quot;https://get.sdkman.io&quot; | bash
 source &quot;$HOME/.sdkman/bin/sdkman-init.sh&quot;
 sdk install java 27.0.0.0+35-tem
 sdk install maven 3.10.0
-java -version    # should report version 27
-mvn -version     # should report Apache Maven 3.10.0 running on Java 27
+java --version    # should report version 27
+mvn --version     # should report Maven 3.10.0 running on Java 27
 </code></pre>
-<p>The Juno Maven plugin drives <a href="https://arduino.github.io/arduino-cli/">Arduino CLI</a> to compile and upload sketches, so
-install it too, with Homebrew on macOS or the official install script elsewhere:</p>
+<p>If you already manage Java and Maven another way, install JDK 27 and Maven 3.10.0 and check that those versions are
+selected before continuing.</p>
+<h3 id="git">Git</h3>
+<p>Git is needed to work with project sources and examples. Install it from <a href="https://git-scm.com/downloads">git-scm.com</a>
+and verify it:</p>
+<pre><code class="language-bash">git --version
+</code></pre>
+<h3 id="arduino-cli">Arduino CLI</h3>
+<p>The Juno Maven plugin uses <a href="https://arduino.github.io/arduino-cli/">Arduino CLI</a> to compile and upload sketches.
+Install it with Homebrew on macOS or the official install script elsewhere:</p>
 <pre><code class="language-bash">brew install arduino-cli
 # or: curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
 arduino-cli version
 </code></pre>
-<h3 id="2-clone-the-project">2. Clone the project</h3>
-<pre><code class="language-bash">git clone https://github.com/jabrena/juno.git
-cd juno
-sdk env
-./mvnw clean install
-</code></pre>
-<p><code>sdk env</code> switches the shell to the pinned Java and Maven versions. <code>install</code> builds every module and puts the Juno
-Maven plugin in your local repository, so the examples can use it.</p>
-<h3 id="3-look-around-the-modules">3. Look around the modules</h3>
-<table>
-<thead>
-<tr>
-<th>Module</th>
-<th>What it holds</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="https://github.com/jabrena/juno/tree/main/juno-api"><code>juno-api</code></a></td>
-<td>The Java API your programs compile against: GPIO, timing, Serial, Wi-Fi, shields, LEGO and the <code>@Board</code> annotations.</td>
-</tr>
-<tr>
-<td><a href="https://github.com/jabrena/juno/tree/main/juno-compiler"><code>juno-compiler</code></a></td>
-<td>The compiler: reads <code>.class</code> files, links the program and emits AVR, Thumb-2 or Xtensa assembly plus a C++ runtime shim.</td>
-</tr>
-<tr>
-<td><a href="https://github.com/jabrena/juno/tree/main/juno-maven-plugin"><code>juno-maven-plugin</code></a></td>
-<td>The Maven goals that compile, verify, flash and monitor a program.</td>
-</tr>
-<tr>
-<td><a href="https://github.com/jabrena/juno/tree/main/juno-examples"><code>juno-examples</code></a></td>
-<td>Ready-to-run example programs, from Blink to games.</td>
-</tr>
-</tbody>
-</table>
-<h3 id="4-connect-the-board">4. Connect the board</h3>
-<p>Plug the UNO R4 WiFi into your computer with a USB-C cable.</p>
-<img src="../images/boards/arduino-uno-r4-wifi.png" alt="Arduino UNO R4 WiFi" width="280">
-<p>Install the board cores and libraries the examples need, once per machine, then check that the board is detected:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml juno:install-deps
-./mvnw -f juno-examples/pom.xml juno:boards
-</code></pre>
-<p><code>juno:boards</code> lists the connected boards with their port and FQBN; the UNO R4 WiFi shows as
-<code>arduino:renesas_uno:unor4wifi</code>.</p>
-<h3 id="5-read-the-blink-example">5. Read the Blink example</h3>
-<p><a href="https://github.com/jabrena/juno/blob/main/juno-examples/src/main/java/io/github/jabrena/juno/api/hardware/gpio/Blink.java"><code>Blink</code></a> is plain
-Java: it turns the built-in LED on and off every half second.</p>
-<pre><code class="language-java">public class Blink {
-
-    public static void main(String[] args) {
-        DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
-
-        while (true) {
-            led.high();
-            Delay.millis(500);
-            led.low();
-            Delay.millis(500);
-        }
-    }
-}
-</code></pre>
-<h3 id="6-compile-verify-and-upload-blink">6. Compile, verify and upload Blink</h3>
-<p>Each Maven goal builds on the previous one. <code>juno:compile</code> turns the program into an Arduino sketch (<code>.S</code> assembly,
-<code>Shim.cpp</code> and <code>.ino</code>) under <code>juno-examples/target/juno</code>:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:compile \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r4-wifi
-</code></pre>
-<p>The plugin generates a complete Arduino sketch directory:</p>
-<pre><code class="language-text">juno-examples/target/juno/BlinkAsm/
-├── BlinkAsm.ino
-├── Blink.S
-└── BlinkShim.cpp
-</code></pre>
-<p><code>juno:verify</code> also compiles that sketch with the real Arduino toolchain, without touching the board:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:verify \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r4-wifi
-</code></pre>
-<p><code>juno:flash</code> flashes it to the board, which then blinks its built-in LED:</p>
-<pre><code class="language-bash">./mvnw -f juno-examples/pom.xml compile juno:flash \
-  -Djuno.main=io.github.jabrena.juno.api.hardware.gpio.Blink \
-  -Djuno.board=arduino-uno-r4-wifi
-</code></pre>
+<h3 id="continue">Continue</h3>
+<p>Once the prerequisites are installed, continue with <a href="create-your-first-project">Create your first project</a>
+to generate a standalone Juno project and compile its first sketch.</p>
     </div>
   </section>
 </article>

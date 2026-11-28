@@ -29,3 +29,5 @@ juno-site/node_modules/
 
 .lsp
 .clj-kondo
+
+out 
