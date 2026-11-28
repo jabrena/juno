@@ -196,5 +196,4 @@ items:
       - title: "Overview"
         path: "/blog"
   - title: "Javadocs"
-    path: "/javadocs/0.1.0/apidocs/index.html"
-    target: "_blank"
+    path: "/javadocs"
