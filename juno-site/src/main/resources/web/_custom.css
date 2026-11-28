@@ -642,6 +642,16 @@
     background: var(--color-pop-300);
 }
 
+.juno-btn-white {
+    background: white;
+    border-color: white;
+    color: var(--lego-black);
+}
+
+.juno-btn-white:hover {
+    background: rgba(255, 255, 255, 0.88);
+}
+
 .juno-btn-ghost {
     border-color: var(--lego-black);
     color: var(--lego-black);

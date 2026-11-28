@@ -96,11 +96,15 @@ class JunoSiteTest {
     }
 
     @Test
-    void createYourFirstProjectPageExplainsSubmoduleAndPlugin() {
+    void createYourFirstProjectPageExplainsArchetypeAndPlugin() {
         RestAssured.given().when().get("/getting-started/create-your-first-project/").then().statusCode(200)
-                .body(containsString("git submodule add"))
+                .body(containsString("mvn archetype:generate"))
+                .body(containsString("juno-bom"))
+                .body(containsString("junoVersion"))
                 .body(containsString("mainClass"))
-                .body(containsString("juno:flash"));
+                .body(containsString("juno:flash"))
+                .body(not(containsString("git submodule add")))
+                .body(not(containsString("--recursive")));
     }
 
     @Test

@@ -24,9 +24,9 @@
   <meta name="twitter:title" content="Create your first project">
   <meta property="og:site_name" content="Juno: Java for Microcontrollers">
   <!-- SEO DESCRIPTION -->
-  <meta name="description" content="Create a new Git repository called testing-juno, add Juno as a submodule, configure the Maven plugin and upload a first program to an Arduino UNO R4 WiFi.">
-  <meta property="og:description" content="Create a new Git repository called testing-juno, add Juno as a submodule, configure the Maven plugin and upload a first program to an Arduino UNO R4 WiFi." />
-  <meta name="twitter:description" content="Create a new Git repository called testing-juno, add Juno as a submodule, configure the Maven plugin and upload a first program to an Arduino UNO R4 WiFi.">
+  <meta name="description" content="Create a standalone Juno project from the published Maven archetype, generate an Arduino sketch and verify it before uploading.">
+  <meta property="og:description" content="Create a standalone Juno project from the published Maven archetype, generate an Arduino sketch and verify it before uploading." />
+  <meta name="twitter:description" content="Create a standalone Juno project from the published Maven archetype, generate an Arduino sketch and verify it before uploading.">
 
   <!-- SEO URL -->
   <link rel="canonical" href="https://jabrena.github.io/juno/getting-started/create-your-first-project/" />
@@ -56,7 +56,7 @@
 
 
     <script type="module" src="/juno/static/bundle/app-P5LY5ZJW.js"></script>
-      <link rel="stylesheet" href="/juno/static/bundle/app-YYW5Q3S7.css" />
+      <link rel="stylesheet" href="/juno/static/bundle/app-H4XRNYTM.css" />
 
 </head>
 <body>
@@ -89,6 +89,7 @@
         <a class="" href="/juno/features/memory-model">Memory Model</a>
         <a class="" href="/juno/features/jls-17-conformance">JLS 17 Conformance</a>
         <a class="" href="/juno/features/juno-maven-plugin">Maven Plugin</a>
+        <a class="" href="/juno/features/javadocs">Javadocs</a>
       </div>
       <a class="" href="/juno/boards" >Boards</a>
       <div class="juno-topnav-children">
@@ -122,7 +123,6 @@
       <div class="juno-topnav-children">
         <a class="" href="/juno/blog">Overview</a>
       </div>
-      <a class="" href="/juno/javadocs/0.1.0/apidocs/index.html" target="_blank" rel="noopener">Javadocs</a>
     </nav>
     <div class="juno-topbar-actions">
 <form class="juno-search juno-search-desktop" role="search" autocomplete="off">
@@ -307,257 +307,218 @@ document.addEventListener('DOMContentLoaded', function () {
   <h1>Create your first project</h1>
 </header>
     <div class="content-prose">
-<p>This page creates a new Git repository called <code>testing-juno</code>. It adds Juno as a git submodule, configures the Maven
-plugin, and uploads a first program to an Arduino UNO R4 WiFi.</p>
-<p>You need the tools from <a href="../#1-prerequisites">Getting Started</a>: JDK 27, Maven, Arduino CLI and Git.</p>
-<h2 id="1-create-the-repository">1. Create the repository</h2>
-<pre><code class="language-bash">mkdir testing-juno
-cd testing-juno
-git init
+<p>This page creates a standalone Juno project called <code>my-first-juno-project</code>. It consumes the published Juno artifacts
+from Maven Central: it does not clone the Juno repository or add it as a Git submodule.</p>
+<h2 id="1-check-the-prerequisites">1. Check the prerequisites</h2>
+<p>Install these tools before creating the project. Juno requires JDK 27, Maven, Arduino CLI and Git. The repository's
+<a href="../#1-prerequisites">Getting Started prerequisites</a> show an SDKMAN-based installation for Java and Maven, plus
+Arduino CLI installation options.</p>
+<p>Verify that each tool is available in the shell you will use for the commands below:</p>
+<pre><code class="language-bash">java --version       # must report Java 27
+mvn --version        # must report Maven and Java 27
+arduino-cli version
+git --version
 </code></pre>
-<p>By the end of this page the project will look like this:</p>
-<pre><code class="language-text">testing-juno/
-├── juno/                                  git submodule: jabrena/juno
-├── src/main/java/com/example/testingjuno/App.java
-├── .gitmodules
-├── .mvn/jvm.config
+<p>If a command is not found, install the corresponding tool first: <a href="../#1-prerequisites">JDK 27 and Maven</a>,
+<a href="https://docs.arduino.cc/arduino-cli/installation/">Arduino CLI</a> and <a href="https://git-scm.com/downloads">Git</a>.
+Uploading to a physical board is optional; <code>juno:verify</code> only compiles and checks the generated sketch.</p>
+<h2 id="2-create-your-project-directory">2. Create your project directory</h2>
+<pre><code class="language-bash">mkdir my-first-juno-project
+cd my-first-juno-project
+</code></pre>
+<p>The project is created from the published Maven archetype. It uses the Juno BOM to keep the API and compiler-side
+artifacts on one version. No Juno repository checkout or submodule is needed.</p>
+<h2 id="3-generate-the-maven-project">3. Generate the Maven project</h2>
+<p>Run this command from the parent directory of the project directory. Maven creates <code>my-first-juno-project/</code>:</p>
+<pre><code class="language-bash">mvn archetype:generate \
+  -DarchetypeGroupId=io.github.jabrena \
+  -DarchetypeArtifactId=juno-archetype \
+  -DarchetypeVersion=0.2.0 \
+  -DgroupId=com.example \
+  -DartifactId=my-first-juno-project \
+  -Dversion=1.0.0-SNAPSHOT \
+  -Dpackage=com.example.juno \
+  -DjunoVersion=0.2.0 \
+  -DinteractiveMode=false
+</code></pre>
+<p>If you are already inside <code>my-first-juno-project</code>, run the same command with <code>-DoutputDirectory=.</code>. The archetype
+version identifies the project template; <code>junoVersion</code> selects the published Juno release.</p>
+<p>Enter the generated project and create its Maven Wrapper:</p>
+<pre><code class="language-bash">cd my-first-juno-project
+mvn wrapper:wrapper
+</code></pre>
+<p>The wrapper records the Maven distribution used by the project and lets every contributor build with <code>./mvnw</code> (or
+<code>mvnw.cmd</code> on Windows), without depending on a particular Maven installation on <code>PATH</code>. Maven is needed once to
+bootstrap the wrapper; after that, use the generated wrapper for the remaining commands in this guide.</p>
+<p>The generated project has this shape:</p>
+<pre><code class="language-text">my-first-juno-project/
+├── .mvn/
+│   ├── jvm.config
+│   └── wrapper/
+│       └── maven-wrapper.properties
 ├── mvnw
-└── pom.xml
+├── mvnw.cmd
+├── pom.xml
+└── src/main/java/com/example/juno/
+    └── Blink.java
 </code></pre>
-<h2 id="2-add-juno-as-a-submodule">2. Add Juno as a submodule</h2>
-<pre><code class="language-bash">git submodule add https://github.com/jabrena/juno.git juno
-</code></pre>
-<p><code>git submodule add</code> clones Juno into <code>juno/</code> and records it in a <code>.gitmodules</code> file. To build against a specific Juno
-revision, pin the submodule to a commit with <code>git -C juno checkout &lt;commit&gt;</code>.</p>
-<h2 id="3-build-juno-into-your-local-maven-repository">3. Build Juno into your local Maven repository</h2>
-<p>The project depends on <code>juno-api</code> and the Maven plugin at version <code>0.1.0</code>. Maven resolves them from your local
-repository (<code>~/.m2</code>), not from the submodule, so build the submodule once with its own wrapper:</p>
-<pre><code class="language-bash">cd juno
-./mvnw clean install -DskipTests -Dspotless.check.skip=true -Dpmd.skip=true \
-  -pl juno-api,juno-compiler,juno-maven-plugin -am
-cd ..
-</code></pre>
-<p>Run this again whenever you move the submodule to a new commit.</p>
-<h2 id="4-create-the-maven-project">4. Create the Maven project</h2>
-<p>Create a <code>pom.xml</code> in the root of <code>testing-juno</code>:</p>
-<pre><code class="language-xml">&lt;project xmlns=&quot;http://maven.apache.org/POM/4.0.0&quot;
-         xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
-         xsi:schemaLocation=&quot;http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd&quot;&gt;
-    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+<h2 id="4-understand-the-generated-pomxml">4. Understand the generated <code>pom.xml</code></h2>
+<p>The important generated sections are:</p>
+<pre><code class="language-xml">&lt;groupId&gt;com.example&lt;/groupId&gt;
+&lt;artifactId&gt;my-first-juno-project&lt;/artifactId&gt;
+&lt;version&gt;1.0.0-SNAPSHOT&lt;/version&gt;
 
-    &lt;groupId&gt;com.example&lt;/groupId&gt;
-    &lt;artifactId&gt;testing-juno&lt;/artifactId&gt;
-    &lt;version&gt;1.0.0-SNAPSHOT&lt;/version&gt;
-    &lt;packaging&gt;jar&lt;/packaging&gt;
+&lt;properties&gt;
+    &lt;java.version&gt;27&lt;/java.version&gt;
+    &lt;maven-compiler-plugin.version&gt;3.16.0&lt;/maven-compiler-plugin.version&gt;
+    &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+    &lt;juno.version&gt;0.2.0&lt;/juno.version&gt;
+    &lt;juno.board&gt;arduino-uno-r4-wifi&lt;/juno.board&gt;
+    &lt;juno.main&gt;com.example.juno.Blink&lt;/juno.main&gt;
+&lt;/properties&gt;
 
-    &lt;properties&gt;
-        &lt;maven.compiler.release&gt;27&lt;/maven.compiler.release&gt;
-        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
-        &lt;juno.version&gt;0.1.0&lt;/juno.version&gt;
-        &lt;juno.board&gt;arduino-uno-r4-wifi&lt;/juno.board&gt;
-        &lt;juno.main&gt;com.example.testingjuno.App&lt;/juno.main&gt;
-    &lt;/properties&gt;
-
+&lt;dependencyManagement&gt;
     &lt;dependencies&gt;
         &lt;dependency&gt;
             &lt;groupId&gt;io.github.jabrena&lt;/groupId&gt;
-            &lt;artifactId&gt;juno-api&lt;/artifactId&gt;
+            &lt;artifactId&gt;juno-bom&lt;/artifactId&gt;
             &lt;version&gt;${juno.version}&lt;/version&gt;
+            &lt;type&gt;pom&lt;/type&gt;
+            &lt;scope&gt;import&lt;/scope&gt;
         &lt;/dependency&gt;
     &lt;/dependencies&gt;
+&lt;/dependencyManagement&gt;
 
-    &lt;build&gt;
-        &lt;plugins&gt;
-            &lt;plugin&gt;
-                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
-                &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
-                &lt;version&gt;3.13.0&lt;/version&gt;
-                &lt;configuration&gt;
-                    &lt;release&gt;${maven.compiler.release}&lt;/release&gt;
-                &lt;/configuration&gt;
-            &lt;/plugin&gt;
-            &lt;plugin&gt;
-                &lt;groupId&gt;io.github.jabrena&lt;/groupId&gt;
-                &lt;artifactId&gt;juno-maven-plugin&lt;/artifactId&gt;
-                &lt;version&gt;${juno.version}&lt;/version&gt;
-                &lt;configuration&gt;
-                    &lt;board&gt;${juno.board}&lt;/board&gt;
-                    &lt;mainClass&gt;${juno.main}&lt;/mainClass&gt;
-                &lt;/configuration&gt;
-            &lt;/plugin&gt;
-        &lt;/plugins&gt;
-    &lt;/build&gt;
-&lt;/project&gt;
+&lt;dependencies&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;io.github.jabrena&lt;/groupId&gt;
+        &lt;artifactId&gt;juno-api&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;
+
+&lt;build&gt;
+    &lt;plugins&gt;
+        &lt;plugin&gt;
+            &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+            &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+            &lt;version&gt;${maven-compiler-plugin.version}&lt;/version&gt;
+            &lt;configuration&gt;&lt;release&gt;${java.version}&lt;/release&gt;&lt;/configuration&gt;
+        &lt;/plugin&gt;
+        &lt;plugin&gt;
+            &lt;groupId&gt;io.github.jabrena&lt;/groupId&gt;
+            &lt;artifactId&gt;juno-maven-plugin&lt;/artifactId&gt;
+            &lt;version&gt;${juno.version}&lt;/version&gt;
+            &lt;configuration&gt;
+                &lt;board&gt;${juno.board}&lt;/board&gt;
+                &lt;mainClass&gt;${juno.main}&lt;/mainClass&gt;
+            &lt;/configuration&gt;
+        &lt;/plugin&gt;
+    &lt;/plugins&gt;
+&lt;/build&gt;
 </code></pre>
-<p>Each part has a job:</p>
+<p>The project coordinates identify your application. Java 27 is the JDK level required by Juno. <code>juno.version</code> selects
+the Juno release. The imported <code>juno-bom</code> supplies versions for Juno artifacts, so <code>juno-api</code> needs no version of
+its own. <code>juno.board</code> selects the board and <code>juno.main</code> names the entry point. The compiler plugin targets Java 27;
+the Juno Maven plugin generates, verifies and uploads the Arduino sketch.</p>
+<p>POM values are defaults. Command-line <code>-D</code> properties override them for one run:</p>
 <table>
 <thead>
 <tr>
-<th>Element</th>
-<th>Purpose</th>
+<th>POM value</th>
+<th>Command-line property</th>
+<th>Use</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>maven.compiler.release</code></td>
-<td>The JDK level the program is compiled for. Juno requires 27.</td>
-</tr>
-<tr>
-<td><code>juno.version</code></td>
-<td>Must match the version installed from the submodule in step 3.</td>
-</tr>
-<tr>
-<td><code>juno-api</code> dependency</td>
-<td>The only artifact your program compiles against: the board API, with no compiler code.</td>
-</tr>
-<tr>
-<td><code>&lt;mainClass&gt;</code></td>
-<td>The entry-point class, fully qualified. It is the <code>juno.main</code> property.</td>
-</tr>
-<tr>
-<td><code>&lt;board&gt;</code></td>
-<td>The target board id, here <code>arduino-uno-r4-wifi</code>. It is the <code>juno.board</code> property.</td>
-</tr>
-</tbody>
-</table>
-<p>Every plugin option can also be passed on the command line. A <code>-D</code> property overrides the value in <code>pom.xml</code> for that run:</p>
-<table>
-<thead>
-<tr>
-<th>Plugin option</th>
-<th>Property</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>mainClass</code></td>
-<td><code>juno.main</code></td>
-<td>The entry point to compile.</td>
-</tr>
-<tr>
-<td><code>board</code></td>
 <td><code>juno.board</code></td>
-<td>The board id. Needed only when the entry point's <code>@Board</code> lists several boards.</td>
+<td><code>-Djuno.board=&lt;board-id&gt;</code></td>
+<td>Select another supported board.</td>
 </tr>
 <tr>
-<td><code>port</code></td>
-<td><code>juno.port</code></td>
-<td>The serial port, when more than one matching board is connected.</td>
+<td><code>juno.main</code></td>
+<td><code>-Djuno.main=&lt;fully-qualified-class&gt;</code></td>
+<td>Compile another entry point.</td>
 </tr>
 <tr>
-<td><code>fqbn</code></td>
-<td><code>juno.fqbn</code></td>
-<td>Overrides the board's Arduino FQBN.</td>
+<td>plugin <code>port</code></td>
+<td><code>-Djuno.port=&lt;serial-port&gt;</code></td>
+<td>Select a connected board when needed.</td>
 </tr>
 <tr>
-<td><code>arduinoCli</code></td>
-<td><code>juno.arduinoCli</code></td>
-<td>The <code>arduino-cli</code> executable, if it is not on the <code>PATH</code>.</td>
+<td>plugin <code>fqbn</code></td>
+<td><code>-Djuno.fqbn=&lt;fqbn&gt;</code></td>
+<td>Override the Arduino board identifier.</td>
 </tr>
 <tr>
-<td><code>outputDirectory</code></td>
-<td><code>juno.outputDirectory</code></td>
-<td>Where the generated sketch folders are written.</td>
+<td>plugin <code>arduinoCli</code></td>
+<td><code>-Djuno.arduinoCli=&lt;path&gt;</code></td>
+<td>Use Arduino CLI outside <code>PATH</code>.</td>
 </tr>
 <tr>
-<td><code>arenaSize</code></td>
-<td><code>juno.Xmx</code></td>
-<td>The memory arena size for the program.</td>
-</tr>
-<tr>
-<td><code>threadStackSize</code></td>
-<td><code>juno.Xss</code></td>
-<td>The stack size of each Juno thread.</td>
+<td>plugin <code>outputDirectory</code></td>
+<td><code>-Djuno.outputDirectory=&lt;path&gt;</code></td>
+<td>Change generated output location.</td>
 </tr>
 </tbody>
 </table>
-<p>Juno's compiler needs a few JDK modules opened, so add <code>.mvn/jvm.config</code> with these lines:</p>
-<pre><code class="language-text">--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
---add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED
---add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED
---add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED
---add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED
---add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED
---add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED
---add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
---add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED
---add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED
-</code></pre>
-<p>Then add the Maven wrapper so <code>./mvnw</code> works without a separate Maven install:</p>
-<pre><code class="language-bash">mvn -N wrapper:wrapper
-</code></pre>
-<h2 id="5-install-the-board-core-and-libraries">5. Install the board core and libraries</h2>
-<p>Run this once per machine. It installs the Renesas UNO core and the optional libraries the examples need:</p>
-<pre><code class="language-bash">./mvnw juno:install-deps
-</code></pre>
-<h2 id="6-write-the-program">6. Write the program</h2>
-<p>Create <code>src/main/java/com/example/testingjuno/App.java</code>. The board is selected by its <code>@Board</code> annotation, and the program
-scrolls a message across the 12 × 8 LED matrix:</p>
-<pre><code class="language-java">package com.example.testingjuno;
+<h2 id="5-understand-mvnjvmconfig">5. Understand <code>.mvn/jvm.config</code></h2>
+<p>The archetype includes <code>.mvn/jvm.config</code> with the JDK compiler module exports and opens required by Juno's compiler.
+Maven reads it automatically, so no separate runtime setup is needed.</p>
+<h2 id="6-understand-the-generated-blink-example">6. Understand the generated <code>Blink</code> example</h2>
+<pre><code class="language-java">package com.example.juno;
 
-import io.github.jabrena.juno.annotations.ArduinoUnoR4WiFiBoard;
-import io.github.jabrena.juno.annotations.Board;
 import io.github.jabrena.juno.hardware.MCU;
-import io.github.jabrena.juno.hardware.display.Display;
+import io.github.jabrena.juno.hardware.gpio.DigitalOutput;
 import io.github.jabrena.juno.util.Delay;
 
-@Board(ArduinoUnoR4WiFiBoard.class)
-public final class App {
+public final class Blink {
     public static void main(String[] args) {
-        Display display = MCU.getDisplay();
-        display.setTextColor(Display.WHITE, Display.BLACK);
-
+        DigitalOutput led = DigitalOutput.of(MCU.getGpio().getBuiltinLed());
         while (true) {
-            for (int offset = 12; offset &gt;= -60; offset--) {
-                display.fillScreen(Display.BLACK);
-                display.setCursor(offset, 0);
-                display.print(&quot;Hello, Juno&quot;);
-                display.flush();
-                Delay.millis(80);
-            }
+            led.high();
+            Delay.millis(500);
+            led.low();
+            Delay.millis(500);
         }
     }
 }
 </code></pre>
-<p><code>print</code> takes any <code>String</code>, and the matrix clips the text at its edges.</p>
-<h2 id="7-build-and-compile">7. Build and compile</h2>
-<p>Compile the project and generate the Arduino sketch:</p>
+<p><code>MCU.getGpio().getBuiltinLed()</code> obtains the board's built-in LED. <code>DigitalOutput.of(...)</code> gives the program a digital
+output, and <code>led.high()</code> / <code>led.low()</code> switch it on and off. The two 500 millisecond delays create one-second blink
+cycles. The board abstraction keeps this program portable across supported boards. It intentionally produces no serial
+output.</p>
+<h2 id="7-install-board-dependencies">7. Install board dependencies</h2>
+<p>Install the Arduino cores and libraries needed by Juno examples once per machine:</p>
+<pre><code class="language-bash">./mvnw juno:install-deps
+</code></pre>
+<h2 id="8-generate-and-verify-the-sketch">8. Generate and verify the sketch</h2>
 <pre><code class="language-bash">./mvnw compile juno:compile
+./mvnw compile juno:verify
 </code></pre>
-<p>On Windows, use <code>.\mvnw.cmd compile juno:compile</code>. To check the generated sketch with Arduino CLI without touching the
-board, run <code>juno:verify</code>:</p>
-<pre><code class="language-bash">./mvnw compile juno:verify
-</code></pre>
-<p>When ready to flash the program, connect the board with a USB-C cable. If several boards are connected, list them and
-choose the port:</p>
+<p><code>juno:verify</code> compiles/checks the generated sketch with Arduino CLI; it does not upload anything. Generated sketch and
+assembly files are normally below <code>target/juno/&lt;board&gt;/</code>; the Java source and POM remain the portable source of truth.</p>
+<h2 id="9-optionally-flash-the-board">9. Optionally flash the board</h2>
+<p>Uploading is optional. Connect the board over USB, list matching boards and flash it:</p>
 <pre><code class="language-bash">./mvnw juno:boards
 ./mvnw compile juno:flash -Djuno.port=&lt;PORT&gt;
 </code></pre>
-<p>On Windows, quote the property: <code>.\mvnw.cmd compile juno:flash &quot;-Djuno.port=COM11&quot;</code>.</p>
-<h2 id="8-commit-the-project">8. Commit the project</h2>
-<pre><code class="language-bash">git add .gitmodules juno pom.xml mvnw .mvn src
-git commit -m &quot;chore: first Juno project&quot;
-</code></pre>
-<p>Others can then clone it with <code>git clone --recursive</code> and build it the same way.</p>
-<h2 id="9-review-ideas-for-your-next-steps">9. Review ideas for your next steps</h2>
-<ul>
-<li><strong>Change the message:</strong> edit the text and the scroll range in <code>App.java</code>, then run <code>./mvnw compile juno:flash</code> again.</li>
-<li><strong>Add a second program:</strong> create another class with <code>@Board</code>, then upload it with <code>-Djuno.main=&lt;fully-qualified-name&gt;</code>
-instead of editing <code>pom.xml</code>.</li>
-<li><strong>Update Juno:</strong> move the submodule to a new commit with <code>git -C juno checkout &lt;commit&gt;</code>, rebuild it with the step 3
-command, then compile again.</li>
-<li><strong>Track the submodule version:</strong> commit the new submodule pointer after each update, so everyone builds the same Juno.</li>
-</ul>
-<h2 id="troubleshooting">Troubleshooting</h2>
-<ul>
-<li><strong>The <code>juno-maven-plugin</code> or <code>juno-api</code> version cannot be resolved:</strong> rebuild the submodule (step 3). The <code>juno.version</code>
-property must match the version it installs.</li>
-<li><strong>&quot;Missing required Juno entry point&quot;:</strong> set <code>&lt;mainClass&gt;</code> in <code>pom.xml</code>, or pass <code>-Djuno.main=&lt;fully-qualified-name&gt;</code>.</li>
-<li><strong>The upload cannot find the port:</strong> run <code>./mvnw juno:boards</code> and pass <code>-Djuno.port=&lt;PORT&gt;</code>.</li>
-<li><strong>Several boards match:</strong> pass <code>-Djuno.board=&lt;id&gt;</code> when the entry point's <code>@Board</code> lists more than one board.</li>
-</ul>
+<p>Use <code>-Djuno.board=&lt;board-id&gt;</code> when the program supports more than one board. The port is the USB serial device
+reported by <code>juno:boards</code>; do not use a network address for uploading.</p>
 <p>For every goal and option, see the <a href="../../features/juno-maven-plugin">Maven Plugin</a> page.</p>
+<h2 id="10-what-to-expect-after-flashing-the-uno-r4-wifi">10. What to expect after flashing the UNO R4 WiFi</h2>
+<img src="../../images/boards/arduino-uno-r4-wifi.png" alt="Arduino UNO R4 WiFi" width="280">
+<p>The default project targets the Arduino UNO R4 WiFi. After <code>juno:flash</code> finishes, the board resets and the built-in
+LED should blink repeatedly: on for 500 milliseconds, then off for 500 milliseconds. This confirms that the generated
+Java program is running on the board.</p>
+<p>The <code>Blink</code> example intentionally produces no serial output, so a quiet serial monitor is expected. If the LED does
+not blink, check that the selected <code>juno.board</code> is <code>arduino-uno-r4-wifi</code>, the USB serial <code>-Djuno.port</code> is correct, and
+the flash command completed without errors.</p>
+<h2 id="11-continue-learning">11. Continue learning</h2>
+<p>Read the <a href="https://jabrena.github.io/juno/">Juno documentation site</a> to explore supported boards, features and APIs.
+Use the <a href="../../features/javadocs">Javadocs</a> to look up the public Java API, and review the
+<a href="https://github.com/jabrena/juno/tree/main/juno-examples">examples in <code>juno-examples</code></a> for complete programs that
+use hardware features beyond <code>Blink</code>.</p>
     </div>
   </section>
 </article>
@@ -570,7 +531,7 @@ property must match the version it installs.</li>
   <div class="juno-footer-inner">
     <div class="juno-footer-links">
       <a href="https://github.com/jabrena/juno" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
-      <a href="/juno/javadocs/0.1.0/apidocs/index.html" target="_blank" rel="noopener" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
+      <a href="/juno/features/javadocs" aria-label="Javadocs"><i class="fa-solid fa-book"></i></a>
       <a href="https://github.com/jabrena/juno/issues" target="_blank" rel="noopener" aria-label="Issues"><i class="fa-solid fa-bug"></i></a>
     </div>
     <p>&copy; 2026 Juan Antonio Breña Moral. Java for Microcontrollers</p>
